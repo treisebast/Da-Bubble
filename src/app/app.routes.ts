@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
+import { MainPageComponent } from './pages/main-page/main-page.component';
 import { FrontPageComponent } from './front-page/front-page.component';
-import { MainContentComponent } from './main-content/main-content.component';
 
 export const routes: Routes = [
-    { path: '', component: FrontPageComponent},
-    { path: '', component: MainContentComponent}
+    {path: "", component: FrontPageComponent},
+    {path: "", component: MainPageComponent},
 ];
