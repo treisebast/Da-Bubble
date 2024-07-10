@@ -1,32 +1,61 @@
-
-
 .full-page {
     display: flex;
+    justify-content: center;
+    width: 100%;
+}
 
+.max-width {
+    display: flex;
+    width: 100%;
+    max-width: 1920px;
+  
     app-chat-channels {
-        width: 20%;
-        background-color: white;
-        margin: 16px;
-        border-radius: 16px;
-        padding: 16px;
-        height: 80vh;
+      width: 20%;
+      min-width: 280px;
+      background-color: white;
+      margin: 8px;
+      padding: 16px;
+      border-radius: 16px;
+      height: calc(100vh - 131px);
     }
     app-chat-main {
-        width: 50%;
-        background-color: white;
-        margin: 16px;
-        border-radius: 16px;
-        padding: 16px;
-        height: 80vh;
+      background-color: white;
+      margin: 8px;
+      padding: 16px;
+      border-radius: 16px;
+      height: calc(100vh - 131px);
+      flex-grow: 1;
+      &.full-width {
+        width: 100%;
+      }
     }
     app-chat-secondary {
-        width: 30%;
-        background-color: white;
-        margin: 16px;
-        border-radius: 16px;
-        padding: 16px;
-        height: 80vh;
+      width: 20%;
+      min-width: 280px;
+      background-color: white;
+      margin: 8px;
+      padding: 16px;
+      border-radius: 16px;
+      height: calc(100vh - 131px);
     }
 
+    .workspaceMenuBtn {
+        position: absolute;
+        left: 0;
+        bottom: 112px;
+        transform: rotate(270deg);
+        transform-origin: left top;
+        background-color: white;
+        height: 24px;
+        box-shadow: 0 1px 4px 1px;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+  }
+  
 
-}
+  @media(max-width: 1000px) {
+    .full-page {
+        flex-direction: column;
+    }
+  }
