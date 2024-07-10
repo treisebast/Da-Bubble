@@ -3,6 +3,7 @@ header {
     height: 115px;
     display: flex;
     justify-content: center;
+    position: relative;
 
     .max-width {
         width: 100%;
@@ -76,9 +77,9 @@ header {
     }
 }
 
-mat-menu {
-    position: absolute;
-    right: 16px;
+.cdk-overlay-pane {
+    position: absolute !important;
+    right: 0;
     top: 115px;
 }
 

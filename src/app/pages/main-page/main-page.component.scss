@@ -1,0 +1,32 @@
+
+
+.full-page {
+    display: flex;
+
+    app-chat-channels {
+        width: 20%;
+        background-color: white;
+        margin: 16px;
+        border-radius: 16px;
+        padding: 16px;
+        height: 80vh;
+    }
+    app-chat-main {
+        width: 50%;
+        background-color: white;
+        margin: 16px;
+        border-radius: 16px;
+        padding: 16px;
+        height: 80vh;
+    }
+    app-chat-secondary {
+        width: 30%;
+        background-color: white;
+        margin: 16px;
+        border-radius: 16px;
+        padding: 16px;
+        height: 80vh;
+    }
+
+
+}
