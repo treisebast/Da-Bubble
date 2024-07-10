@@ -1,16 +1,3 @@
-
-<header>
-    <div class="fp-logo">
-        <img class="logo" src="/assets/img/logo-header.png" alt="" srcset="">
-    </div>
-
-    <div class="sign-up">
-        <span>Neu bei DABubble?</span>
-        <button class="sign-up-button">Konto erstellen</button>
-    </div>
-    
-</header>
-
 <mat-card class="login-card centered">
     <mat-card-title>Anmeldung</mat-card-title>
     <mat-card-subtitle>Wir empfehlen dir, die E-Mail-Adresse zu nutzen, die du bei der Arbeit
@@ -41,14 +28,7 @@
     </button>
 
     <div class="login-actions">
-        <button class="sign-in-button">Anmelden</button>
-        <button class="guest-login-button">Gäste-Login</button>
+        <button routerLink="main" class="sign-in-button">Anmelden</button>
+        <button routerLink="main" class="guest-login-button">Gäste-Login</button>
     </div>
 </mat-card>
-
-<app-footer></app-footer>
-
-<div class="imprint">
-    <a href="#" class="forgot-password">Impressum</a>
-    <a href="#" class="forgot-password">Datenschutz</a>
-</div>
