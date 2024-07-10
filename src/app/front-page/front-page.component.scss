@@ -1,5 +1,17 @@
 @import '../../styles.scss';
 
+
+header {
+    width: 100%;
+    max-width: 1920px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 85px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .fp-logo {
     display: flex;
     top: 7% !important;
@@ -10,6 +22,7 @@
 
     >img {
         width: 150px;
+        object-fit: contain;
     }
 }
 
@@ -22,7 +35,7 @@
 
 .login-card {
     width: 90%;
-    max-width: 450px;
+    max-width: 600px;
     margin: auto;
     padding: 20px;
     border-radius: 16px;
@@ -32,6 +45,7 @@
 mat-card-title {
     text-align: center;
     font-size: 22px;
+    font-weight: 700;
     color: $purple-one;
     margin-bottom: 8px;
 }
@@ -111,8 +125,14 @@ mat-card-subtitle {
     background-color: $light-purple;
     transition: border 0.3s ease, background-color 0.3s ease;
 
+    >a {
+        color: $purple-one;
+        text-decoration: none;
+    }
+
     &:hover {
         border: 1px solid $purple-one;
+        font-weight: 700;
     }
 }
 
@@ -166,7 +186,8 @@ mat-card-subtitle {
     border-radius: 25px;
     padding: 8px 20px;
     margin: 8px 0;
-    height: 25px;
+    border: 1px solid transparent;
+    height: 41px;
 
     &:hover {
         border: 1px solid $purple-one;
@@ -195,9 +216,8 @@ mat-card-subtitle {
     flex-direction: column;
     position: absolute;
     left: 50%;
-    top: 50%;
+    bottom: 7%;
     transform: translate(-50%, -50%);
-    top: unset;
     gap: 12px;
     bottom: -20px;
 }
@@ -244,31 +264,83 @@ mat-card-subtitle {
 
 
 @media (min-width: 1200px) {
+
+    header {
+        width: 100%;
+        max-width: 1920px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 30px;
+        padding-right:30px;
+        padding-top:50px;
+        height: 115px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .login-card {
+        height: 700px;
+        padding: 40px;
+        display: flex;
+    }
+
+    mat-card-title {
+        font-size: 34px;
+    }
+
+    mat-card-subtitle {
+        font-size: 20px;
+        font-weight: 400;
+    }
+
     .fp-logo {
         display: flex;
-        top: 7% !important;
-        left: 150px;
+        position: relative;
+        top: unset;
+        left: unset;
+        transform: unset;
+
 
 
         >img {
             width: 200px;
+            height: 70px;
+            margin-left: 16px;
         }
     }
 
+    .input-container input,
+    .forgot-password,
+    .or-divider>span,
+    .google-login>a,
+    .login-actions>button {
+        font-size: 18px;
+    }
+
+    .input-container,
+    .google-login {
+        height: 55px;
+    }
+
     .sign-up {
-        position: absolute;
-        bottom: unset;
-        top: 7%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        position: relative;
+        gap: 0px;
         left: unset;
-        right: 150px;
-        transform: translate(50%, -50%);
-        text-align: right;
+        bottom: unset;
+        transform: unset;
+
 
         >span {
             padding-right: 30px;
             font-size: 18px;
         }
     }
+
 
     .sign-up-button {
         padding: 8px 16px;
@@ -285,6 +357,7 @@ mat-card-subtitle {
 
     .imprint {
         display: flex;
+        bottom: 2%;
 
         >a {
             padding: 8px 16px;
@@ -299,4 +372,33 @@ mat-card-subtitle {
         }
     }
 
+}
+
+@media (min-width: 500px){
+
+    mat-card-title {
+        font-size: 28px;
+    }
+
+    mat-card-subtitle {
+        font-size: 20px;
+        font-weight: 400;
+    }
+
+    .input-container,
+    .google-login {
+        height: 48px;
+    }
+    
+    .login-card {
+        height: 600px;
+        justify-content: space-around;
+    }
+    .input-container input,
+    .forgot-password,
+    .or-divider>span,
+    .google-login>a,
+    .login-actions>button {
+        font-size: 18px;
+    }
 }
