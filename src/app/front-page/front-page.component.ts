@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-front-page',
   standalone: true,
@@ -14,10 +15,5 @@ import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angu
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FrontPageComponent {
-  hide = signal(true);
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
-    event.stopPropagation();
-  }
-  emailFormControl = new FormControl('', [Validators.required, Validators.email]);
+ 
 }
