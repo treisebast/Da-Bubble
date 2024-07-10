@@ -15,6 +15,6 @@ export const appConfig: ApplicationConfig = {
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),
-    provideDatabase(() => getDatabase()), provideFirebaseApp(() => initializeApp({"projectId":"dabubble-7412a","appId":"1:522018485270:web:c36608a9b37a84f0e27137","storageBucket":"dabubble-7412a.appspot.com","apiKey":"AIzaSyBPcnhnxoL7P8Uxe4Lx7MfIbG1upnGqQPQ","authDomain":"dabubble-7412a.firebaseapp.com","messagingSenderId":"522018485270"})), provideAnalytics(() => getAnalytics()), ScreenTrackingService, provideFirestore(() => getFirestore()), provideDatabase(() => getDatabase()), provideAnimationsAsync(),
+    provideDatabase(() => getDatabase()), provideFirebaseApp(() => initializeApp({"projectId":"dabubble-7412a","appId":"1:522018485270:web:c36608a9b37a84f0e27137","storageBucket":"dabubble-7412a.appspot.com","apiKey":"AIzaSyBPcnhnxoL7P8Uxe4Lx7MfIbG1upnGqQPQ","authDomain":"dabubble-7412a.firebaseapp.com","messagingSenderId":"522018485270"})), provideAnalytics(() => getAnalytics()), ScreenTrackingService, provideFirestore(() => getFirestore()), provideDatabase(() => getDatabase()), provideAnimationsAsync(), provideAnimationsAsync(),
   ]
 };
