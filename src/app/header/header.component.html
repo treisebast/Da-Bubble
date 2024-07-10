@@ -1,0 +1,23 @@
+<header>
+  <div class="max-width">
+    <img src="./assets/img/logo-header.png" alt="" class="logo" />
+
+    <div class="searchbar">
+      <input type="text" placeholder="Durchsuchen" />
+      <mat-icon matSuffix>search</mat-icon>
+    </div>
+
+    <div class="profile" [matMenuTriggerFor]="menu" #menuTrigger>
+      <h2>{{ currentUser.name }}</h2>
+      <div class="profil-img-div">
+        <img src="{{ currentUser.imgSrc }}" alt="" class="profile-img"/>
+        <img *ngIf="currentUser.online" src="./assets/img/online.png" alt="" class="online" />
+      </div>
+
+      <mat-icon fontIcon="keyboard_arrow_down"></mat-icon>
+      <mat-menu class="menu" #menu="matMenu">
+        <button mat-menu-item (click)="openDialog()">Open dialog</button>
+      </mat-menu>
+    </div>
+  </div>
+</header>
