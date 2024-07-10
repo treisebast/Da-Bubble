@@ -6,11 +6,21 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
+import { HeaderComponent } from '../../header/header.component';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [ChatChannelsComponent, ChatMainComponent, ChatSecondaryComponent, CommonModule, MatButtonModule, MatDividerModule, MatIconModule],
+  imports: [
+    ChatChannelsComponent, 
+    ChatMainComponent, 
+    ChatSecondaryComponent, 
+    CommonModule, 
+    MatButtonModule, 
+    MatDividerModule, 
+    MatIconModule,
+    HeaderComponent
+  ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss']
 })
