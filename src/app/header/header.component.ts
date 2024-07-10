@@ -4,7 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
-
+import { Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -13,7 +13,8 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
     MatIconModule,
     MatInputModule,
     MatMenuModule,
-    CommonModule
+    CommonModule,
+    RouterModule
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
