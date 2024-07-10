@@ -1,0 +1,13 @@
+<div class="full-page">
+  <div class="max-width">
+    <app-chat-channels *ngIf="showChannels && (!isMobileView || currentView === 'channels')"></app-chat-channels>
+    <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}" *ngIf="!isMobileView || currentView === 'main'"></app-chat-main>
+    <app-chat-secondary *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')"></app-chat-secondary>
+    <button (click)="openCloseChatChannel()" class="workspaceMenuBtn" mat-raised-button>{{ workspaceMenu }}</button>
+  </div>  
+</div>
+<div class="mobile-buttons" *ngIf="isMobileView">
+  <button *ngIf="currentView !== 'channels'" (click)="switchTo('channels')">Kanäle</button>
+  <button *ngIf="currentView !== 'main'" (click)="switchTo('main')">Hauptansicht</button>
+  <button *ngIf="currentView !== 'secondary'" (click)="switchTo('secondary')">Sekundäransicht</button>
+</div>
