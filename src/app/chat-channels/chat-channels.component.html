@@ -1,1 +1,34 @@
-<p>chat-channels works!</p>
+<div class="channelHeader">
+  <div class="serverName"></div>
+  <img class="edit" src="./assets/img/icons/edit.png" alt="" />
+</div>
+
+<div class="menuChannelDropdown">
+  <div (click)="openMenuChannel()" *ngIf="menuChannelDropdown" class="closed dropdown" ></div>
+  <div (click)="openMenuChannel()" *ngIf="!menuChannelDropdown" class="opend dropdown"></div>
+
+  <table>
+    <div *ngIf="!menuChannelDropdown" class="channels">
+      <tr *ngFor="let channel of allChannels">
+        <img src="./assets/img/chatChannel/tag.png" alt="" />
+        {{ channel.name }}
+      </tr>
+      <img class="addNewChannel" (click)="addNewChannel()" src="./assets/img/chatChannel/addChannelDefault.png" alt="" />
+    </div>
+  </table>
+</div>
+
+<div class="directMessages">
+  <div (click)="openDirectMessages()" *ngIf="directMessages" class="directMessagesClose dropdown" ></div>
+  <div (click)="openDirectMessages()" *ngIf="!directMessages" class="directMessagesOpend dropdown" ></div>
+
+  <table>
+    <div *ngIf="!directMessages" class="channels">
+      <tr *ngFor="let directMessage of allDirectMessages">
+        <img src="./assets/img/chatChannel/tag.png" alt="" />
+        {{ directMessage.name }}
+      </tr>
+      <img class="addNewChannel" (click)="addNewDirectMessage()" src="./assets/img/chatChannel/addChannelDefault.png" alt="" />
+    </div>
+  </table>
+</div>
