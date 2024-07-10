@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from '../../header/header.component';
-import { FooterComponent } from '../../shared/footer/footer.component';
 
 @Component({
   selector: 'app-main-page',
@@ -21,7 +20,6 @@ import { FooterComponent } from '../../shared/footer/footer.component';
     MatDividerModule, 
     MatIconModule,
     HeaderComponent,
-    FooterComponent
   ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss']
