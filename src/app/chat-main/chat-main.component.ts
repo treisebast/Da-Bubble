@@ -20,4 +20,8 @@ export class ChatMainComponent implements OnInit {
       this.currentChat = chat;
     });
   }
+
+  sendMessage() {
+    
+  }
 }
