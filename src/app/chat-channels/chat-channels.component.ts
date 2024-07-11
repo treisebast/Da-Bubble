@@ -33,15 +33,33 @@ export class ChatChannelsComponent {
   readonly dialog = inject(MatDialog);
   private chatService = inject(ChatServiceService);
 
-  allChannels = [
+  allChannels: ChatUserProfile[] = [
     {
       name: "Entwickler Team",
+      imgScr: "./assets/img/chatChannel/tag.svg",
+      online: true,
+      messages: {
+        myMessage: "",
+        answeredMessages: ""
+      },
     },
     {
       name: "Office Team",
+      imgScr: "./assets/img/chatChannel/tag.svg",
+      online: true,
+      messages: {
+        myMessage: "",
+        answeredMessages: ""
+      },
     },
     {
       name: "Test Team",
+      imgScr: "./assets/img/chatChannel/tag.svg",
+      online: true,
+      messages: {
+        myMessage: "",
+        answeredMessages: ""
+      },
     }
   ]
 
