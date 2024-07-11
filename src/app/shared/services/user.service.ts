@@ -1,28 +1,36 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, docData, setDoc, doc, collection } from '@angular/fire/firestore';
+import { Firestore, collectionData, doc, docData, setDoc, updateDoc, deleteDoc, collection } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private usersCollection = collection(this.firestore, 'users');
+
   constructor(private firestore: Firestore) {}
 
-  getUserById(userId: string): Observable<any> {
-    // Benutzer anhand der ID abrufen
-    const userDocRef = doc(this.firestore, `users/${userId}`);
-    return docData(userDocRef);
+  getUsers(): Observable<any[]> {
+    return collectionData(this.usersCollection, { idField: 'id' }) as Observable<any[]>;
+  }
+
+  getUser(id: string): Observable<any> {
+    const userDoc = doc(this.firestore, `users/${id}`);
+    return docData(userDoc, { idField: 'id' }) as Observable<any>;
+  }
+
+  addUser(user: any): Promise<void> {
+    const userDoc = doc(this.firestore, `users/${user.id}`);
+    return setDoc(userDoc, user);
   }
 
   updateUser(user: any): Promise<void> {
-    // Benutzerinformationen aktualisieren
-    const userDocRef = doc(this.firestore, `users/${user.id}`);
-    return setDoc(userDocRef, user);
+    const userDoc = doc(this.firestore, `users/${user.id}`);
+    return updateDoc(userDoc, user);
   }
 
-  getAllUsers(): Observable<any[]> {
-    // Alle Benutzer abrufen
-    const usersCollectionRef = collection(this.firestore, 'users');
-    return collectionData(usersCollectionRef);
+  deleteUser(id: string): Promise<void> {
+    const userDoc = doc(this.firestore, `users/${id}`);
+    return deleteDoc(userDoc);
   }
 }
