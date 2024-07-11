@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { ChatUserProfile } from '../chat-channels/chat-channels.component';
+import { ChatServiceService } from '../chat-service.service';
 
 @Component({
   selector: 'app-chat-secondary',
@@ -9,4 +11,20 @@ import { Component } from '@angular/core';
 })
 export class ChatSecondaryComponent {
 
+  currentChat: ChatUserProfile | null = null;
+  private chatService = inject(ChatServiceService);
+
+  ngOnInit() {
+    this.chatService.currentChat$.subscribe(chat => {
+      this.currentChat = chat;
+    });
+  }
+
+  sendMessage() {
+
+  }
+
+  close() {
+    
+  }
 }
