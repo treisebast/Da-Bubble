@@ -229,6 +229,28 @@ mat-card-subtitle {
     justify-content: end;
 }
 
+.checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 8px;
+    margin: 10px 0px;
+
+    >span {
+        font-size: 13px;
+
+        >a {
+            color: $purple-one;
+            text-decoration: none;
+
+            &:hover {
+                color: $purple-two;
+            }
+        }
+    }
+
+}
+
 @media (min-width: 1200px) {
 
     .login-card {

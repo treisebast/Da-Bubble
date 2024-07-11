@@ -20,8 +20,13 @@
         <input type="password" placeholder="Passwort">
     </div>
 
+    <div class="checkbox">
+        <img [src]="isPrivacyPolicyAccepted ? '/assets/img/icons/checkbox_checked.svg' : '/assets/img/icons/checkbox_unchecked.svg'"
+            alt="Checkbox" (click)="isPrivacyPolicyAccepted = !isPrivacyPolicyAccepted">
+        <span>Ich stimme der <a routerLink="/privacy">Datenschutzerklärung</a> zu.</span>
+    </div>
     <div class="login-actions jc-end">
-        <button routerLink="main" class="sign-in-button">Weiter</button>
+        <button routerLink="/avatar" class="sign-in-button">Weiter</button>
     </div>
 
 </mat-card>

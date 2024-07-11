@@ -5,6 +5,7 @@ import { PrivacypolicyComponent } from './shared/privacypolicy/privacypolicy.com
 import { MainSignInComponent } from './pages/main-sign-in/main-sign-in.component';
 import { SignInComponent } from './pages/main-sign-in/sign-in/sign-in.component';
 import { SignUpComponent } from './pages/main-sign-in/sign-up/sign-up.component';
+import { AvatarChoiceComponent } from './pages/main-sign-in/avatar-choice/avatar-choice.component';
 
 export const routes: Routes = [
     {
@@ -13,6 +14,7 @@ export const routes: Routes = [
         children: [
             { path: "", component: SignInComponent }, // default child route
             { path: "signup", component: SignUpComponent },
+            { path: "avatar", component: AvatarChoiceComponent },
             { path: "imprint", component: ImprintComponent },
             { path: "privacy", component: PrivacypolicyComponent },
         ],
