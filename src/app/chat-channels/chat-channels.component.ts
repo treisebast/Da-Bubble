@@ -48,7 +48,7 @@ export class ChatChannelsComponent {
   allDirectMessages: ChatUserProfile[] = [
     {
       name: "Marco Amman",
-      imgScr: "./assets/img/profile/1.png",
+      imgScr: "./assets/img/profile/1.svg",
       online: true,
       messages: {
         myMessage: "",
@@ -57,7 +57,7 @@ export class ChatChannelsComponent {
     },
     {
       name: "Sebastian Treittinger",
-      imgScr: "./assets/img/profile/2.png",
+      imgScr: "./assets/img/profile/2.svg",
       online: true,
       messages: {
         myMessage: "",
@@ -66,7 +66,7 @@ export class ChatChannelsComponent {
     },
     {
       name: "Aristotelis Stratis",
-      imgScr: "./assets/img/profile/1.png",
+      imgScr: "./assets/img/profile/3.svg",
       online: false,
       messages: {
         myMessage: "",
@@ -75,7 +75,7 @@ export class ChatChannelsComponent {
     },
     {
       name: "Tobias Wall",
-      imgScr: "./assets/img/profile/4.png",
+      imgScr: "./assets/img/profile/4.svg",
       online: false,
       messages: {
         myMessage: "",
