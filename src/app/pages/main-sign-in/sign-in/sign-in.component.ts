@@ -15,9 +15,9 @@ import { RouterModule, Router } from '@angular/router';
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.scss']
 })
-
 export class SignInComponent {
   signInForm: FormGroup;
+  formSubmitted = false;
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.signInForm = this.fb.group({
@@ -35,6 +35,7 @@ export class SignInComponent {
   }
 
   onSubmit() {
+    this.formSubmitted = true;
     if (this.signInForm.valid) {
       // Handle successful form submission here
       console.log('Form Submitted', this.signInForm.value);
