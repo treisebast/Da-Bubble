@@ -1,17 +1,17 @@
 <header>
     <div class="fp-logo" routerLink="">
-        <img class="logo" src="/assets/img/logo-header.png" alt="" srcset="">
+      <img [routerLink]="['start']" class="logo" src="/assets/img/logo.svg" alt="Logo">
     </div>
-
-    <div class="sign-up">
-        <span>Neu bei DABubble?</span>
-        <button routerLink="signup" class="sign-up-button">Konto erstellen</button>
+  
+    <div class="sign-up" *ngIf="showSignUpDiv">
+      <span>Neu bei DABubble?</span>
+      <button routerLink="signup" class="sign-up-button">Konto erstellen</button>
     </div>
-</header>
-
-<router-outlet></router-outlet>
-
-<div class="imprint">
+  </header>
+  
+  <router-outlet></router-outlet>
+  
+  <div class="imprint">
     <a routerLink="imprint" class="forgot-password">Impressum</a>
     <a routerLink="privacy" class="forgot-password">Datenschutz</a>
-</div>
+  </div>
