@@ -55,6 +55,10 @@ export class MainPageComponent implements OnInit {
     this.showChannels = !this.showChannels;
   }
 
+  closeThreadComponent() {
+    this.showSecondary = !this.showSecondary;
+  }
+
   switchTo(view: 'channels' | 'main' | 'secondary') {
     this.currentView = view;
   }

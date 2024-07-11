@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { ChatUserProfile } from '../chat-channels/chat-channels.component';
 import { ChatServiceService } from '../chat-service.service';
 
@@ -18,6 +18,12 @@ export class ChatSecondaryComponent {
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat;
     });
+  }
+
+  @Output() closeThread = new EventEmitter<void>();
+
+  onCloseThread() {
+    this.closeThread.emit();
   }
 
   sendMessage() {
