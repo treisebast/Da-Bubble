@@ -309,3 +309,9 @@ form {
         font-size: 18px;
     }
 }
+
+@media (max-width: 499px){
+    .input-container>img {
+        width: 20px;
+    }
+}
