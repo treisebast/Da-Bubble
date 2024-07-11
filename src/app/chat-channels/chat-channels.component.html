@@ -23,7 +23,7 @@
 
   <table>
     <div *ngIf="!directMessages" class="channels">
-      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages">
+      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages" (click)="showChat(directMessage)">
         <img class="table-profile-img" src="{{ directMessage.imgScr }}" alt="">
         <img *ngIf="directMessage.online" src="./assets/img/online.png" alt="" class="online"/>
         <img *ngIf="!directMessage.online" src="./assets/img/offline.png" alt="" class="online"/>
