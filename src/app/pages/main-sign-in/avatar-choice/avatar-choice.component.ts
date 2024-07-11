@@ -8,12 +8,12 @@ import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-sign-up',
+  selector: 'app-avatar-choice',
   standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
-  templateUrl: './sign-up.component.html',
-  styleUrl: './sign-up.component.scss'
+  templateUrl: './avatar-choice.component.html',
+  styleUrl: './avatar-choice.component.scss'
 })
-export class SignUpComponent {
-  isPrivacyPolicyAccepted: boolean = false;
+export class AvatarChoiceComponent {
+
 }
