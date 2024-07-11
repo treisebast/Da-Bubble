@@ -1,0 +1,54 @@
+<div class="container">
+  <h2>Neuen Benutzer hinzufügen</h2>
+  <form [formGroup]="userForm" (ngSubmit)="addUser()">
+    <mat-form-field appearance="fill">
+      <mat-label>User ID</mat-label>
+      <input matInput formControlName="userId" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Avatar URL</mat-label>
+      <input matInput formControlName="avatarUrl">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="online">Online</mat-option>
+        <mat-option value="offline">Offline</mat-option>
+        <mat-option value="away">Away</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit">{{ editingUserId ? 'Benutzer aktualisieren' : 'Benutzer hinzufügen' }}</button>
+    <button mat-button type="button" (click)="resetForm()" *ngIf="editingUserId">Abbrechen</button>
+  </form>
+
+  <h2>Benutzerliste</h2>
+  <ul>
+    <li *ngFor="let user of users">
+      <img [src]="user.avatarUrl" alt="{{ user.name }}'s avatar" width="50">
+      <div class="user-info">
+        {{ user.name }} ({{ user.email }}) - {{ user.status }} - Last Seen: {{ user.lastSeen.toDate ? user.lastSeen.toDate() : user.lastSeen | date:'short' }}
+      </div>
+      <div class="actions">
+        <button mat-button color="accent" (click)="editUser(user)">
+          <mat-icon>Edit</mat-icon>
+        </button>
+        <button mat-button color="warn" (click)="deleteUser(user.userId)">
+          <mat-icon>Delete</mat-icon>
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

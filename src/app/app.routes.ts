@@ -6,6 +6,7 @@ import { MainSignInComponent } from './pages/main-sign-in/main-sign-in.component
 import { SignInComponent } from './pages/main-sign-in/sign-in/sign-in.component';
 import { SignUpComponent } from './pages/main-sign-in/sign-up/sign-up.component';
 import { AvatarChoiceComponent } from './pages/main-sign-in/avatar-choice/avatar-choice.component';
+import { TestingComponent } from './testing/testing.component';
 
 export const routes: Routes = [
     {
@@ -20,5 +21,6 @@ export const routes: Routes = [
         ],
     },
     { path: "main", component: MainPageComponent },
+    { path: "testing", component: TestingComponent},
     { path: "**", redirectTo: "" },
 ];
