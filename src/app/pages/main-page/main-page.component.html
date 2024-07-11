@@ -6,7 +6,7 @@
     <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}" *ngIf="!isMobileView || currentView === 'main'"></app-chat-main>
     <app-chat-secondary *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')" (closeThread)="closeThreadComponent()"></app-chat-secondary>
     <button (click)="openCloseChatChannel()" class="workspaceMenuBtn" mat-raised-button>{{ workspaceMenu }}</button>
-  </div>  
+  </div>
 </div>
 <div class="mobile-buttons" *ngIf="isMobileView">
   <button *ngIf="currentView !== 'channels'" (click)="switchTo('channels')">Kanäle</button>
