@@ -136,6 +136,11 @@ mat-card-subtitle {
     }
 }
 
+.sign-in-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 .guest-login-button {
     background-color: transparent;
     color: $purple-one;
@@ -183,6 +188,7 @@ mat-card-subtitle {
     flex: 1;
 }
 
+
 .sign-up {
     display: flex;
     justify-content: center;
@@ -229,11 +235,17 @@ mat-card-subtitle {
     justify-content: end;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+}
+
 .checkbox {
     display: flex;
     align-items: center;
     justify-content: start;
     gap: 8px;
+    padding-left: 20px;
     margin: 10px 0px;
 
     >img {
@@ -345,5 +357,17 @@ mat-card-subtitle {
     .checkbox>span,
     .checkbox>span>a {
         font-size: 18px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .input-container>img,
+    .checkbox>img {
+        width: 20px;
+    }
+
+    .validMsg {
+        height: 10px;
     }
 }

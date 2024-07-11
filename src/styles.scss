@@ -21,6 +21,32 @@ $purple-three: #535AF1;
 $light-purple: #ECEEFE;
 
 
+.invalid-border input {
+  border-color: red;
+}
+
+.validMsg {
+  color: red;
+  font-size: 12px;
+  height: 16px;
+  margin-bottom: 8px;
+  padding-left:16px;
+  display: block;
+}
+
+.validMsg.hidden {
+  visibility: hidden;
+}
+
+@media(max-width:500px){
+  .validMsg {
+    font-size: 11px;
+  }
+}
+
+
+
+
 /* nunito-200 - latin */
 @font-face {
     font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
