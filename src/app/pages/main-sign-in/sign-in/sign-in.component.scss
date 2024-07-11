@@ -9,7 +9,7 @@
 
 .login-card {
     width: 90%;
-    max-width: 600px;
+    max-width: 500px;
     margin: auto;
     padding: 20px;
     border-radius: 16px;
@@ -218,7 +218,6 @@ mat-card-subtitle {
 @media (min-width: 1200px) {
 
     .login-card {
-        height: 700px;
         padding: 40px;
         display: flex;
     }
@@ -295,8 +294,7 @@ mat-card-subtitle {
     }
     
     .login-card {
-        height: 600px;
-        justify-content: space-around;
+        gap:12px;
     }
     .input-container input,
     .forgot-password,
