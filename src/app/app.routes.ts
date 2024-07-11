@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { MainPageComponent } from './pages/main-page/main-page.component';
-import { FrontPageComponent } from './front-page/front-page.component';
 import { ImprintComponent } from './shared/imprint/imprint.component';
 import { PrivacypolicyComponent } from './shared/privacypolicy/privacypolicy.component';
 import { MainSignInComponent } from './pages/main-sign-in/main-sign-in.component';
@@ -19,6 +18,5 @@ export const routes: Routes = [
         ],
     },
     { path: "main", component: MainPageComponent },
-    // { path: "start", component: FrontPageComponent },
     { path: "**", redirectTo: "" },
 ];
