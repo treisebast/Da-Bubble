@@ -4,3 +4,19 @@
     <h2>{{ currentChat?.name }}</h2>
 </div>
 
+
+
+
+
+<div class="messageBox">
+    <textarea placeholder="Nachricht an {{ currentChat?.name }}" name="" id=""></textarea>
+    <div class="messageBoxBottom">
+        <div class="iconsLeft">
+            <div class="addIcon"></div>
+            <div class="border"></div>
+            <div class="emoji"></div>
+            <div class="iconMarkUser"></div>
+        </div>
+        <div (click)="sendMessage()" class="sendMessage"></div>
+    </div>
+</div>
