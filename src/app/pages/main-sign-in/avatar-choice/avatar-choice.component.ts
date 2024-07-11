@@ -12,8 +12,12 @@ import { RouterModule, RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
   templateUrl: './avatar-choice.component.html',
-  styleUrl: './avatar-choice.component.scss'
+  styleUrls: ['./avatar-choice.component.scss']
 })
 export class AvatarChoiceComponent {
+  selectedAvatar: string = '/assets/img/front-page/avatar.svg';  // Standard-Avatar-Bild
 
+  selectAvatar(avatar: string) {
+    this.selectedAvatar = avatar;
+  }
 }
