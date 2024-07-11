@@ -23,7 +23,7 @@ export class HeaderComponent {
 
   currentUser = {
       name: "Tobias Wall",
-      imgSrc: "./assets/img/profile/1.png",
+      imgSrc: "./assets/img/profile/3.svg",
       online: true
     }
 
