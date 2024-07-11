@@ -236,6 +236,10 @@ mat-card-subtitle {
     gap: 8px;
     margin: 10px 0px;
 
+    >img {
+        cursor: pointer;
+    }
+
     >span {
         font-size: 13px;
 
@@ -337,7 +341,9 @@ mat-card-subtitle {
     .forgot-password,
     .or-divider>span,
     .google-login>a,
-    .login-actions>button {
+    .login-actions>button,
+    .checkbox>span,
+    .checkbox>span>a {
         font-size: 18px;
     }
 }
