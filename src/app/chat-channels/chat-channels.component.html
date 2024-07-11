@@ -8,12 +8,11 @@
   <div (click)="openMenuChannel()" *ngIf="!menuChannelDropdown" class="opend dropdown"></div>
 
   <table>
-    <div *ngIf="!menuChannelDropdown" class="channels">
-      <tr *ngFor="let channel of allChannels">
-        <img src="./assets/img/chatChannel/tag.png" alt="" />
+    <div *ngIf="!menuChannelDropdown" class="channels ml40">
+      <tr class="channel-tr" *ngFor="let channel of allChannels">
         {{ channel.name }}
       </tr>
-      <img class="addNewChannel" (click)="addNewChannel()" src="./assets/img/chatChannel/addChannelDefault.png" alt="" />
+      <div class="addNewChannel" (click)="addNewChannel()"></div>
     </div>
   </table>
 </div>
@@ -24,11 +23,12 @@
 
   <table>
     <div *ngIf="!directMessages" class="channels">
-      <tr *ngFor="let directMessage of allDirectMessages">
-        <img src="./assets/img/chatChannel/tag.png" alt="" />
+      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages">
+        <img class="table-profile-img" src="{{ directMessage.imgScr }}" alt="">
+        <img *ngIf="directMessage.online" src="./assets/img/online.png" alt="" class="online"/>
+        <img *ngIf="!directMessage.online" src="./assets/img/offline.png" alt="" class="online"/>
         {{ directMessage.name }}
       </tr>
-      <img class="addNewChannel" (click)="addNewDirectMessage()" src="./assets/img/chatChannel/addChannelDefault.png" alt="" />
     </div>
   </table>
 </div>

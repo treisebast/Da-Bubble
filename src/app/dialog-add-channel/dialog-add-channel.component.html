@@ -1,0 +1,24 @@
+<div class="dialog-add-channel">
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+  <h2>Channel erstellen</h2>
+  <p>
+    Channels dienen deinem Team zur Kommunikation. Am besten sollten sie
+    themenbezogen sein #marketing zum Beispiel.
+  </p>
+
+  <mat-dialog-content class="input-container">
+    <div>
+      <h4>Channel-Name</h4>
+      <input type="text" placeholder="# z.B. Kooperationsprojekte" />
+    </div>
+    <div>
+      <h4>
+        Beschreibung
+        <p class="optional">(optional)</p>
+      </h4>
+      <input type="text" placeholder="Dein Text hier" />
+    </div>
+
+    <button class="saveChannelBtn" [disabled]="loading" (click)="saveUser()" mat-flat-button>Erstellen</button>
+  </mat-dialog-content>
+</div>
