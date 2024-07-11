@@ -1,1 +1,27 @@
-<p> Registierung! sign-up works!</p>
+<mat-card class="login-card centered">
+    <div class="arrow-back">
+        <img routerLink="main" src="/assets/img/front-page/arrow_back.svg" alt="arrow icon">
+    </div>
+    <mat-card-title>Konto erstellen</mat-card-title>
+    <mat-card-subtitle>Mit deinem Namen und deiner E-Mail-Adresse hast du dein neues DABubble-Konto.</mat-card-subtitle>
+
+    <div class="input-container">
+        <img src="/assets/img/front-page/person_filled.svg" alt="user icon">
+        <input type="text" placeholder="Name und Nachname">
+    </div>
+
+    <div class="input-container">
+        <img src="/assets/img/front-page/mail.svg" alt="email icon">
+        <input type="email" placeholder="beispielname@email.com">
+    </div>
+
+    <div class="input-container">
+        <img src="/assets/img/front-page/lock.svg" alt="password icon">
+        <input type="password" placeholder="Passwort">
+    </div>
+
+    <div class="login-actions jc-end">
+        <button routerLink="main" class="sign-in-button">Weiter</button>
+    </div>
+
+</mat-card>
