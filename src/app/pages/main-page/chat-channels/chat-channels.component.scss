@@ -16,17 +16,17 @@
 .serverName {
     width: 80%;
     height: 100%;
-    background-image: url(../../assets/img/serverNameDefault.png);
+    background-image: url(../../../../assets/img/serverNameDefault.png);
     background-repeat: no-repeat;
     background-size: contain;
 
     &:hover {
-        background-image: url(../../assets/img/serverNameHover.png);
+        background-image: url(../../../../assets/img/serverNameHover.png);
         cursor: pointer;
     }
 
     &:active {
-        background-image: url(../../assets/img/serverNameClick.png);
+        background-image: url(../../../../assets/img/serverNameClick.png);
     }
 }
 
@@ -61,70 +61,69 @@ table {
         width: 100%;
         height: 33px;
         margin-top: 16px;
-        margin-left: 24px;
-        background-image: url(../../assets/img/chatChannel/addChannelDefault.png);
+        background-image: url(../../../../assets/img/chatChannel/addChannelDefault.png);
         background-repeat: no-repeat;
 
         &:hover {
-            background-image: url(../../assets/img/chatChannel/addChannelHover.png);
+            background-image: url(../../../../assets/img/chatChannel/addChannelHover.png);
             cursor: pointer;
         }
 
         &:active {
-            background-image: url(../../assets/img/chatChannel/addChannelClicked.png);
+            background-image: url(../../../../assets/img/chatChannel/addChannelClicked.png);
         }
     }
 }
 
 .closed {
-    background-image: url(../../assets/img/chatChannel/menuChannelDefault.png);
+    background-image: url(../../../../assets/img/chatChannel/menuChannelDefault.png);
 
     &:hover {
-        background-image: url(../../assets/img/chatChannel/menuChannelHover.png);
+        background-image: url(../../../../assets/img/chatChannel/menuChannelHover.png);
         cursor: pointer;
     }
 
     &:active {
-        background-image: url(../../assets/img/chatChannel/menuChannelClick.png);
+        background-image: url(../../../../assets/img/chatChannel/menuChannelClick.png);
     }
 }
 
 .opend {
-    background-image: url(../../assets/img/chatChannel/menuChannelOpendDefault.png);
+    background-image: url(../../../../assets/img/chatChannel/menuChannelOpendDefault.png);
 
     &:hover {
-        background-image: url(../../assets/img/chatChannel/menuChannelOpendHover.png);
+        background-image: url(../../../../assets/img/chatChannel/menuChannelOpendHover.png);
         cursor: pointer;
     }
 
     &:active {
-        background-image: url(../../assets/img/chatChannel/menuChannelOpendClicked.png);
+        background-image: url(../../../../assets/img/chatChannel/menuChannelOpendClicked.png);
     }
 }
 
 .directMessagesClose {
-    background-image: url(../../assets/img/chatChannel/directMessageDefault.png);
+    background-image: url(../../../../assets/img/chatChannel/directMessageDefault.png);
 
     &:hover {
-        background-image: url(../../assets/img/chatChannel/directMessageHover.png);
+        background-image: url(../../../../assets/img/chatChannel/directMessageHover.png);
         cursor: pointer;
     }
 
     &:active {
-        background-image: url(../../assets/img/chatChannel/directMessageClicked.png);
+        background-image: url(../../../../assets/img/chatChannel/directMessageClicked.png);
     }
 }
 
 .directMessagesOpend {
-    background-image: url(../../assets/img/chatChannel/directMessageOpendDefault.png);
+    background-image: url(../../../../assets/img/chatChannel/directMessageOpendDefault.png);
 
     &:hover {
-        background-image: url(../../assets/img/chatChannel/directMessageOpendHover.png);
+        background-image: url(../../../../assets/img/chatChannel/directMessageOpendHover.png);
         cursor: pointer;
     }
 
     &:active {
-        background-image: url(../../assets/img/chatChannel/directMessageOpendClicked.png);
+        background-image: url(../../../../assets/img/chatChannel/directMessageOpendClicked.png);
     }
 }
 
@@ -133,16 +132,16 @@ table {
 }
 
 .channel-tr {
-    background-image: url(../../assets/img/chatChannel/tag.png);
+    background-image: url(../../../../assets/img/chatChannel/tag.png);
     background-repeat: no-repeat;
     padding-left: 40px;
 
     &:hover {
-        background-image: url(../../assets/img/chatChannel/tagHover.png);
+        background-image: url(../../../../assets/img/chatChannel/tagHover.png);
     }
 
     &:active {
-        background-image: url(../../assets/img/chatChannel/tagClicked.png);
+        background-image: url(../../../../assets/img/chatChannel/tagClicked.png);
     }
 }
 

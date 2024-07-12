@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { ChatUserProfile } from '../chat-channels/chat-channels.component';
-import { ChatServiceService } from '../chat-service.service';
+import { ChatServiceService } from '../../../chat-service.service';
 
 @Component({
   selector: 'app-chat-secondary',

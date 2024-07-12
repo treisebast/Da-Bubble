@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
+import { DialogAddChannelComponent } from '../../../dialog-add-channel/dialog-add-channel.component';
 import { UserProfile } from 'firebase/auth';
-import { ChatServiceService } from '../chat-service.service';
+import { ChatServiceService } from '../../../chat-service.service';
 
 
 export interface Messages {
@@ -114,7 +114,10 @@ export class ChatChannelsComponent {
     this.dialog.open(DialogAddChannelComponent);
   }
 
-  showChat(chat: ChatUserProfile) {
+  showChat(chat: ChatUserProfile, channel:boolean) {
     this.chatService.setCurrentChat(chat);
+
+    if (!channel) this.chatService.setChannelFalse();
+    else this.chatService.setChannelTrue();
   }
 }

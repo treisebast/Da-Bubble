@@ -1,12 +1,13 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { ChatChannelsComponent } from "../../chat-channels/chat-channels.component";
-import { ChatMainComponent } from "../../chat-main/chat-main.component";
-import { ChatSecondaryComponent } from "../../chat-secondary/chat-secondary.component";
+import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { ChatChannelsComponent } from './chat-channels/chat-channels.component';
+import { ChatMainComponent } from "./chat-main/chat-main.component";
+import { ChatSecondaryComponent } from "./chat-secondary/chat-secondary.component";
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from '../../header/header.component';
+import { ChatServiceService } from '../../chat-service.service';
 
 @Component({
   selector: 'app-main-page',
@@ -27,9 +28,10 @@ import { HeaderComponent } from '../../header/header.component';
 export class MainPageComponent implements OnInit {
   
   showChannels: boolean = true;
-  showSecondary: boolean = true;
+  showSecondary: boolean | null = false;
   currentView: 'channels' | 'main' | 'secondary' = 'channels';
   isMobileView: boolean = false;
+  private chatService = inject(ChatServiceService);
 
   workspaceMenu: string = "Workspace-Menü schließen";
 
@@ -40,6 +42,10 @@ export class MainPageComponent implements OnInit {
 
   ngOnInit() {
     this.checkMobileView();
+
+    this.chatService.getChannelStatus().subscribe(status => {
+      this.showSecondary = status;
+    });
   }
 
   checkMobileView() {

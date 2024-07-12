@@ -9,7 +9,7 @@
 
   <table>
     <div *ngIf="!menuChannelDropdown" class="channels ml40">
-      <tr class="channel-tr" *ngFor="let channel of allChannels" (click)="showChat(channel)">
+      <tr class="channel-tr" *ngFor="let channel of allChannels" (click)="showChat(channel, true)">
         {{ channel.name }}
       </tr>
       <div class="addNewChannel" (click)="addNewChannel()"></div>
@@ -23,7 +23,7 @@
 
   <table>
     <div *ngIf="!directMessages" class="channels">
-      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages" (click)="showChat(directMessage)">
+      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages" (click)="showChat(directMessage, false)">
         <img class="table-profile-img" src="{{ directMessage.imgScr }}" alt="">
         <img *ngIf="directMessage.online" src="./assets/img/online.png" alt="" class="online"/>
         <img *ngIf="!directMessage.online" src="./assets/img/offline.png" alt="" class="online"/>

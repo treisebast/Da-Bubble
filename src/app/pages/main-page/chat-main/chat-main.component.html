@@ -1,6 +1,10 @@
 
 <div class="header">
-    <img class="profileImg" src="{{ currentChat?.imgScr }}" alt="">
+    <div class="profileImg">
+        <img src="{{ currentChat?.imgScr }}" alt="">
+        <img *ngIf="!channel && currentChat?.online" src="./assets/img/online.png" alt="" class="online"/>
+        <img *ngIf="!channel && !currentChat?.online" src="./assets/img/offline.png" alt="" class="online"/>
+    </div>
     <h2>{{ currentChat?.name }}</h2>
 </div>
 
