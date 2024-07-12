@@ -1,29 +1,5 @@
 @import './../../../../styles.scss';
 
-.centered {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.login-card {
-    width: 90%;
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-mat-card-title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: $purple-one;
-    margin-bottom: 8px;
-}
-
 .m-20 {
     margin-left: 20px;
 }
@@ -69,44 +45,6 @@ p {
     }
 }
 
-.prio-button,
-.alt-button {
-    display: inline-block;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 45px;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.prio-button {
-    background-color: $purple-one;
-    color: white;
-    border: none;
-
-    &:hover {
-        background-color: $purple-two;
-    }
-}
-
-.alt-button {
-    background-color: transparent;
-    color: $purple-one;
-    border: 1px solid $purple-one;
-
-    &:hover {
-        background-color: $purple-three;
-        color: #ECEEFE;
-    }
-}
-
-
-.alt-button,
-.prio-button {
-    border: 1px solid $purple-one;
-}
-
 .login-actions {
     display: flex;
     flex-direction: row;
@@ -120,11 +58,6 @@ p {
         line-height: 24.55px;
         text-align: left;
     }
-}
-
-
-.jc-end {
-    justify-content: end;
 }
 
 .avatar-choices {
@@ -146,32 +79,15 @@ p {
     }
 }
 
-.arrow-back {
-    position: absolute;
-
-    >img {
-        width: 30px;
-        cursor: pointer;
-    }
-}
-
 .break::before {
     content: '';
     display: block;
 }
 
+
 @media (min-width: 1200px) {
 
-    .login-card {
-        padding: 40px;
-        display: flex;
-    }
-
-    mat-card-title {
-        font-size: 34px;
-    }
-
-    .login-actions>button,
+      .login-actions>button,
     .alt-choice>button {
         font-size: 18px;
     }
@@ -197,7 +113,6 @@ p {
             height: 100px;
         }
     }
-
 }
 
 
@@ -218,6 +133,7 @@ p {
         font-size: 18px;
     }
 }
+
 
 @media (max-width: 424px) {
     p {
