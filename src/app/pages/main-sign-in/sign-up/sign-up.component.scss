@@ -32,6 +32,13 @@
 
 }
 
+@media (min-width:1200px) {
+    .checkbox {
+        >span {
+            font-size: 18px;
+        }
+    }
+}
 
 @media (min-width: 500px) {
 
