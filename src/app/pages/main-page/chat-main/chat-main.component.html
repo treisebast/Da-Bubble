@@ -12,8 +12,46 @@
 
 
 
+
+
+<div class="chat-container">
+    <div *ngFor="let message of messages; let i = index">
+      <div *ngIf="isNewDay(message.date, i)" class="date-divider">
+        <span class="date">{{ message.date | date: 'fullDate' }}</span>
+      </div>
+
+
+      <div class="singelMessageContainer" [ngClass]="{'message-left': message.user !== currentChat?.name, 'message-right': message.user === currentChat?.name}">
+        
+        <div class="message-header">
+          <span class="timestamp">{{ message.time | date: 'shortTime' }}</span>
+          <span class="name">{{ message.user }}</span>
+        </div>
+
+        <div class="message-content">
+          <p>{{ message.message }}</p>
+        </div>
+
+        <img [src]="currentChat?.imgScr" alt="{{ message.user }}" class="profile-img">
+
+      </div>
+
+
+
+
+
+    </div>
+  </div>
+  
+
+
+
+
+
+
+
 <div class="messageBox">
-    <textarea placeholder="Nachricht an {{ currentChat?.name }}" name="" id=""></textarea>
+    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"></textarea>
     <div class="messageBoxBottom">
         <div class="iconsLeft">
             <div class="addIcon"></div>
