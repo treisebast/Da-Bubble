@@ -31,6 +31,7 @@ import { DirectMessage } from '../shared/models/directMessage.model';
   templateUrl: './testing.component.html',
   styleUrls: ['./testing.component.scss']
 })
+
 export class TestingComponent implements OnInit {
   users: User[] = [];
   userForm: FormGroup;
@@ -39,6 +40,7 @@ export class TestingComponent implements OnInit {
   editingUserId: string | null = null;
   messages: DirectMessage[] = [];
   currentChatId: string | null = null;
+  currentUser: User | null = null;
 
   constructor(
     private userService: UserService,
@@ -72,16 +74,24 @@ export class TestingComponent implements OnInit {
     }
   }
 
+  /**
+   * Selects a user to start a chat with and loads the messages for the chat.
+   * @param {User} user - The user to start a chat with.
+   */
   async selectChatUser(user: User): Promise<void> {
     this.selectedChatUser = user;
-    const currentUser = this.getCurrentUser(); // Add logic to get the current user ID
+    const currentUser = this.getCurrentUser();
     if (!currentUser) {
+      console.error('Current user not found');
       return;
     }
     this.currentChatId = await this.messageService.getOrCreateChat(currentUser.userId, user.userId);
     this.loadMessages();
   }
 
+  /**
+   * Loads the messages for the current chat.
+   */
   loadMessages(): void {
     if (!this.currentChatId) {
       return;
@@ -91,6 +101,9 @@ export class TestingComponent implements OnInit {
     });
   }
 
+  /**
+   * Adds a new user or updates an existing user.
+   */
   addUser(): void {
     const newUser: User = this.userForm.value;
     newUser.lastSeen = serverTimestamp();
@@ -106,6 +119,10 @@ export class TestingComponent implements OnInit {
     }
   }
 
+  /**
+   * Fills the form with the user's information for editing.
+   * @param {User} user - The user to edit.
+   */
   editUser(user: User): void {
     this.userForm.setValue({
       userId: user.userId || '',
@@ -118,12 +135,19 @@ export class TestingComponent implements OnInit {
     this.editingUserId = user.userId;
   }
 
+  /**
+   * Deletes a user by their ID.
+   * @param {string} userId - The ID of the user to delete.
+   */
   deleteUser(userId: string): void {
     this.userService.deleteUser(userId).then(() => {
       this.resetForm();
     });
   }
 
+  /**
+   * Resets the user form.
+   */
   resetForm(): void {
     this.userForm.reset({
       userId: '',
@@ -136,6 +160,9 @@ export class TestingComponent implements OnInit {
     this.editingUserId = null;
   }
 
+  /**
+   * Adds a new message to the current chat.
+   */
   addMessage(): void {
     if (!this.currentChatId) {
       return;
@@ -143,18 +170,36 @@ export class TestingComponent implements OnInit {
     const newMessage: DirectMessage = this.messageForm.value;
     newMessage.timestamp = serverTimestamp();
     this.messageService.addDirectMessage(this.currentChatId, newMessage).then(() => {
-      this.messageForm.reset({ content: '', senderId: '', attachments: [], timestamp: serverTimestamp() });
+      this.messageForm.reset({ content: '', senderId: this.currentUser?.userId || '', attachments: [], timestamp: serverTimestamp() });
       this.loadMessages();
     });
   }
 
+  /**
+   * Gets the name of a user by their ID.
+   * @param {string} userId - The ID of the user.
+   * @returns {string} - The name of the user or 'Unknown'.
+   */
   getUserName(userId: string): string {
     const user = this.users.find(user => user.userId === userId);
     return user ? user.name : 'Unknown';
   }
 
+  /**
+   * Sets the current user.
+   * @param {User} user - The user to set as the current user.
+   */
+  setCurrentUser(user: User): void {
+    this.currentUser = user;
+    this.messageForm.patchValue({ senderId: user.userId });
+    console.log('Current user set to:', this.currentUser);
+  }
+
+  /**
+   * Gets the current logged-in user.
+   * @returns {User | null} - The current user or null if not found.
+   */
   getCurrentUser(): User | null {
-    // Replace this with the actual logic to get the current user
-    return this.users.find(user => user.email === 'marco-ammann@hotmail.com') || null;
+    return this.currentUser;
   }
 }

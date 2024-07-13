@@ -4,5 +4,5 @@ export interface User {
   email: string;
   avatar: string;
   status: string;
-  lastSeen: any; // Using Firebase timestamp
+  lastSeen: any;
 }

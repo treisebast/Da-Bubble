@@ -29,7 +29,7 @@
     <button mat-button type="button" (click)="resetForm()" *ngIf="editingUserId">Abbrechen</button>
   </form>
 
-  <h2>Benutzerliste</h2>
+  <h2>Benutzerliste. Aktueller Nutzer: {{ getCurrentUser()?.name || "set Current User anklicken" }}</h2>
   <ul>
     <li *ngFor="let user of users">
       <img [src]="user.avatar" alt="{{ user.name }}'s avatar" width="50">
@@ -38,13 +38,16 @@
       </div>
       <div class="actions">
         <button mat-button color="accent" (click)="editUser(user)">
-          <mat-icon>Edit</mat-icon>
+          Edit
         </button>
         <button mat-button color="warn" (click)="deleteUser(user.userId)">
-          <mat-icon>Delete</mat-icon>
+          Delete
         </button>
         <button mat-button color="primary" (click)="selectChatUser(user)">
-          <mat-icon>Chat</mat-icon>
+          Chat
+        </button>
+        <button mat-button color="primary" (click)="setCurrentUser(user)">
+          Set Current User
         </button>
       </div>
     </li>
@@ -60,7 +63,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Sender ID</mat-label>
-        <input matInput formControlName="senderId" required>
+        <input matInput formControlName="senderId" required readonly>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
