@@ -28,8 +28,11 @@
     height: 25px;
 }
 
+.forgot-password {
+    font-size: 14px;
+}
 
-@media (min-width: 500px){
+@media (min-width: 500px) {
 
     mat-card-title {
         font-size: 28px;
@@ -44,13 +47,13 @@
     .google-login {
         height: 48px;
     }
-    
+
     .login-card {
-        gap:12px;
+        gap: 12px;
     }
 }
 
-@media (max-width: 499px){
+@media (max-width: 499px) {
     .input-container>img {
         width: 20px;
     }
