@@ -1,18 +1,22 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-privacypolicy',
   standalone: true,
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [
+    MatCardModule,
+    ScrollingModule,
+  ],
   templateUrl: './privacypolicy.component.html',
-  styleUrl: './privacypolicy.component.scss'
+  styleUrl: './privacypolicy.component.scss',
 })
 export class PrivacypolicyComponent {
-
+  privacyPolicy: string =
+    'https://www.privacypolicies.com/privacy-policy-generator/';
+  goBack() {
+    window.history.go(-1);
+    return false;
+  }
 }

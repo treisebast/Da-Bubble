@@ -274,6 +274,29 @@ form {
   }
 }
 
+// scrollbar -
+// width
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+
+// Track
+::-webkit-scrollbar-track {
+  background: $light-purple;
+}
+
+// Handle 
+::-webkit-scrollbar-thumb {
+  background: $purple-two;
+  border-radius: 10px;
+}
+
+// Handle on hover
+::-webkit-scrollbar-thumb:hover {
+  background: $purple-one;
+}
+
 /* nunito-200 - latin */
 @font-face {
   font-display: swap;
