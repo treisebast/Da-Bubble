@@ -167,7 +167,6 @@ form {
 
 .arrow-back {
   position: absolute;
-  top: 22px;
 
   >img {
     width: 30px;
@@ -232,7 +231,7 @@ form {
   .login-actions>button,
   .checkbox>span,
   .checkbox>span>a {
-    font-size: 18px;
+    font-size: 18px !important;
   }
 
   .input-container,
