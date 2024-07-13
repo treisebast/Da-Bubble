@@ -4,7 +4,7 @@
     </div>
     <mat-card-title class="m-20">Wähle deinen<span class="break"> Avatar</span></mat-card-title>
     <div class="avatar-big">
-        <img [src]="selectedAvatar" alt="main avatar">
+        <img #uploadedImage [src]="selectedAvatar" alt="main avatar">
         <h1>Frederik Beck</h1>
     </div>
     <div>
@@ -19,10 +19,13 @@
         </div>
         <div class="alt-choice">
             <p>eigenes Bild verwenden</p>
-            <button class="alt-button">Datei hochladen</button>
+            <label class="custom-file-upload">
+                Datei hochladen
+                <input type="file" (change)="onFileSelected($event)">
+            </label>
         </div>
     </div>
     <div class="login-actions jc-end">
-        <button routerLink="/avatar" class="prio-button">Weiter</button>
+        <button (click)="logSelectedAvatar()" class="prio-button">Weiter</button>
     </div>
 </mat-card>

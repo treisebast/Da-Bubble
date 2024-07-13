@@ -13,6 +13,7 @@
     margin-top: 8px;
 
     >img {
+        object-fit: cover;
         border-radius: 50%;
         width: 80px;
         height: 80px;
@@ -72,6 +73,7 @@ p {
         border-radius: 50%;
         cursor: pointer;
         transition: 225ms ease-in-out;
+
         &:hover {
             transform: scale(1.3);
             border: 3px solid rgba(230, 230, 230, 1);
@@ -84,10 +86,29 @@ p {
     display: block;
 }
 
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 2px solid #6c63ff;
+    border-radius: 25px;
+    font-size: 14px;
+    color: #6c63ff;
+    background-color: white;
+}
+
+.custom-file-upload:hover {
+    background-color: #6c63ff;
+    color: white;
+}
+
+input[type="file"] {
+    display: none;
+}
 
 @media (min-width: 1200px) {
 
-      .login-actions>button,
+    .login-actions>button,
     .alt-choice>button {
         font-size: 18px;
     }
@@ -116,7 +137,7 @@ p {
 }
 
 
-@media (min-width: 425px) {
+@media (min-width: 431px) {
 
     mat-card-title {
         font-size: 28px;
@@ -135,14 +156,10 @@ p {
 }
 
 
-@media (max-width: 424px) {
+@media (max-width: 430px) {
     p {
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 400;
-    }
-
-    .alt-button {
-        padding: 8px 12px!important;
     }
 
     .avatar-choices {
@@ -159,9 +176,14 @@ p {
         }
     }
 
-    .alt-choice {    
+    .alt-choice {
         >button {
             min-width: 152px !important;
         }
+    }
+
+    .custom-file-upload {
+        padding: 8px 6px;
+        font-size: 12px;
     }
 }
