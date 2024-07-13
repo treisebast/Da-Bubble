@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collection, addDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collection, addDoc, setDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
@@ -37,8 +37,8 @@ export class UserService {
    * @returns {Promise<void>} - A promise that resolves when the user is added.
    */
   async addUser(user: User): Promise<void> {
-    const docRef = await addDoc(this.usersCollection, user);
-    return updateDoc(doc(this.firestore, `users/${docRef.id}`), { userId: docRef.id });
+    const userDoc = doc(this.firestore, `users/${user.userId}`);
+    return setDoc(userDoc, user);
   }
 
 

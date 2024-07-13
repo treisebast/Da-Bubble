@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
 
 @Injectable({
@@ -47,7 +47,7 @@ export class AuthService {
    *
    * @returns {Observable<any>} - An observable of the authentication state.
    */
-  getUser(): Observable<any> {
+  getUser(): Observable<FirebaseUser | null> {
     return authState(this.auth);
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,20 +8,34 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
+import { AuthService } from '../../../shared/services/auth.service';
+import { UserService } from '../../../shared/services/user.service';
+import { User } from '../../../shared/models/user.model';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-sign-up',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule, MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule],
+  imports: [
+    MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule,
+    MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule
+  ],
   templateUrl: './sign-up.component.html',
-  styleUrl: './sign-up.component.scss'
+  styleUrls: ['./sign-up.component.scss']
 })
-
 export class SignUpComponent {
   signUpForm: FormGroup;
   isPrivacyPolicyAccepted: boolean = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService,
+    private dialog: MatDialog
+  ) {
     this.signUpForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
@@ -41,13 +55,31 @@ export class SignUpComponent {
     return this.signUpForm.get('password')!;
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.signUpForm.valid && this.isPrivacyPolicyAccepted) {
-      // Step 1: Sign up with AuthService<
-      // Step 2: Add user details to Firestore (mithilfe des user.module.ts
-      //neuerUser: User = {userId:...,name:...,email:...,avatar:''....status: 'online', ....lastSeen: serverTimestamp()} --> userservice.addUser(neuerUser))
-      console.log('Form Submitted', this.signUpForm.value);
-      this.router.navigate(['/avatar']);
+      const { name, email, password } = this.signUpForm.value;
+
+      try {
+        const credential = await firstValueFrom(this.authService.signUp(email, password));
+        const userId = credential.user?.uid;
+        console.log('New User ID:', userId);
+
+        const user: User = {
+          userId: userId!,
+          name: name,
+          email: email,
+          avatar: '',
+          status: 'online',
+          lastSeen: new Date()
+        };
+
+        await this.userService.addUser(user);
+        this.dialog.open(ConfirmationDialogComponent);
+        console.log('User registered and details saved');
+        this.router.navigate(['/avatar']);
+      } catch (error) {
+        console.error('Error during sign up or saving user details', error);
+      }
     }
   }
 }

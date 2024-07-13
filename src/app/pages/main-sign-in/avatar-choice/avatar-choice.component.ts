@@ -10,11 +10,17 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { UserService } from '../../../shared/services/user.service';
 import { CommonModule } from '@angular/common';
+import { User } from '../../../shared/models/user.model'; // Passe den Pfad an
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-avatar-choice',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
+  imports: [
+    CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule,
+    RouterOutlet, RouterModule
+  ],
   templateUrl: './avatar-choice.component.html',
   styleUrls: ['./avatar-choice.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -65,7 +71,31 @@ export class AvatarChoiceComponent {
     }
   }
 
-  logSelectedAvatar() {
+  async logSelectedAvatar() {
     console.log('Selected Avatar:', this.selectedAvatar);
+  
+    const currentUser = await firstValueFrom(this.authService.getUser());
+    if (currentUser) {
+      const userId = currentUser.uid;
+      console.log('Current User ID:', userId);
+  
+      const updatedUser: Partial<User> = { avatar: this.selectedAvatar };
+  
+      try {
+        const userDoc = await firstValueFrom(this.userService.getUser(userId));
+        console.log('User document fetched:', userDoc);
+        if (userDoc) {
+          await this.userService.updateUser({ ...updatedUser, userId } as User);
+          console.log('Avatar updated successfully');
+          this.router.navigate(['/main-page']);
+        } else {
+          console.error('No document found for user:', userId);
+        }
+      } catch (error) {
+        console.error('Error updating avatar:', error);
+      }
+    } else {
+      console.error('No authenticated user found');
+    }
   }
 }
