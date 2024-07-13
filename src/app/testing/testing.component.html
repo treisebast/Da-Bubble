@@ -2,11 +2,6 @@
   <h2>Neuen Benutzer hinzufügen</h2>
   <form [formGroup]="userForm" (ngSubmit)="addUser()">
     <mat-form-field appearance="fill">
-      <mat-label>User ID</mat-label>
-      <input matInput formControlName="userId" required>
-    </mat-form-field>
-
-    <mat-form-field appearance="fill">
       <mat-label>Name</mat-label>
       <input matInput formControlName="name" required>
     </mat-form-field>
@@ -18,7 +13,7 @@
 
     <mat-form-field appearance="fill">
       <mat-label>Avatar URL</mat-label>
-      <input matInput formControlName="avatarUrl">
+      <input matInput formControlName="avatar">
     </mat-form-field>
 
     <mat-form-field appearance="fill">
@@ -37,9 +32,9 @@
   <h2>Benutzerliste</h2>
   <ul>
     <li *ngFor="let user of users">
-      <img [src]="user.avatarUrl" alt="{{ user.name }}'s avatar" width="50">
+      <img [src]="user.avatar" alt="{{ user.name }}'s avatar" width="50">
       <div class="user-info">
-        {{ user.name }} ({{ user.email }}) - {{ user.status }} - Last Seen: {{ user.lastSeen.toDate ? user.lastSeen.toDate() : user.lastSeen | date:'short' }}
+        {{ user.userId }} - {{ user.name }} ({{ user.email }}) - Status: {{ user.status }} - Last Seen: {{ user.lastSeen.toDate ? user.lastSeen.toDate() : user.lastSeen | date:'short' }}
       </div>
       <div class="actions">
         <button mat-button color="accent" (click)="editUser(user)">
@@ -48,7 +43,48 @@
         <button mat-button color="warn" (click)="deleteUser(user.userId)">
           <mat-icon>Delete</mat-icon>
         </button>
+        <button mat-button color="primary" (click)="selectChatUser(user)">
+          <mat-icon>Chat</mat-icon>
+        </button>
       </div>
     </li>
   </ul>
+
+  <div *ngIf="selectedChatUser">
+    <h2>Chat mit {{ selectedChatUser.name }}</h2>
+    <form [formGroup]="messageForm" (ngSubmit)="addMessage()">
+      <mat-form-field appearance="fill">
+        <mat-label>Nachricht</mat-label>
+        <input matInput formControlName="content" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Sender ID</mat-label>
+        <input matInput formControlName="senderId" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Attachments (Kommagetrennt)</mat-label>
+        <input matInput formControlName="attachments">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit">Nachricht hinzufügen</button>
+    </form>
+
+    <h2>Nachrichtenliste</h2>
+    <ul>
+      <li *ngFor="let message of messages">
+        <div class="message-info">
+          {{ getUserName(message.senderId) }}: {{ message.content }} -
+          <span *ngIf="message.timestamp">{{ message.timestamp.toDate ? message.timestamp.toDate() : message.timestamp | date:'short' }}</span>
+          <div *ngIf="message.attachments && message.attachments.length > 0">
+            <h4>Attachments:</h4>
+            <ul>
+              <li *ngFor="let attachment of message.attachments">{{ attachment }}</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
