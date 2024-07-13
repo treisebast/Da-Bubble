@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ChatChannelsComponent } from '../chat-channels/chat-channels.component';
 import { ChatServiceService } from '../../../chat-service.service';
 import { ChatUserProfile } from '../chat-channels/chat-channels.component';
@@ -21,7 +21,8 @@ interface Message {
   styleUrl: './chat-main.component.scss'
 })
 
-export class ChatMainComponent implements OnInit {
+export class ChatMainComponent implements OnInit, AfterViewChecked {
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
   currentChat: ChatUserProfile | null = null;
   channel: boolean | null = true;
   private chatService = inject(ChatServiceService);
@@ -72,6 +73,18 @@ export class ChatMainComponent implements OnInit {
       if (status === null) this.channel = true;
       else this.channel = status;
     });
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+    } catch (err) {
+      console.error('Scroll to bottom failed:', err);
+    }
   }
 
   sendMessage() {

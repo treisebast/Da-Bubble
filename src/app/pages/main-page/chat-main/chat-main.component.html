@@ -14,7 +14,7 @@
 
 
 
-<div class="chat-container">
+<div class="chat-container" #chatContainer>
     <div *ngFor="let message of messages; let i = index">
       <div *ngIf="isNewDay(message.date, i)" class="date-divider">
         <span class="date">{{ message.date | date: 'fullDate' }}</span>
