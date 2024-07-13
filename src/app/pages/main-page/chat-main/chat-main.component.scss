@@ -281,3 +281,37 @@
   display: flex;
   gap: 4px;
 }
+
+
+
+
+
+@media (max-width: 700px) {
+  .message-content {
+    max-width: 80%;
+  }
+
+  .chat-container {
+    padding: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .message-content {
+    max-width: 95%;
+  }
+
+  .profile-img {
+    width: 40px;
+    height: 40px;
+    right: 4px;
+  }
+
+  .message-right {
+    padding-left: 64px;
+  }
+
+  .message-left {
+    padding-right: 64px;
+  }
+}
