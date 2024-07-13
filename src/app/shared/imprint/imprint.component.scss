@@ -1,62 +1,19 @@
-@import './../../../styles.scss';
+@import "./../../../styles.scss";
 
-.centered {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+.gap32 {
+    gap: 32px;
 }
 
-.login-card {
-    width: 90%;
-    max-width: 600px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.gap16 {
+    display: grid;
+    gap: 16px;
 }
 
-mat-card-title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: $purple-one;
-    margin-bottom: 8px;
+.position-relative {
+    position: relative;
 }
 
-mat-card-subtitle {
-    text-align: center;
-    font-size: 12px;
-    margin-bottom: 8px;
-    color: #757575;
-}
-
-@media (min-width: 1200px) {
-
-    .login-card {
-        height: 700px;
-        padding: 40px;
-        display: flex;
-    }
-
-    mat-card-title {
-        font-size: 34px;
-    }
-
-    mat-card-subtitle {
-        font-size: 20px;
-        font-weight: 400;
-    }
-}
-
-@media (min-width: 500px){
-
-    mat-card-title {
-        font-size: 28px;
-    }
-
-    mat-card-subtitle {
-        font-size: 20px;
-        font-weight: 400;
-    }
+mat-card-title, mat-card-subtitle {
+    text-align: left;
+    margin: 0;
 }

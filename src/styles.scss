@@ -3,7 +3,6 @@ $purple-two: #797ef3;
 $purple-three: #535af1;
 $light-purple: #eceefe;
 
-
 * {
   font-family: Nunito !important;
   scroll-behavior: smooth;
@@ -13,6 +12,7 @@ $light-purple: #eceefe;
 html,
 body {
   height: 100%;
+  font-size: 16px;
 }
 
 body {
@@ -53,7 +53,7 @@ mat-card-title {
 
 mat-card-subtitle {
   text-align: center;
-  font-size: 12px;
+  font-size: 16px;
   margin-bottom: 8px;
   color: #757575;
 }
@@ -167,10 +167,23 @@ form {
 
 .arrow-back {
   position: absolute;
+  margin-top: -4px;
 
-  >img {
-    width: 30px;
+  .arrow-back-img {
+    width: 40px;
+    height: 40px;
     cursor: pointer;
+    background-image: url(./assets/img/front-page/arrow_back.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &:hover {
+      border-radius: 50px;
+      background: $light-purple;
+      background-image: url(./assets/img/front-page/arrow_back_hover.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+    }
   }
 }
 
@@ -247,7 +260,7 @@ form {
   overflow: hidden !important;
 }
 
-@media(max-width:500px) {
+@media (max-width: 500px) {
   .validMsg {
     font-size: 11px;
   }
