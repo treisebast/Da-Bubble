@@ -43,7 +43,9 @@ export class SignUpComponent {
 
   onSubmit() {
     if (this.signUpForm.valid && this.isPrivacyPolicyAccepted) {
-      // Handle successful form submission here
+      // Step 1: Sign up with AuthService<
+      // Step 2: Add user details to Firestore (mithilfe des user.module.ts
+      //neuerUser: User = {userId:...,name:...,email:...,avatar:''....status: 'online', ....lastSeen: serverTimestamp()} --> userservice.addUser(neuerUser))
       console.log('Form Submitted', this.signUpForm.value);
       this.router.navigate(['/avatar']);
     }
