@@ -21,9 +21,10 @@
             <p>eigenes Bild verwenden</p>
             <label class="custom-file-upload">
                 Datei hochladen
-                <input type="file" (change)="onFileSelected($event)">
+                <input type="file" #fileInput (change)="onFileSelected($event)">
             </label>
         </div>
+        <span *ngIf="fileError" class="validMsg">{{fileError}}</span>
     </div>
     <div class="login-actions jc-end">
         <button (click)="logSelectedAvatar()" class="prio-button">Weiter</button>
