@@ -18,10 +18,10 @@
       <mat-icon fontIcon="keyboard_arrow_down"></mat-icon>
       <div class="menu">
         <mat-menu #menu="matMenu">
-          <button class="dialog-btn" mat-menu-item (click)="openDialog()">
+          <div class="dialog-btn"  (click)="openDialog()">
             Profil
-          </button>
-          <button class="dialog-btn" mat-menu-item (click)="openDialog()">
+          </div>
+          <button class="dialog-btn" (click)="openDialog()"> 
             Log out
           </button>
         </mat-menu>

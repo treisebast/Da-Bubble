@@ -26,6 +26,15 @@ $purple-three: #535af1;
 $light-purple: #eceefe;
 
 
+/* Mixins */
+@mixin btn-hover() {
+  &:hover {
+    background: $light-purple;
+    cursor: pointer;
+  }
+}
+
+
 /* Global styles */
 * {
   font-family: Nunito, sans-serif;

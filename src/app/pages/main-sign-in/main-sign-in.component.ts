@@ -11,22 +11,26 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 @Component({
   selector: 'app-main-sign-in',
   standalone: true,
-  imports: [MatFormFieldModule,MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
+  imports: [MatFormFieldModule, MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
   templateUrl: './main-sign-in.component.html',
   styleUrl: './main-sign-in.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 
 })
 export class MainSignInComponent {
-  showSignUpDiv = true;
+  showSignUpDiv: boolean = true;
+  showFooterDiv: boolean = true;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showSignUpDiv = !event.url.includes('signup') && !event.url.includes('avatar');
+        this.showSignUpDiv = !(event.url.includes('signup') || event.url.includes('avatar') ||
+          (event.url.includes('/imprint') || event.url.includes('/privacy')));
+        this.showFooterDiv = !(event.url.includes('/imprint') || event.url.includes('/privacy'));
       }
     });
   }
+
 }

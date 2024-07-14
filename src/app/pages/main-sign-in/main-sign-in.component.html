@@ -11,7 +11,7 @@
   
   <router-outlet></router-outlet>
   
-  <div class="imprint">
+  <div class="imprint" *ngIf="showFooterDiv">
     <a routerLink="imprint" class="forgot-password">Impressum</a>
     <a routerLink="privacy" class="forgot-password">Datenschutz</a>
   </div>
