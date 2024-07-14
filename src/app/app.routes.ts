@@ -9,6 +9,7 @@ import { AvatarChoiceComponent } from './pages/main-sign-in/avatar-choice/avatar
 import { TestingComponent } from './testing/testing.component';
 import { ResetPasswordComponent } from './pages/main-sign-in/reset-password/reset-password.component';
 import { ChangePasswordComponent } from './pages/main-sign-in/change-password/change-password.component';
+import { ConfirmationDialogComponent } from './shared/confirmation-dialog/confirmation-dialog.component';
 
 export const routes: Routes = [
     {
@@ -22,6 +23,7 @@ export const routes: Routes = [
             { path: "change-password", component: ChangePasswordComponent },
             { path: "imprint", component: ImprintComponent },
             { path: "privacy", component: PrivacypolicyComponent },
+            { path: "confirmation", component: ConfirmationDialogComponent }, // for testing
         ],
     },
     { path: "main", component: MainPageComponent },

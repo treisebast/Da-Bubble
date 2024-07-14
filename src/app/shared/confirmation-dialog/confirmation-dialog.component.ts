@@ -8,5 +8,8 @@ import { Component } from '@angular/core';
   styleUrl: './confirmation-dialog.component.scss'
 })
 export class ConfirmationDialogComponent {
-  message: string = "Konto erfolgreich erstellt!";
+  creationMessage: string = 'Konto erfolgreich erstellt!';
+  emailSendMessage: string = 'E-Mail gesendet';
+  signInMessage: string = 'Anmelden';
+
 }
