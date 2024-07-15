@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,13 +28,15 @@ import { firstValueFrom } from 'rxjs';
 export class SignUpComponent {
   signUpForm: FormGroup;
   isPrivacyPolicyAccepted: boolean = false;
+  emailError: string = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private authService: AuthService,
     private userService: UserService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {
     this.signUpForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -79,8 +81,14 @@ export class SignUpComponent {
         });
         console.log('User registered and details saved');
         this.router.navigate(['/avatar']);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error during sign up or saving user details', error);
+        if (error.code === 'auth/email-already-in-use') {
+          this.emailError = 'Diese E-Mail existiert bereits.';
+        } else {
+          this.emailError = 'Diese E-mail ist ungültig.';
+        }
+        this.cdr.detectChanges();
       }
     }
   }

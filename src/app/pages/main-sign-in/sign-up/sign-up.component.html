@@ -18,8 +18,8 @@
             <img src="/assets/img/front-page/mail.svg" alt="email icon">
             <input type="email" formControlName="email" placeholder="beispielname@email.com">
         </div>
-        <span class="validMsg" [class.hidden]="!(email.invalid && email.touched)">
-            Bitte geben Sie eine gültige E-Mail-Adresse ein.
+        <span class="validMsg" [class.hidden]="!(email.invalid && email.touched) && !emailError">
+            {{ emailError ? emailError : 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }}
         </span>
         
         <div class="input-container" [ngClass]="{ 'invalid-border': password.invalid && (password.dirty || password.touched) }">
