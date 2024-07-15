@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-sign-in',
@@ -19,7 +20,11 @@ export class SignInComponent {
   signInForm: FormGroup;
   formSubmitted = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -41,5 +46,18 @@ export class SignInComponent {
       console.log('Form Submitted', this.signInForm.value);
       this.router.navigate(['/main']);
     }
+  }
+
+  signInWithGoogle(event: Event) {
+    event.preventDefault();
+    this.authService.signInWithGoogle().subscribe({
+      next: (res: any) => {
+        console.log('Google Sign-In Successful', res);
+        this.router.navigate(['/main']);
+      },
+      error: (err: any) => {
+        console.error('Google Sign-In Error', err);
+      }
+    });
   }
 }
