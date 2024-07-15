@@ -1,15 +1,8 @@
 <div class="confirmation-box">
-  <h1 mat-dialog-title>{{ creationMessage }}</h1>
-
-  <!-- <div>
-    <img src="./assets/img/front-page/send.svg" alt="">
-    <h1 mat-dialog-title>{{ emailSendMessage }}</h1>
+  <div *ngIf="data.image">
+    <img [src]="data.image" alt="confirmation image">
   </div>
-
-  <div>
-    <h1 mat-dialog-title>{{ signInMessage }}</h1>
-  </div> -->
-
+  <h1 mat-dialog-title>{{ data.message }}</h1>
 </div>
 
-<!-- Je nach Action die richtige Confirmation anzeigen. -->
+<!-- "anmelden" missing ?? -->

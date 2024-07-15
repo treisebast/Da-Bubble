@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-confirmation-dialog',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './confirmation-dialog.component.html',
-  styleUrl: './confirmation-dialog.component.scss'
+  styleUrls: ['./confirmation-dialog.component.scss']
 })
-export class ConfirmationDialogComponent {
-  creationMessage: string = 'Konto erfolgreich erstellt!';
-  emailSendMessage: string = 'E-Mail gesendet';
-  signInMessage: string = 'Anmelden';
 
+export class ConfirmationDialogComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: { message: string, image?: string }) {}
 }

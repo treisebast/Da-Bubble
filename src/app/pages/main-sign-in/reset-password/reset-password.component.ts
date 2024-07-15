@@ -8,6 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
+
 
 @Component({
   selector: 'app-reset-password',
@@ -26,10 +29,15 @@ import { CommonModule } from '@angular/common';
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
+
 export class ResetPasswordComponent {
   resetPasswordForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router,
+    private dialog: MatDialog
+  ) {
     this.resetPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
@@ -42,7 +50,13 @@ export class ResetPasswordComponent {
   onSubmit() {
     if (this.resetPasswordForm.valid) {
       console.log('Reset Password Form Submitted', this.resetPasswordForm.value);
-      // Code for reset-email
+      // Reset-Email send successful 
+      this.dialog.open(ConfirmationDialogComponent, {
+        data: { 
+          message: 'E-Mail gesendet',
+          image: './assets/img/front-page/send.svg'
+        }
+      });
     }
   }
 }

@@ -74,7 +74,9 @@ export class SignUpComponent {
         };
 
         await this.userService.addUser(user);
-        this.dialog.open(ConfirmationDialogComponent);
+        this.dialog.open(ConfirmationDialogComponent, {
+          data: { message: 'Konto erfolgreich erstellt!' },
+        });
         console.log('User registered and details saved');
         this.router.navigate(['/avatar']);
       } catch (error) {

@@ -24,6 +24,7 @@ header {
         width: 150px;
         object-fit: contain;
         transition: 125ms ease-in-out;
+
         &:hover {
             transform: scale(1.05);
         }
@@ -80,8 +81,8 @@ header {
         line-height: 21.6px;
         text-align: left;
     }
-
 }
+
 
 
 @media (min-width: 1200px) {
@@ -92,8 +93,8 @@ header {
         margin-left: auto;
         margin-right: auto;
         padding-left: 30px;
-        padding-right:30px;
-        padding-top:50px;
+        padding-right: 30px;
+        padding-top: 50px;
         height: 115px;
         display: flex;
         justify-content: space-between;
@@ -165,5 +166,3 @@ header {
     }
 
 }
-
-
