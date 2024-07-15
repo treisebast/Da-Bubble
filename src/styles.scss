@@ -106,23 +106,6 @@ mat-card-subtitle {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.password-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 8px;
-  margin-bottom: 8px;
-
-  >a {
-    text-decoration: none;
-  }
-}
-
-.forgot-password {
-  display: block;
-  font-size: 12px;
-  color: $purple-two;
-}
-
 .login-actions {
   display: flex;
   flex-direction: row;
