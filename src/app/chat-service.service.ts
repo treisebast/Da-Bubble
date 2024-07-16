@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ChatUserProfile } from './pages/main-page/chat-channels/chat-channels.component';
+import { ChatUserProfile } from './shared/models/chat-user-profile.model';
 
 
 interface Message {

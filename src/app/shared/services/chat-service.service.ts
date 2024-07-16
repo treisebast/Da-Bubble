@@ -6,7 +6,7 @@ import { Channel } from '../models/channel.model';
 @Injectable({
   providedIn: 'root'
 })
-export class ChannelService {
+export class ChatService {
   private channelsCollection = collection(this.firestore, 'channels');
 
   constructor(private firestore: Firestore) {}

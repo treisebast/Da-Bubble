@@ -1,24 +1,33 @@
-<div class="dialog-add-channel">
-  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-  <h2>Channel erstellen</h2>
+<mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+<h2 mat-dialog-title>Channel erstellen</h2>
+
+<mat-dialog-content class="mat-typography">
   <p>
     Channels dienen deinem Team zur Kommunikation. Am besten sollten sie
     themenbezogen sein #marketing zum Beispiel.
   </p>
+  <div>
+    <h4>Channel-Name</h4>
+    <input
+      [(ngModel)]="channelName"
+      type="text"
+      placeholder="# z.B. Kooperationsprojekte"
+    />
+  </div>
+  <div>
+    <h4>Beschreibung <span class="optional">(optional)</span></h4>
+    <input [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
+  </div>
+</mat-dialog-content>
 
-  <mat-dialog-content class="input-container">
-    <div>
-      <h4>Channel-Name</h4>
-      <input type="text" placeholder="# z.B. Kooperationsprojekte" />
-    </div>
-    <div>
-      <h4>
-        Beschreibung
-        <p class="optional">(optional)</p>
-      </h4>
-      <input type="text" placeholder="Dein Text hier" />
-    </div>
-
-    <button class="saveChannelBtn" [disabled]="loading" (click)="saveUser()" mat-flat-button>Erstellen</button>
-  </mat-dialog-content>
-</div>
+<mat-dialog-actions align="end">
+  <button
+    class="saveChannelBtn"
+    mat-dialog-close
+    [disabled]="loading"
+    (click)="saveChannel()"
+    mat-flat-button
+  >
+    Erstellen
+  </button>
+</mat-dialog-actions>

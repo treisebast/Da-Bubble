@@ -1,22 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { ChannelService } from '../../../shared/services/channel.service';
+import { Channel } from '../../../shared/models/channel.model';
+import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
 import { DialogAddChannelComponent } from '../../../dialog-add-channel/dialog-add-channel.component';
-import { UserProfile } from 'firebase/auth';
-import { ChatServiceService } from '../../../chat-service.service';
 
 
-export interface Messages {
-  myMessage: string;
-  answeredMessages: string;
-}
-
-export interface ChatUserProfile {
-  name: string;
-  imgScr: string;
-  online: boolean;
-  messages: Messages;
-}
 @Component({
   selector: 'app-chat-channels',
   standalone: true,
@@ -24,83 +14,43 @@ export interface ChatUserProfile {
     CommonModule
   ],
   templateUrl: './chat-channels.component.html',
-  styleUrl: './chat-channels.component.scss'
+  styleUrls: ['./chat-channels.component.scss']
 })
-export class ChatChannelsComponent {
-
+export class ChatChannelsComponent implements OnInit {
   menuChannelDropdown: boolean = true;
   directMessages: boolean = true;
   readonly dialog = inject(MatDialog);
-  private chatService = inject(ChatServiceService);
+  private channelService = inject(ChannelService);
 
-  allChannels: ChatUserProfile[] = [
-    {
-      name: "Entwickler Team",
-      imgScr: "./assets/img/chatChannel/tag.svg",
-      online: true,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
-    },
-    {
-      name: "Office Team",
-      imgScr: "./assets/img/chatChannel/tag.svg",
-      online: true,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
-    },
-    {
-      name: "Test Team",
-      imgScr: "./assets/img/chatChannel/tag.svg",
-      online: true,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
-    }
-  ]
-
+  allChannels: Channel[] = [];
   allDirectMessages: ChatUserProfile[] = [
     {
       name: "Marco Amman",
       imgScr: "./assets/img/profile/1.svg",
-      online: true,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
+      online: true
     },
     {
       name: "Sebastian Treittinger",
       imgScr: "./assets/img/profile/2.svg",
-      online: true,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
+      online: true
     },
     {
       name: "Aristotelis Stratis",
       imgScr: "./assets/img/profile/3.svg",
-      online: false,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
+      online: false
     },
     {
       name: "Tobias Wall",
       imgScr: "./assets/img/profile/4.svg",
-      online: false,
-      messages: {
-        myMessage: "",
-        answeredMessages: ""
-      },
+      online: false
     }
-  ]
+  ];
+
+  ngOnInit() {
+    this.channelService.getChannels().subscribe(channels => {
+      this.allChannels = channels;
+    });
+  }
 
   openMenuChannel() {
     this.menuChannelDropdown = !this.menuChannelDropdown;
@@ -111,13 +61,24 @@ export class ChatChannelsComponent {
   }
 
   addNewChannel() {
-    this.dialog.open(DialogAddChannelComponent);
+    const dialogRef = this.dialog.open(DialogAddChannelComponent, {
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Channel created:', result);
+      }
+    });
   }
 
-  showChat(chat: ChatUserProfile, channel:boolean) {
-    this.chatService.setCurrentChat(chat);
+  showChannel(channel: Channel) {
+    console.log('Showing channel:', channel);
+    // Your logic to show the selected channel
+  }
 
-    if (!channel) this.chatService.setChannelFalse();
-    else this.chatService.setChannelTrue();
+  showDirectMessage(directMessage: ChatUserProfile) {
+    console.log('Showing direct message:', directMessage);
+    // Your logic to show the selected direct message
   }
 }
