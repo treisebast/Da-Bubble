@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from '../shared/header/header.component';
-import { ChatServiceService } from '../shared/services/chat-service.service';
+import { ChatService } from '../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-main-page',
@@ -31,7 +31,7 @@ export class MainPageComponent implements OnInit {
   showSecondary: boolean | null = false;
   currentView: 'channels' | 'main' | 'secondary' = 'channels';
   isMobileView: boolean = false;
-  private chatService = inject(ChatServiceService);
+  private chatService = inject(ChatService);
 
   workspaceMenu: string = "Workspace-Menü schließen";
 

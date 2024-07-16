@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
-import { ChatServiceService } from '../../shared/services/chat-service.service';
+import { ChatService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-thread',
@@ -12,7 +12,7 @@ import { ChatServiceService } from '../../shared/services/chat-service.service';
 export class ThreadComponent {
 
   currentChat: ChatUserProfile | null = null;
-  private chatService = inject(ChatServiceService);
+  private chatService = inject(ChatService);
 
   ngOnInit() {
     this.chatService.currentChat$.subscribe(chat => {

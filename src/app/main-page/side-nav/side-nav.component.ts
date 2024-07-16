@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
 import { ChannelService } from '../../shared/services/channel.service';
+import { ChatService } from '../../shared/services/chat-service.service';
 import { Channel } from '../../shared/models/channel.model';
 import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
-import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
-import { ChatServiceService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-side-nav',
@@ -21,7 +21,7 @@ export class SideNavComponent implements OnInit {
   directMessages: boolean = true;
   readonly dialog = inject(MatDialog);
   private channelService = inject(ChannelService);
-  private chatService = inject(ChatServiceService);
+  private chatService = inject(ChatService);
 
   allChannels: Channel[] = [];
   allDirectMessages: ChatUserProfile[] = [

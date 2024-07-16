@@ -10,21 +10,21 @@
 
   <div class="chat-container" #chatContainer>
     <div *ngFor="let message of messages; let i = index">
-      <div *ngIf="isNewDay(message.date, i)" class="date-divider">
-        <span class="date">{{ message.date | date: 'fullDate' }}</span>
+      <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+        <span class="date">{{ message.timestamp | date: 'fullDate' }}</span>
       </div>
 
-      <div class="singelMessageContainer" [ngClass]="{'message-left': message.user !== currentChat.name, 'message-right': message.user === currentChat.name}">
+      <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat.name, 'message-right': message.senderId === currentChat.name}">
         <div class="message-header">
-          <span class="timestamp">{{ message.time | date: 'shortTime' }}</span>
-          <span class="name">{{ message.user }}</span>
+          <span class="timestamp">{{ message.timestamp | date: 'shortTime' }}</span>
+          <span class="name">{{ message.senderId }}</span>
         </div>
 
         <div class="message-content">
-          <p>{{ message.message }}</p>
+          <p>{{ message.content }}</p>
         </div>
 
-        <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.user }}" class="profile-img">
+        <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.senderId }}" class="profile-img">
       </div>
     </div>
   </div>

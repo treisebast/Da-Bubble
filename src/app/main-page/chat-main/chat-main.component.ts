@@ -1,18 +1,11 @@
-import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { Channel } from '../../shared/models/channel.model';
-import { ChatServiceService } from '../../shared/services/chat-service.service';
-
-interface Message {
-  user: string;
-  date: Date;
-  time: Date;
-  message: string;
-  likes: number;
-}
+import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
+import { Message } from '../../shared/models/message.model';
+import { ChatService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-chat-main',
@@ -27,11 +20,11 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   messages: Message[] = [];
 
   newMessageText = '';
-  constructor(private chatService: ChatServiceService) {}
+  constructor(private chatService: ChatService) {}
 
   isNewDay(date: Date, index: number): boolean {
     if (index === 0) return true;
-    const prevDate = new Date(this.messages[index - 1].date);
+    const prevDate = new Date(this.messages[index - 1].timestamp);
     const currentDate = new Date(date);
     return prevDate.toDateString() !== currentDate.toDateString();
   }
@@ -65,14 +58,14 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
 
     const newMessage: Message = {
-      user: 'Current User',
-      date: new Date(),
-      time: new Date(),
-      message: this.newMessageText,
-      likes: 0
+      content: this.newMessageText,
+      senderId: 'Current User',  // Hier sollte die aktuelle Benutzer-ID verwendet werden
+      timestamp: new Date(),
     };
 
-    this.chatService.addMessage(this.currentChat?.name || 'Current User', newMessage.message);
+    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      this.chatService.addMessage(this.currentChat.id, newMessage);
+    }
     this.newMessageText = '';
   }
 

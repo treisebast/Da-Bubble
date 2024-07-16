@@ -14,7 +14,7 @@ import {
   getDocs,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { DirectMessage } from '../models/directMessage.model';
+import { Message } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root',
@@ -27,13 +27,13 @@ export class DirectMessageService {
    * @param {string} chatId - The ID of the chat.
    * @returns {Observable<DirectMessage[]>} - An observable array of direct messages.
    */
-  getDirectMessages(chatId: string): Observable<DirectMessage[]> {
+  getDirectMessages(chatId: string): Observable<Message[]> {
     const messagesCollection = collection(
       this.firestore,
       `directMessages/${chatId}/messages`
     );
     return collectionData(messagesCollection, { idField: 'id' }) as Observable<
-      DirectMessage[]
+    Message[]
     >;
   }
 
@@ -46,12 +46,12 @@ export class DirectMessageService {
   getDirectMessage(
     chatId: string,
     messageId: string
-  ): Observable<DirectMessage> {
+  ): Observable<Message> {
     const messageDoc = doc(
       this.firestore,
       `directMessages/${chatId}/messages/${messageId}`
     );
-    return docData(messageDoc, { idField: 'id' }) as Observable<DirectMessage>;
+    return docData(messageDoc, { idField: 'id' }) as Observable<Message>;
   }
 
   /**
@@ -62,7 +62,7 @@ export class DirectMessageService {
    */
   async addDirectMessage(
     chatId: string,
-    message: DirectMessage
+    message: Message
   ): Promise<void> {
     const messagesCollection = collection(
       this.firestore,
@@ -81,7 +81,7 @@ export class DirectMessageService {
    * @param {DirectMessage} message - The direct message to update.
    * @returns {Promise<void>} - A promise that resolves when the message is updated.
    */
-  updateDirectMessage(chatId: string, message: DirectMessage): Promise<void> {
+  updateDirectMessage(chatId: string, message: Message): Promise<void> {
     const messageDoc = doc(
       this.firestore,
       `directMessages/${chatId}/messages/${message.id}`

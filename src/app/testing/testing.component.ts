@@ -10,7 +10,7 @@ import { serverTimestamp } from '@angular/fire/firestore';
 import { User } from '../shared/models/user.model';
 import { UserService } from '../shared/services/user.service';
 import { DirectMessageService } from '../shared/services/direct-message.service';
-import { DirectMessage } from '../shared/models/directMessage.model';
+import { Message } from '../shared/models/message.model';
 
 /**
  * Testing Component
@@ -38,7 +38,7 @@ export class TestingComponent implements OnInit {
   messageForm: FormGroup;
   selectedChatUser: User | null = null;
   editingUserId: string | null = null;
-  messages: DirectMessage[] = [];
+  messages: Message[] = [];
   currentChatId: string | null = null;
   currentUser: User | null = null;
 
@@ -167,7 +167,7 @@ export class TestingComponent implements OnInit {
     if (!this.currentChatId) {
       return;
     }
-    const newMessage: DirectMessage = this.messageForm.value;
+    const newMessage: Message = this.messageForm.value;
     newMessage.timestamp = serverTimestamp();
     this.messageService.addDirectMessage(this.currentChatId, newMessage).then(() => {
       this.messageForm.reset({ content: '', senderId: this.currentUser?.userId || '', attachments: [], timestamp: serverTimestamp() });
