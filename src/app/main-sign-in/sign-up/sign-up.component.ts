@@ -9,10 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
-import { AuthService } from '../../../shared/services/auth.service';
-import { UserService } from '../../../shared/services/user.service';
-import { User } from '../../../shared/models/user.model';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+import { AuthService } from '../../shared/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
+import { User } from '../../shared/models/user.model';
 import { firstValueFrom } from 'rxjs';
 
 @Component({

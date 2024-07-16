@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
-import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
-import { ChatServiceService } from '../../../shared/services/chat-service.service';
+import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
+import { ChatServiceService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-thread',

@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ChannelService } from '../../../shared/services/channel.service';
-import { Channel } from '../../../shared/models/channel.model';
-import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
+import { ChannelService } from '../../shared/services/channel.service';
+import { Channel } from '../../shared/models/channel.model';
+import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
-import { ChatServiceService } from '../../../shared/services/chat-service.service';
+import { ChatServiceService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-side-nav',

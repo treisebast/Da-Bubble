@@ -7,10 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../shared/services/auth.service';
-import { UserService } from '../../../shared/services/user.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
 import { CommonModule } from '@angular/common';
-import { User } from '../../../shared/models/user.model'; // Passe den Pfad an
+import { User } from '../../shared/models/user.model'; // Passe den Pfad an
 import { firstValueFrom } from 'rxjs';
 
 @Component({

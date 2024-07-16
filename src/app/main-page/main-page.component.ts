@@ -6,8 +6,8 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { HeaderComponent } from '../../shared/header/header.component';
-import { ChatServiceService } from '../../shared/services/chat-service.service';
+import { HeaderComponent } from '../shared/header/header.component';
+import { ChatServiceService } from '../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-main-page',

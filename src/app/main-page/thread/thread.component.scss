@@ -11,7 +11,7 @@
     border-top-right-radius: 16px;
 
     .close {
-        background-image: url(../../../../assets/img/icons/close.svg);
+        background-image: url(   ../../../assets/img/icons/close.svg);
         background-repeat: no-repeat;
         background-position: center center;
         width: 24px;
@@ -19,7 +19,7 @@
         margin-right: 24px;
         &:hover {
             cursor: pointer;
-            background-image: url(../../../../assets/img/icons/closeHover.svg);
+            background-image: url(   ../../../assets/img/icons/closeHover.svg);
         }
     }
 
@@ -100,45 +100,45 @@
             }
 
             .addIcon {
-                background-image: url(../../../../assets/img/icons/add.png);
+                background-image: url(   ../../../assets/img/icons/add.png);
 
                 &:hover {
-                    background-image: url(../../../../assets/img/icons/addHover.svg);
+                    background-image: url(   ../../../assets/img/icons/addHover.svg);
                     background-color: rgb(235, 239, 254);
                     border-radius: 100%;
                 }
 
                 &:active {
-                    background-image: url(../../../../assets/img/icons/addClicked.svg);
+                    background-image: url(   ../../../assets/img/icons/addClicked.svg);
                 }
             }
 
             .emoji {
                 margin-right: 16px;
-                background-image: url(../../../../assets/img/icons/emoji.svg);
+                background-image: url(   ../../../assets/img/icons/emoji.svg);
 
                 &:hover {
-                    background-image: url(../../../../assets/img/icons/emojiHover.svg);
+                    background-image: url(   ../../../assets/img/icons/emojiHover.svg);
                     background-color: rgb(235, 239, 254);
                     border-radius: 100%;
                 }
 
                 &:active {
-                    background-image: url(../../../../assets/img/icons/emojiClicked.svg);
+                    background-image: url(   ../../../assets/img/icons/emojiClicked.svg);
                 }
             }
 
             .iconMarkUser {
-                background-image: url(../../../../assets/img/icons/@.svg);
+                background-image: url(   ../../../assets/img/icons/@.svg);
 
                 &:hover {
-                    background-image: url(../../../../assets/img/icons/@Hover.svg);
+                    background-image: url(   ../../../assets/img/icons/@Hover.svg);
                     background-color: rgb(235, 239, 254);
                     border-radius: 100%;
                 }
 
                 &:active {
-                    background-image: url(../../../../assets/img/icons/@Clicked.svg);
+                    background-image: url(   ../../../assets/img/icons/@Clicked.svg);
                 }
             }
         }
@@ -147,10 +147,10 @@
             width: 32px;
             height: 32px;
             background-position: center center;
-            background-image: url(../../../../assets/img/icons/send.svg);
+            background-image: url(   ../../../assets/img/icons/send.svg);
 
             &:hover {
-                background-image: url(../../../../assets/img/icons/sendHover.svg);
+                background-image: url(   ../../../assets/img/icons/sendHover.svg);
                 cursor: pointer;
             }
         }

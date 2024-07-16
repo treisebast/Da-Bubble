@@ -2,9 +2,9 @@ import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } fr
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
-import { Channel } from '../../../shared/models/channel.model';
-import { ChatServiceService } from '../../../shared/services/chat-service.service';
+import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
+import { Channel } from '../../shared/models/channel.model';
+import { ChatServiceService } from '../../shared/services/chat-service.service';
 
 interface Message {
   user: string;
