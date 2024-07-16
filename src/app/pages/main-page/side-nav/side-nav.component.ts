@@ -4,23 +4,24 @@ import { MatDialog } from '@angular/material/dialog';
 import { ChannelService } from '../../../shared/services/channel.service';
 import { Channel } from '../../../shared/models/channel.model';
 import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
-import { DialogAddChannelComponent } from '../../../dialog-add-channel/dialog-add-channel.component';
-
+import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
+import { ChatServiceService } from '../../../shared/services/chat-service.service';
 
 @Component({
-  selector: 'app-chat-channels',
+  selector: 'app-side-nav',
   standalone: true,
   imports: [
     CommonModule
   ],
-  templateUrl: './chat-channels.component.html',
-  styleUrls: ['./chat-channels.component.scss']
+  templateUrl: './side-nav.component.html',
+  styleUrls: ['./side-nav.component.scss']
 })
-export class ChatChannelsComponent implements OnInit {
+export class SideNavComponent implements OnInit {
   menuChannelDropdown: boolean = true;
   directMessages: boolean = true;
   readonly dialog = inject(MatDialog);
   private channelService = inject(ChannelService);
+  private chatService = inject(ChatServiceService);
 
   allChannels: Channel[] = [];
   allDirectMessages: ChatUserProfile[] = [
@@ -62,7 +63,8 @@ export class ChatChannelsComponent implements OnInit {
 
   addNewChannel() {
     const dialogRef = this.dialog.open(DialogAddChannelComponent, {
-      disableClose: false
+      disableClose: false,
+      panelClass: 'addChannelDialog'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -74,11 +76,11 @@ export class ChatChannelsComponent implements OnInit {
 
   showChannel(channel: Channel) {
     console.log('Showing channel:', channel);
-    // Your logic to show the selected channel
+    this.chatService.setCurrentChat(channel);
   }
 
   showDirectMessage(directMessage: ChatUserProfile) {
     console.log('Showing direct message:', directMessage);
-    // Your logic to show the selected direct message
+    this.chatService.setCurrentChat(directMessage);
   }
 }

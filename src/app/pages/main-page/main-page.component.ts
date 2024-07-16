@@ -1,32 +1,32 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
-import { ChatChannelsComponent } from './chat-channels/chat-channels.component';
+import { SideNavComponent } from './side-nav/side-nav.component';
 import { ChatMainComponent } from "./chat-main/chat-main.component";
-import { ChatSecondaryComponent } from "./chat-secondary/chat-secondary.component";
+import { ThreadComponent } from "./thread/thread.component";
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { HeaderComponent } from '../../header/header.component';
-import { ChatServiceService } from '../../chat-service.service';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { ChatServiceService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
   imports: [
-    ChatChannelsComponent, 
-    ChatMainComponent, 
-    ChatSecondaryComponent, 
-    CommonModule, 
-    MatButtonModule, 
-    MatDividerModule, 
+    SideNavComponent,
+    ChatMainComponent,
+    ThreadComponent,
+    CommonModule,
+    MatButtonModule,
+    MatDividerModule,
     MatIconModule,
-    HeaderComponent,
-  ],
+    HeaderComponent
+],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss']
 })
 export class MainPageComponent implements OnInit {
-  
+
   showChannels: boolean = true;
   showSecondary: boolean | null = false;
   currentView: 'channels' | 'main' | 'secondary' = 'channels';
@@ -43,7 +43,8 @@ export class MainPageComponent implements OnInit {
   ngOnInit() {
     this.checkMobileView();
 
-    this.chatService.getChannelStatus().subscribe(status => {
+    this.chatService.getChannelStatus().subscribe((status: boolean) => {
+      console.log('Channel Status:', status); // Debugging output
       this.showSecondary = status;
     });
   }
@@ -62,10 +63,19 @@ export class MainPageComponent implements OnInit {
   }
 
   closeThreadComponent() {
-    this.showSecondary = !this.showSecondary;
+    console.log('Closing thread component'); // Debugging output
+    this.chatService.setChannelFalse();
+    this.showSecondary = false;
+  }
+
+  openThreadComponent() {
+    console.log('Opening thread component'); // Debugging output
+    this.chatService.setChannelTrue();
+    this.showSecondary = true;
   }
 
   switchTo(view: 'channels' | 'main' | 'secondary') {
+    console.log('Switching to view:', view); // Debugging output
     this.currentView = view;
   }
 }

@@ -1,37 +1,80 @@
+//TODO:
+//BehaviorSubject auf default false setzen wenn es klappt, damit "threads" nicht standardmässig sichtbar ist
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, doc, updateDoc, deleteDoc, docData } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { ChatUserProfile } from '../models/chat-user-profile.model';
 import { Channel } from '../models/channel.model';
+import { ChannelService } from './channel.service';
+import { DirectMessage } from '../models/directMessage.model';
+
+interface Message {
+  user: string;
+  date: Date;
+  time: Date;
+  message: string;
+  likes: number;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class ChatService {
-  private channelsCollection = collection(this.firestore, 'channels');
+export class ChatServiceService {
+  private currentChatSource = new BehaviorSubject<ChatUserProfile | Channel | null>(null);
+  currentChat$ = this.currentChatSource.asObservable();
 
-  constructor(private firestore: Firestore) {}
+  private isChannelSource = new BehaviorSubject<boolean>(true);//hier auf false setzen wenns läuft
+  isChannel$ = this.isChannelSource.asObservable();
 
-  getChannels(): Observable<Channel[]> {
-    return collectionData(this.channelsCollection, { idField: 'id' }) as Observable<Channel[]>;
+  private messagesSource = new BehaviorSubject<Message[]>([]);
+  messages$ = this.messagesSource.asObservable();
+
+  constructor(private channelService: ChannelService) {}
+
+  setCurrentChat(chat: ChatUserProfile | Channel) {
+    this.currentChatSource.next(chat);
+    this.loadMessages(chat);
   }
 
-  getChannel(id: string): Observable<Channel> {
-    const channelDoc = doc(this.firestore, `channels/${id}`);
-    return docData(channelDoc, { idField: 'id' }) as Observable<Channel>;
+  private loadMessages(chat: ChatUserProfile | Channel) {
+    if ((chat as Channel).id) {
+      this.channelService.getChannelMessages((chat as Channel).id!).subscribe((messages: DirectMessage[]) => {
+        const mappedMessages = messages.map(message => ({
+          user: message.senderId,
+          date: new Date(message.timestamp),
+          time: new Date(message.timestamp),
+          message: message.content,
+          likes: 0
+        }));
+        this.messagesSource.next(mappedMessages);
+      });
+    } else {
+      // Implement logic to load direct messages
+    }
   }
 
-  async addChannel(channel: Channel): Promise<void> {
-    const docRef = await addDoc(this.channelsCollection, channel);
-    await updateDoc(doc(this.firestore, `channels/${docRef.id}`), { id: docRef.id });
+  addMessage(user: string, message: string) {
+    const newMessage: Message = {
+      user: user,
+      date: new Date(),
+      time: new Date(),
+      message: message,
+      likes: 0
+    };
+
+    const currentMessages = this.messagesSource.getValue();
+    currentMessages.push(newMessage);
+    this.messagesSource.next(currentMessages);
   }
 
-  updateChannel(channel: Channel): Promise<void> {
-    const channelDoc = doc(this.firestore, `channels/${channel.id}`);
-    return updateDoc(channelDoc, { ...channel });
+  setChannelFalse() {
+    this.isChannelSource.next(false);
   }
 
-  deleteChannel(id: string): Promise<void> {
-    const channelDoc = doc(this.firestore, `channels/${id}`);
-    return deleteDoc(channelDoc);
+  setChannelTrue() {
+    this.isChannelSource.next(true);
+  }
+
+  getChannelStatus() {
+    return this.isChannel$;
   }
 }

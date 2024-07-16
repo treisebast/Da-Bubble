@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, doc, updateDoc, deleteDoc, docData } from '@angular/fire/firestore';
+import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collection, addDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
+import { DirectMessage } from '../models/directMessage.model';
 
 @Injectable({
   providedIn: 'root'
@@ -33,5 +34,10 @@ export class ChannelService {
   deleteChannel(id: string): Promise<void> {
     const channelDoc = doc(this.firestore, `channels/${id}`);
     return deleteDoc(channelDoc);
+  }
+
+  getChannelMessages(channelId: string): Observable<DirectMessage[]> {
+    const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+    return collectionData(messagesCollection, { idField: 'id' }) as Observable<DirectMessage[]>;
   }
 }

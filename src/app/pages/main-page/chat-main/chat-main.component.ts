@@ -1,10 +1,10 @@
 import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { ChatChannelsComponent } from '../chat-channels/chat-channels.component';
-import { ChatServiceService } from '../../../chat-service.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
+import { Channel } from '../../../shared/models/channel.model';
+import { ChatServiceService } from '../../../shared/services/chat-service.service';
 
 interface Message {
   user: string;
@@ -13,39 +13,21 @@ interface Message {
   message: string;
   likes: number;
 }
+
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [ChatChannelsComponent, CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule],
   templateUrl: './chat-main.component.html',
-  styleUrl: './chat-main.component.scss'
+  styleUrls: ['./chat-main.component.scss']
 })
-
 export class ChatMainComponent implements OnInit, AfterViewChecked {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
-  currentChat: ChatUserProfile | null = null;
-  channel: boolean | null = true;
-  private chatService = inject(ChatServiceService);
-  messages = [
-    {
-      user: 'Tobias Wall',
-      date: new Date(),
-      time: new Date(),
-      message: 'Hallo, wie geht es dir?',
-      likes: 0
-    },
-    {
-      user: 'Marco Amman',
-      date: new Date(),
-      time: new Date(),
-      message: 'Hallo! Mir geht es gut, danke!',
-      likes: 0
-    }
-  ];
+  currentChat: ChatUserProfile | Channel | null = null;
+  messages: Message[] = [];
 
   newMessageText = '';
-
-
+  constructor(private chatService: ChatServiceService) {}
 
   isNewDay(date: Date, index: number): boolean {
     if (index === 0) return true;
@@ -54,24 +36,12 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
-  addMessage(text: string) {
-    if (this.currentChat) {
-      this.chatService.addMessage(this.currentChat.name, text);
-    }
-  }
-
-
   ngOnInit() {
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat;
     });
     this.chatService.messages$.subscribe(messages => {
-      //this.messages = messages.sort((a, b) => a.date.getTime() - b.date.getTime());
-    });
-
-    this.chatService.getChannelStatus().subscribe(status => {
-      if (status === null) this.channel = true;
-      else this.channel = status;
+      this.messages = messages;
     });
   }
 
@@ -81,7 +51,9 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
   scrollToBottom(): void {
     try {
-      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+      if (this.chatContainer) {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+      }
     } catch (err) {
       console.error('Scroll to bottom failed:', err);
     }
@@ -93,20 +65,18 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
 
     const newMessage: Message = {
-      user: 'Tobias Wall',
+      user: 'Current User',
       date: new Date(),
       time: new Date(),
       message: this.newMessageText,
       likes: 0
     };
 
-    this.messages.push(newMessage);
+    this.chatService.addMessage(this.currentChat?.name || 'Current User', newMessage.message);
     this.newMessageText = '';
-
-
-    console.log(this.messages)
-
-
   }
 
+  isChatUserProfile(chat: ChatUserProfile | Channel): chat is ChatUserProfile {
+    return (chat as ChatUserProfile).imgScr !== undefined;
+  }
 }

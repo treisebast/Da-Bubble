@@ -1,22 +1,23 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
-import { ChatServiceService } from '../../../chat-service.service';
 import { ChatUserProfile } from '../../../shared/models/chat-user-profile.model';
+import { ChatServiceService } from '../../../shared/services/chat-service.service';
 
 @Component({
-  selector: 'app-chat-secondary',
+  selector: 'app-thread',
   standalone: true,
   imports: [],
-  templateUrl: './chat-secondary.component.html',
-  styleUrl: './chat-secondary.component.scss'
+  templateUrl: './thread.component.html',
+  styleUrl: './thread.component.scss'
 })
-export class ChatSecondaryComponent {
+export class ThreadComponent {
 
   currentChat: ChatUserProfile | null = null;
   private chatService = inject(ChatServiceService);
 
   ngOnInit() {
     this.chatService.currentChat$.subscribe(chat => {
-      this.currentChat = chat;
+      console.log('Current Chat:', chat); // Debugging output
+      this.currentChat = chat as ChatUserProfile;
     });
   }
 
@@ -27,10 +28,10 @@ export class ChatSecondaryComponent {
   }
 
   sendMessage() {
-
+    // Logic to send a message
   }
 
   close() {
-
+    // Logic to close the thread
   }
 }

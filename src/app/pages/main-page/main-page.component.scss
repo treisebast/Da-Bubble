@@ -10,7 +10,7 @@
   width: 100%;
   max-width: 1920px;
 
-  app-chat-channels {
+  app-side-nav {
     width: 20%;
     min-width: 280px;
     background-color: white;
@@ -36,7 +36,7 @@
     }
   }
 
-  app-chat-secondary {
+  app-thread {
     width: 25%;
     min-width: 380px;
     background-color: white;
@@ -85,9 +85,9 @@
     display: none;
   }
 
-  .max-width app-chat-channels,
+  .max-width app-side-nav,
   .max-width app-chat-main,
-  .max-width app-chat-secondary {
+  .max-width app-thread {
     width: 100%;
   }
 }

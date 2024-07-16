@@ -1,28 +1,20 @@
-
-<div class="header">
+<div *ngIf="currentChat">
+  <div class="header">
     <div class="profileImg">
-        <img src="{{ currentChat?.imgScr }}" alt="">
-        <img *ngIf="!channel && currentChat?.online" src="./assets/img/online.png" alt="" class="online"/>
-        <img *ngIf="!channel && !currentChat?.online" src="./assets/img/offline.png" alt="" class="online"/>
+      <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.imgScr }}" alt="">
+      <img *ngIf="isChatUserProfile(currentChat) && currentChat.online" src="./assets/img/online.png" alt="" class="online"/>
+      <img *ngIf="isChatUserProfile(currentChat) && !currentChat.online" src="./assets/img/offline.png" alt="" class="online"/>
     </div>
-    <h2>{{ currentChat?.name }}</h2>
-</div>
+    <h2>{{ currentChat.name }}</h2>
+  </div>
 
-
-
-
-
-
-
-<div class="chat-container" #chatContainer>
+  <div class="chat-container" #chatContainer>
     <div *ngFor="let message of messages; let i = index">
       <div *ngIf="isNewDay(message.date, i)" class="date-divider">
         <span class="date">{{ message.date | date: 'fullDate' }}</span>
       </div>
 
-
-      <div class="singelMessageContainer" [ngClass]="{'message-left': message.user !== currentChat?.name, 'message-right': message.user === currentChat?.name}">
-        
+      <div class="singelMessageContainer" [ngClass]="{'message-left': message.user !== currentChat.name, 'message-right': message.user === currentChat.name}">
         <div class="message-header">
           <span class="timestamp">{{ message.time | date: 'shortTime' }}</span>
           <span class="name">{{ message.user }}</span>
@@ -32,33 +24,21 @@
           <p>{{ message.message }}</p>
         </div>
 
-        <img [src]="currentChat?.imgScr" alt="{{ message.user }}" class="profile-img">
-
+        <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.user }}" class="profile-img">
       </div>
-
-
-
-
-
     </div>
   </div>
-  
 
-
-
-
-
-
-
-<div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"></textarea>
+  <div class="messageBox">
+    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"></textarea>
     <div class="messageBoxBottom">
-        <div class="iconsLeft">
-            <div class="addIcon"></div>
-            <div class="border"></div>
-            <div class="emoji"></div>
-            <div class="iconMarkUser"></div>
-        </div>
-        <div (click)="sendMessage()" class="sendMessage"></div>
+      <div class="iconsLeft">
+        <div class="addIcon"></div>
+        <div class="border"></div>
+        <div class="emoji"></div>
+        <div class="iconMarkUser"></div>
+      </div>
+      <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
+  </div>
 </div>

@@ -11,7 +11,7 @@ describe('MainPageComponent', () => {
       imports: [MainPageComponent]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(MainPageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -21,3 +21,4 @@ describe('MainPageComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+

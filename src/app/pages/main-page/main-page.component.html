@@ -2,9 +2,9 @@
 
 <div class="full-page">
   <div class="max-width">
-    <app-chat-channels *ngIf="showChannels && (!isMobileView || currentView === 'channels')"></app-chat-channels>
+    <app-side-nav *ngIf="showChannels && (!isMobileView || currentView === 'channels')"></app-side-nav>
     <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}" *ngIf="!isMobileView || currentView === 'main'"></app-chat-main>
-    <app-chat-secondary *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')" (closeThread)="closeThreadComponent()"></app-chat-secondary>
+    <app-thread *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')" (closeThread)="closeThreadComponent()"></app-thread>
     <button (click)="openCloseChatChannel()" class="workspaceMenuBtn" mat-raised-button>{{ workspaceMenu }}</button>
   </div>
 </div>
