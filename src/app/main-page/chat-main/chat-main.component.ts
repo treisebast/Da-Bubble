@@ -6,6 +6,7 @@ import { Channel } from '../../shared/models/channel.model';
 import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
+import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-chat-main',
@@ -22,11 +23,18 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   newMessageText = '';
   constructor(private chatService: ChatService) {}
 
-  isNewDay(date: Date, index: number): boolean {
+  isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
-    const prevDate = new Date(this.messages[index - 1].timestamp);
-    const currentDate = new Date(date);
+    const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
+    const currentDate = this.convertToDate(timestamp);
     return prevDate.toDateString() !== currentDate.toDateString();
+  }
+
+  convertToDate(timestamp: Timestamp | FieldValue): Date {
+    if (timestamp instanceof Timestamp) {
+      return timestamp.toDate();
+    }
+    return new Date();
   }
 
   ngOnInit() {
@@ -60,7 +68,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: 'Current User',  // Hier sollte die aktuelle Benutzer-ID verwendet werden
-      timestamp: new Date(),
+      timestamp: serverTimestamp()
     };
 
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {

@@ -24,16 +24,15 @@ import { ChannelService } from '../../shared/services/channel.service';
     MatDialogClose,
     MatProgressBarModule,
     CommonModule,
-    MatDialogModule,
-    MatFormFieldModule
+    MatDialogModule
   ],
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss']
 })
 export class DialogAddChannelComponent {
-  loading: boolean = false;
-  channelName: string = '';
-  description: string = '';
+  loading = false;
+  channelName = '';
+  description = '';
 
   constructor(
     public dialogRef: MatDialogRef<DialogAddChannelComponent>,

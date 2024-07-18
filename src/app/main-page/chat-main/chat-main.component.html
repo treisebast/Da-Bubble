@@ -11,12 +11,12 @@
   <div class="chat-container" #chatContainer>
     <div *ngFor="let message of messages; let i = index">
       <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
-        <span class="date">{{ message.timestamp | date: 'fullDate' }}</span>
+        <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
       </div>
 
       <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat.name, 'message-right': message.senderId === currentChat.name}">
         <div class="message-header">
-          <span class="timestamp">{{ message.timestamp | date: 'shortTime' }}</span>
+          <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
           <span class="name">{{ message.senderId }}</span>
         </div>
 
