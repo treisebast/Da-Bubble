@@ -1,157 +1,163 @@
 .header {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    padding-left: 48px;
-    width: 100%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    position: absolute;
-    top: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding-left: 48px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 
-    h2 {
-        margin: 0;
-    }
+  h2 {
+    margin: 0;
+  }
+}
+
+.wrapper {
+  height: calc(100vh - 131px);
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  display: flex;
+  flex-direction: column;
 }
 
 .profileImg {
-    height: 48px;
-    margin-right: 16px;
+  height: 48px;
+  margin-right: 16px;
 
-    img {
+  img {
     height: 48px;
     border-radius: 100%;
-    }
+  }
 
-    .online {
-        margin-left: -8px;
-        margin-top: 20px;
-        height: 12px;
-        margin-right: 8px;
-    }
+  .online {
+    margin-left: -8px;
+    margin-top: 20px;
+    height: 12px;
+    margin-right: 8px;
+  }
 }
 
 .messageBox {
-    position: absolute;
-    bottom: 32px;
-    left: 32px;
-    right: 32px;
-    border: 1px solid rgb(173, 176, 217);
-    border-radius: 20px;
-    padding: 16px;
+  border: 1px solid rgb(173, 176, 217);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 16px;
+  height: 184px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-    textarea {
-        border: none;
-        outline: none;
-        resize: none;
-        width: 100%;
-        height: 80px;
-        color: #686868;
-        font-size: 18px;
-        font-weight: 400;
+  textarea {
+    border: none;
+    outline: none;
+    resize: none;
+    width: 100%;
+    height: 80px;
+    color: #686868;
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  .messageBoxBottom {
+    width: 100%;
+    height: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    img {
+      width: 24px;
     }
 
-    .messageBoxBottom {
-        width: 100%;
+    .iconsLeft {
+      display: flex;
+
+      div {
+        background-repeat: no-repeat;
+        width: 32px;
         height: 32px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        background-position: center center;
 
-        img {
-            width: 24px;
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      .border {
+        width: 2px !important;
+        background-color: rgb(214, 215, 236);
+        margin: 0 8px 0 8px;
+      }
+
+      .addIcon {
+        background-image: url(../../../assets/img/icons/add.png);
+
+        &:hover {
+          background-image: url(../../../assets/img/icons/addHover.svg);
+          background-color: rgb(235, 239, 254);
+          border-radius: 100%;
         }
 
-        .iconsLeft {
-            display: flex;
-
-            div {
-                background-repeat: no-repeat;
-                width: 32px;
-                height: 32px;
-                background-position: center center;
-
-                &:hover {
-                    cursor: pointer;
-                }
-            }
-
-            .border {
-                width: 2px !important;
-                background-color: rgb(214, 215, 236);
-                margin: 0 8px 0 8px;
-            }
-
-            .addIcon {
-                background-image: url(   ../../../assets/img/icons/add.png);
-
-                &:hover {
-                    background-image: url(   ../../../assets/img/icons/addHover.svg);
-                    background-color: rgb(235, 239, 254);
-                    border-radius: 100%;
-                }
-
-                &:active {
-                    background-image: url(   ../../../assets/img/icons/addClicked.svg);
-                }
-            }
-
-            .emoji {
-                margin-right: 16px;
-                background-image: url(   ../../../assets/img/icons/emoji.svg);
-
-                &:hover {
-                    background-image: url(   ../../../assets/img/icons/emojiHover.svg);
-                    background-color: rgb(235, 239, 254);
-                    border-radius: 100%;
-                }
-
-                &:active {
-                    background-image: url(   ../../../assets/img/icons/emojiClicked.svg);
-                }
-            }
-
-            .iconMarkUser {
-                background-image: url(   ../../../assets/img/icons/@.svg);
-
-                &:hover {
-                    background-image: url(   ../../../assets/img/icons/@Hover.svg);
-                    background-color: rgb(235, 239, 254);
-                    border-radius: 100%;
-                }
-
-                &:active {
-                    background-image: url(   ../../../assets/img/icons/@Clicked.svg);
-                }
-            }
+        &:active {
+          background-image: url(../../../assets/img/icons/addClicked.svg);
         }
-        .sendMessage {
-            background-repeat: no-repeat;
-            width: 32px;
-            height: 32px;
-            background-position: center center;
-            background-image: url(   ../../../assets/img/icons/send.svg);
+      }
 
-            &:hover {
-                background-image: url(   ../../../assets/img/icons/sendHover.svg);
-                cursor: pointer;
-            }
+      .emoji {
+        margin-right: 16px;
+        background-image: url(../../../assets/img/icons/emoji.svg);
+
+        &:hover {
+          background-image: url(../../../assets/img/icons/emojiHover.svg);
+          background-color: rgb(235, 239, 254);
+          border-radius: 100%;
         }
+
+        &:active {
+          background-image: url(../../../assets/img/icons/emojiClicked.svg);
+        }
+      }
+
+      .iconMarkUser {
+        background-image: url(../../../assets/img/icons/@.svg);
+
+        &:hover {
+          background-image: url(../../../assets/img/icons/@Hover.svg);
+          background-color: rgb(235, 239, 254);
+          border-radius: 100%;
+        }
+
+        &:active {
+          background-image: url(../../../assets/img/icons/@Clicked.svg);
+        }
+      }
     }
+    .sendMessage {
+      background-repeat: no-repeat;
+      width: 32px;
+      height: 32px;
+      background-position: center center;
+      background-image: url(../../../assets/img/icons/send.svg);
+
+      &:hover {
+        background-image: url(../../../assets/img/icons/sendHover.svg);
+        cursor: pointer;
+      }
+    }
+  }
 }
-
-
-
 
 .chat-container {
   display: flex;
   flex-direction: column;
   padding: 16px;
   justify-content: flex-start;
-  // max-height: calc(100% - 265px);
+  max-height: calc(100% - 265px);
   overflow-y: auto;
-  margin-bottom: 183px;
+  height: auto;
+  flex-grow: 1;
 
   p {
     margin-bottom: 0;
@@ -180,7 +186,7 @@
 }
 
 .date-divider::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -232,14 +238,14 @@
 }
 
 .singelMessageContainer {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
-    .profile-img {
-        position: absolute;
-        top: 8px;
-    }
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  .profile-img {
+    position: absolute;
+    top: 8px;
+  }
 }
 
 .message-content {
@@ -255,19 +261,19 @@
 }
 
 .message-right {
-    padding-left: 88px;
-    align-items: flex-start;
-    .profile-img {
-        left: 16px;
-    }
+  padding-left: 88px;
+  align-items: flex-start;
+  .profile-img {
+    left: 16px;
+  }
 }
 
 .message-left {
-    padding-right: 88px;
-    align-items: flex-end;
-    .profile-img {
-        right: 16px;
-    }
+  padding-right: 88px;
+  align-items: flex-end;
+  .profile-img {
+    right: 16px;
+  }
 }
 
 .message-left .message-content {
@@ -281,10 +287,6 @@
   display: flex;
   gap: 4px;
 }
-
-
-
-
 
 @media (max-width: 700px) {
   .message-content {
