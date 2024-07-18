@@ -21,11 +21,11 @@
         font-size: 13px;
 
         >a {
-            color: $purple-one;
+            color: var(--purple-one);
             text-decoration: none;
 
             &:hover {
-                color: $purple-two;
+                color: var(--purple-two);
             }
         }
     }

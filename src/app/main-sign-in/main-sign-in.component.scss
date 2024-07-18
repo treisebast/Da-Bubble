@@ -49,16 +49,16 @@ header {
     padding: 8px 20px;
     font-size: 14px;
     font-weight: bold;
-    color: $purple-one;
-    background-color: $light-purple;
-    border: 1px solid $purple-one;
+    color: var(--purple-one);
+    background-color: var(--light-purple);
+    border: 1px solid var(--purple-one);
     border-radius: 45px;
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease, color 0.3s ease;
 
     &:hover {
-        background-color: $purple-one;
+        background-color: var(--purple-one);
         color: white;
     }
 }
@@ -144,7 +144,7 @@ header {
         &:hover {
             background-color: transparent;
             border: 1px solid #686868;
-            color: $purple-one;
+            color: var(--purple-one);
         }
     }
 
@@ -160,7 +160,7 @@ header {
                 background-color: transparent;
                 border: 1px solid #686868;
                 border-radius: 45px;
-                color: $purple-one;
+                color: var(--purple-one);
             }
         }
     }

@@ -1,37 +1,23 @@
 /* Global fontstyle from Angular Material change to fonts Nunito */
 @use "@angular/material" as mat;
 
-$open-sans-typography: mat.define-typography-config($font-family: '"Nunito", sans-serif'
-  );
+$open-sans-typography: mat.define-typography-config(
+  $font-family: '"Nunito", sans-serif'
+);
 
 @include mat.typography-hierarchy($open-sans-typography);
 
-$app-theme: mat.define-light-theme((typography: $open-sans-typography ));
+$app-theme: mat.define-light-theme(
+  (
+    typography: $open-sans-typography
+  )
+);
 @include mat.all-component-themes($app-theme);
 
-
-/* Fonts import */
+/* Imports */
 @import "./fonts.scss";
-
-
-/* Colors */
-$purple-one: #444df2;
-$purple-two: #797ef3;
-$purple-three: #535af1;
-$light-purple: #eceefe;
-
-
-/* Mixins */
-@mixin btn-hover() {
-  &:hover {
-    background: $light-purple;
-    cursor: pointer;
-  }
-}
-
-.addChannelDialog{
-  border-radius: 30px!important;
-}
+@import "./styles/mixins.scss";
+@import "./styles/colors.scss";
 
 /* Global styles */
 * {
@@ -47,7 +33,7 @@ body {
 }
 
 body {
-  background-color: rgb(235, 239, 254);
+  background-color: var(--main-background, rgb(235, 239, 254));
   width: 100%;
   min-height: 100vh;
   margin: 0;
@@ -57,12 +43,37 @@ body {
   display: none !important;
 }
 
+
+// scrollbar - width
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+// Track
+::-webkit-scrollbar-track {
+  background: var(--light-purple);
+}
+
+// Handle
+::-webkit-scrollbar-thumb {
+  background: var(--purple-two);
+  border-radius: 10px;
+}
+
+// Handle on hover
+::-webkit-scrollbar-thumb:hover {
+  background: var(--purple-one);
+}
+
+
+/*---ab hier auslagern in komponenten, da nicht global, sondern Component-Spezifisch---*/
+
 .invalid-border input {
-  border-color: red;
+  border-color: var(--error-color, rgb(255, 0, 0));
 }
 
 .validMsg {
-  color: red;
+  color: var(--error-color, rgb(255, 0, 0));
   font-size: 12px;
   height: 16px;
   margin-bottom: 8px;
@@ -82,7 +93,7 @@ mat-card-title {
   text-align: center;
   font-size: 22px;
   font-weight: 700;
-  color: $purple-one;
+  color: var(--purple-one);
   margin-bottom: 8px;
 }
 
@@ -90,7 +101,7 @@ mat-card-subtitle {
   text-align: center;
   font-size: 16px;
   margin-bottom: 8px;
-  color: #757575;
+  color: var(--black, #000000);//variable machen
 }
 
 .full-width {
@@ -110,7 +121,7 @@ mat-card-subtitle {
   margin: auto;
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--shadow, rgba(0, 0, 0, 0.1));
 }
 
 .login-actions {
@@ -120,7 +131,7 @@ mat-card-subtitle {
   align-items: center;
   gap: 16px;
 
-  >button {
+  > button {
     font-size: 14px;
     font-weight: 700;
     line-height: 24.55px;
@@ -134,16 +145,16 @@ mat-card-subtitle {
   text-align: center;
   margin: 12px 0;
   font-size: 12px;
-  color: black;
+  color: var(--black, #000000);
 
   .line {
     flex: 1;
     height: 1px;
-    background-color: #adb0d9;
+    background-color: var(--ligth-purple-lines);
     margin: 0 8px;
   }
 
-  >span {
+  > span {
     font-size: 14px;
   }
 }
@@ -151,7 +162,7 @@ mat-card-subtitle {
 .input-container {
   display: flex;
   align-items: center;
-  background-color: #f0f0ff;
+  background-color: var(--light-purple);
   border-radius: 25px;
   padding: 8px 20px;
   margin: 8px 0;
@@ -159,10 +170,10 @@ mat-card-subtitle {
   height: 41px;
 
   &:hover {
-    border: 1px solid $purple-one;
+    border: 1px solid var(--purple-one);
   }
 
-  >input {
+  > input {
     width: 155px;
   }
 }
@@ -197,7 +208,7 @@ form {
 
     &:hover {
       border-radius: 50px;
-      background: $light-purple;
+      background: var(--light-purple);
       background-image: url(./assets/img/front-page/arrow_back_hover.svg);
       background-repeat: no-repeat;
       background-position: center;
@@ -216,33 +227,33 @@ form {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
-  border: 1px solid $purple-one;
+  border: 1px solid var(--purple-one);
 }
 
 .prio-button {
-  background-color: $purple-one;
-  color: white;
+  background-color: var(--purple-one);
+  color: var(--white, #FFFFFF);
   border: none;
 
   &:hover {
-    background-color: $purple-two;
+    background-color: var(--purple-two);
   }
 }
 
 .alt-button {
   background-color: transparent;
-  color: $purple-one;
-  border: 1px solid $purple-one;
+  color: var(--purple-one);
+  border: 1px solid var(--purple-one);
 
   &:hover {
-    background-color: $purple-three;
-    color: #eceefe;
+    background-color: var(--purple-three);
+    color: var(--white, #FFFFFF);
   }
 }
 
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
-  display:none !important;
+  display: none !important;
   opacity: 0 !important;
 }
 
@@ -263,11 +274,11 @@ form {
 
   .input-container input,
   .forgot-password,
-  .or-divider>span,
-  .google-login>a,
-  .login-actions>button,
-  .checkbox>span,
-  .checkbox>span>a {
+  .or-divider > span,
+  .google-login > a,
+  .login-actions > button,
+  .checkbox > span,
+  .checkbox > span > a {
     font-size: 18px !important;
   }
 
@@ -288,32 +299,9 @@ form {
   }
 
   .arrow-back {
-    >img {
+    > img {
       width: 25px;
       cursor: pointer;
     }
   }
-}
-
-
-// scrollbar -
-// width
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-// Track
-::-webkit-scrollbar-track {
-  background: $light-purple;
-}
-
-// Handle
-::-webkit-scrollbar-thumb {
-  background: $purple-two;
-  border-radius: 10px;
-}
-
-// Handle on hover
-::-webkit-scrollbar-thumb:hover {
-  background: $purple-one;
 }

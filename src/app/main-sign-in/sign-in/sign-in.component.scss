@@ -9,16 +9,16 @@
     height: 41px;
     border: none;
     margin-bottom: 16px;
-    background-color: $light-purple;
+    background-color: var(--light-purple);
     transition: border 0.3s ease, background-color 0.3s ease;
 
     >a {
-        color: $purple-one;
+        color: var(--purple-one);
         text-decoration: none;
     }
 
     &:hover {
-        border: 1px solid $purple-one;
+        border: 1px solid var(--purple-one);
         font-weight: 700;
     }
 }
@@ -39,11 +39,11 @@
 .forgot-password {
     display: block;
     font-size: 14px;
-    color: $purple-two;
+    color: var(--purple-two);
     text-decoration: none;
 
     &:hover {
-        background-color: $light-purple;
+        background-color: var(--light-purple);
         border-radius: 20px;
         border: none;
         padding: 5px 10px;
