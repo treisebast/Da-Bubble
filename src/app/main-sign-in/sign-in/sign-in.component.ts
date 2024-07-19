@@ -16,9 +16,11 @@ import { AuthService } from '../../shared/services/auth.service';
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.scss']
 })
+
 export class SignInComponent {
   signInForm: FormGroup;
   formSubmitted = false;
+  signInError: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -42,9 +44,23 @@ export class SignInComponent {
   onSubmit() {
     this.formSubmitted = true;
     if (this.signInForm.valid) {
-      // Handle successful form submission here
-      console.log('Form Submitted', this.signInForm.value);
-      this.router.navigate(['/main']);
+      const { email, password } = this.signInForm.value;
+      this.authService.signIn(email, password).subscribe({
+        next: (res: any) => {
+          console.log('Sign-In Successful', res);
+          this.router.navigate(['/main']);
+        },
+        error: (err: any) => {
+          console.error('Sign-In Error', err);
+          if (err.code === 'auth/wrong-password') {
+            this.signInError = 'Falsches Passwort.';
+          } else if (err.code === 'auth/user-not-found') {
+            this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
+          } else {
+            this.signInError = 'Fehler bei der Anmeldung.';
+          }
+        }
+      });
     }
   }
 
