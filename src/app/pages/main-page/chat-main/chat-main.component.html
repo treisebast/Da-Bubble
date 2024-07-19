@@ -23,7 +23,7 @@
 
       <div class="singelMessageContainer" [ngClass]="{'message-left': message.user !== currentChat?.name, 'message-right': message.user === currentChat?.name}">
         
-        <div class="message-header">
+        <div class="message-header" [ngClass]="{'message-header-reverse': message.user === currentChat?.name}">
           <span class="timestamp">{{ message.time | date: 'shortTime' }}</span>
           <span class="name">{{ message.user }}</span>
         </div>
