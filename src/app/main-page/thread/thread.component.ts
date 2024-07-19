@@ -3,22 +3,25 @@ import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
-import { FieldValue, Timestamp } from 'firebase/firestore';
+import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Message } from '../../shared/models/message.model';
+import { Channel } from '../../shared/models/channel.model';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './thread.component.html',
   styleUrl: './thread.component.scss'
 })
 export class ThreadComponent {
 
-  currentChat: ChatUserProfile | null = null;
+  currentChat: ChatUserProfile | Channel | null = null;
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   messages: Message[] = [];
+  newMessageText = '';
 
   ngOnInit() {
     this.chatService.currentChat$.subscribe(chat => {
@@ -42,7 +45,24 @@ export class ThreadComponent {
   }
 
   sendMessage() {
-    // Logic to send a message
+    if (this.newMessageText.trim() === '') {
+      return;
+    }
+
+    const newMessage: Message = {
+      content: this.newMessageText,
+      senderId: 'Current User',  // Hier sollte die aktuelle Benutzer-ID verwendet werden
+      timestamp: serverTimestamp()
+    };
+
+    this.chatService.currentChat$.subscribe(chat => {
+      this.currentChat = chat;
+    });
+
+    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage)
+    }
+    this.newMessageText = '';
   }
 
   close() {

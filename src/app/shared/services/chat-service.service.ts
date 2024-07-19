@@ -13,7 +13,7 @@ export class ChatService {
   private currentChatSource = new BehaviorSubject<ChatUserProfile | Channel | null>(null);
   currentChat$ = this.currentChatSource.asObservable();
 
-  private isChannelSource = new BehaviorSubject<boolean>(true);
+  private isChannelSource = new BehaviorSubject<boolean>(false);
   isChannel$ = this.isChannelSource.asObservable();
 
   private messagesSource = new BehaviorSubject<Message[]>([]);

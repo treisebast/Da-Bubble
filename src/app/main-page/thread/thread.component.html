@@ -1,7 +1,7 @@
 <div class="header">
   <div class="headline">
       <h2>Thread</h2>
-      <img class="profileImg" src="{{ currentChat?.imgScr }}" alt="">
+      <img class="profileImg" src="" alt="">
       <p>{{ currentChat?.name}}</p>
   </div>
   <div (click)="onCloseThread()" class="close"></div>
@@ -35,7 +35,7 @@
 
 
 <div class="messageBox">
-  <textarea placeholder="Nachricht an" name="" id=""></textarea>
+  <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an" name="" id=""></textarea>
   <div class="messageBoxBottom">
       <div class="iconsLeft">
           <div class="addIcon"></div>

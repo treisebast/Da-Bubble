@@ -86,6 +86,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   async openThread(message: Message) {
+    this.chatService.setChannelTrue();
     if (!message || !message.id) {
       console.error('Invalid message object:', message);
       return;
@@ -94,6 +95,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     .subscribe(currentThread => {
       this.currentThreadData = currentThread;
       this.threadService.setCurrentThread(currentThread);
+      if (message.id) this.threadService.currentMessageId = message.id;
       });
   }
 }
