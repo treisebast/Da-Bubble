@@ -1,7 +1,7 @@
-// src/app/services/channel-message.service.ts
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, addDoc, collection } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { Message } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,28 +9,13 @@ import { Observable } from 'rxjs';
 export class ChannelMessageService {
   constructor(private firestore: Firestore) {}
 
-  getChannelMessages(channelId: string): Observable<any[]> {
+  getChannelMessages(channelId: string): Observable<Message[]> {
     const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
-    return collectionData(messagesCollection, { idField: 'id' }) as Observable<any[]>;
+    return collectionData(messagesCollection, { idField: 'id' }) as Observable<Message[]>;
   }
 
-  getChannelMessage(channelId: string, messageId: string): Observable<any> {
-    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-    return docData(messageDoc, { idField: 'id' }) as Observable<any>;
-  }
-
-  addChannelMessage(channelId: string, message: any): Promise<void> {
-    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${message.id}`);
-    return setDoc(messageDoc, message);
-  }
-
-  updateChannelMessage(channelId: string, message: any): Promise<void> {
-    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${message.id}`);
-    return updateDoc(messageDoc, message);
-  }
-
-  deleteChannelMessage(channelId: string, messageId: string): Promise<void> {
-    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-    return deleteDoc(messageDoc);
+  async addChannelMessage(channelId: string, message: Message): Promise<void> {
+    const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+    await addDoc(messagesCollection, message);
   }
 }

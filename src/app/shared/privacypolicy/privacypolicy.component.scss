@@ -1,4 +1,4 @@
-@import "./../../../styles.scss";
+@import "../../../styles.scss";
 
 .gap32 {
     gap: 32px;
@@ -32,7 +32,7 @@ mat-card-subtitle {
 
     a {
         text-decoration: none;
-        color: $purple-one;
+        color: var(--purple-one);
         cursor: pointer;
 
         &:hover {

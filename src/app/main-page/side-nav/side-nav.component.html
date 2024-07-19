@@ -1,0 +1,34 @@
+<div class="channelHeader">
+  <div class="serverName"></div>
+  <img class="edit" src="./assets/img/icons/edit.svg" alt="" />
+</div>
+
+<div class="menuChannelDropdown">
+  <div (click)="openMenuChannel()" *ngIf="menuChannelDropdown" class="closed dropdown"></div>
+  <div (click)="openMenuChannel()" *ngIf="!menuChannelDropdown" class="opend dropdown"></div>
+
+  <table>
+    <div *ngIf="!menuChannelDropdown" class="channels ml40">
+      <tr class="channel-tr" *ngFor="let channel of allChannels" (click)="showChannel(channel)">
+       <span class="channelName"></span> {{ channel.name }}
+      </tr>
+      <div class="addNewChannel" (click)="addNewChannel()"></div>
+    </div>
+  </table>
+</div>
+
+<div class="directMessages">
+  <div (click)="openDirectMessages()" *ngIf="directMessages" class="directMessagesClose dropdown"></div>
+  <div (click)="openDirectMessages()" *ngIf="!directMessages" class="directMessagesOpend dropdown"></div>
+
+  <table>
+    <div *ngIf="!directMessages" class="channels">
+      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages" (click)="showDirectMessage(directMessage)">
+        <img class="table-profile-img" src="{{ directMessage.imgScr }}" alt="">
+        <img *ngIf="directMessage.online" src="./assets/img/online.png" alt="" class="online"/>
+        <img *ngIf="!directMessage.online" src="./assets/img/offline.png" alt="" class="online"/>
+        {{ directMessage.name }}
+      </tr>
+    </div>
+  </table>
+</div>

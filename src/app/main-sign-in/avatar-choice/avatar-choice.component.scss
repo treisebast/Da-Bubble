@@ -1,0 +1,189 @@
+@import './../../../styles.scss';
+
+.m-20 {
+    margin-left: 20px;
+}
+
+.avatar-big {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+
+    >img {
+        object-fit: cover;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+    }
+}
+
+h1 {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+}
+
+p {
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    margin-block-start: 0em;
+    margin-block-end: 0em;
+}
+
+.alt-choice {
+    display: flex;
+    justify-content: space-between;
+
+    align-items: center;
+    margin-bottom: 16px;
+
+    >button {
+        min-width: 125px !important;
+    }
+}
+
+.login-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+
+    >button {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 24.55px;
+        text-align: left;
+    }
+}
+
+.avatar-choices {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0 20px;
+
+    >img {
+        max-width: 72px;
+        max-height: 72px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: 225ms ease-in-out;
+
+        &:hover {
+            transform: scale(1.3);
+            border: 3px solid rgba(230, 230, 230, 1);
+        }
+    }
+}
+
+.break::before {
+    content: '';
+    display: block;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 2px solid #6c63ff;
+    border-radius: 25px;
+    font-size: 14px;
+    color: #6c63ff;
+    background-color: white;
+}
+
+.custom-file-upload:hover {
+    background-color: #6c63ff;
+    color: white;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+
+    .login-actions>button,
+    .alt-choice>button {
+        font-size: 18px;
+    }
+
+    .break::before {
+        content: none;
+        display: inline;
+    }
+
+    h1 {
+        font-size: 32px;
+        margin-block-end: 24px;
+    }
+
+    p {
+        font-size: 20px;
+        font-weight: 400;
+    }
+
+    .avatar-big {
+        >img {
+            width: 100px;
+            height: 100px;
+        }
+    }
+}
+
+
+@media (min-width: 431px) {
+
+    mat-card-title {
+        font-size: 28px;
+    }
+
+    .avatar-choices {
+        >img {
+            width: 55px;
+            height: 55px;
+        }
+    }
+
+    p {
+        font-size: 18px;
+    }
+}
+
+
+@media (max-width: 430px) {
+    p {
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .avatar-choices {
+        >img {
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    .avatar-big {
+        >img {
+            width: 90px;
+            height: 90px;
+        }
+    }
+
+    .alt-choice {
+        >button {
+            min-width: 152px !important;
+        }
+    }
+
+    .custom-file-upload {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+}
