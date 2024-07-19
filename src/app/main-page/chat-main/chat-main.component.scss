@@ -220,6 +220,7 @@
 .message-header {
   display: flex;
   align-items: center;
+  z-index: 2;
 }
 
 .profile-img {
@@ -247,6 +248,20 @@
     position: absolute;
     top: 8px;
   }
+
+  &:hover {
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -16px;
+      left: -16px;
+      right: -16px;
+      bottom: -16px;
+      background-color: rgb(235, 239, 254);
+    }
+  }
 }
 
 .message-content {
@@ -259,6 +274,7 @@
   font-size: 16px;
   display: flex;
   align-items: center;
+  z-index: 2;
 }
 
 .message-right {

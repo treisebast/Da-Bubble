@@ -7,6 +7,33 @@
   <div (click)="onCloseThread()" class="close"></div>
 </div>
 
+
+<div class="chat-container" #chatContainer>
+  <div *ngFor="let message of messages; let i = index">
+    <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+      <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
+    </div>
+
+    <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat?.name, 'message-right': message.senderId === currentChat?.name}">
+      <div class="message-header">
+        <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
+        <span class="name">{{ message.senderId }}</span>
+      </div>
+
+      <div class="message-content">
+        <p>{{ message.content }}</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
 <div class="messageBox">
   <textarea placeholder="Nachricht an" name="" id=""></textarea>
   <div class="messageBoxBottom">

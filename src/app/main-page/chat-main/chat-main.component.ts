@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { Channel } from '../../shared/models/channel.model';
 import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
+import { ThreadService } from '../../shared/services/thread.service';
 import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
@@ -17,8 +18,11 @@ import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore'
 })
 export class ChatMainComponent implements OnInit, AfterViewChecked {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
-  currentChat: ChatUserProfile | Channel | null = null;
+  currentChat: any = null;
   messages: Message[] = [];
+  currentThreadData: any;
+  private threadService = inject(ThreadService);
+
 
   newMessageText = '';
   constructor(private chatService: ChatService) {}
@@ -79,5 +83,17 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
   isChatUserProfile(chat: ChatUserProfile | Channel): chat is ChatUserProfile {
     return (chat as ChatUserProfile).imgScr !== undefined;
+  }
+
+  async openThread(message: Message) {
+    if (!message || !message.id) {
+      console.error('Invalid message object:', message);
+      return;
+    }
+    this.threadService.getThreads(this.currentChat.id, message.id)
+    .subscribe(currentThread => {
+      this.currentThreadData = currentThread;
+      this.threadService.setCurrentThread(currentThread);
+      });
   }
 }

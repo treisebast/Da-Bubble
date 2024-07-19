@@ -1,12 +1,16 @@
 // src/app/services/thread.service.ts
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { Message } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThreadService {
+  private currentThreadSubject = new BehaviorSubject<Message[]>([]);
+  currentThread$ = this.currentThreadSubject.asObservable();
+
   constructor(private firestore: Firestore) {}
 
   getThreads(channelId: string, messageId: string): Observable<any[]> {
@@ -32,5 +36,13 @@ export class ThreadService {
   deleteThread(channelId: string, messageId: string, threadId: string): Promise<void> {
     const threadDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}/threads/${threadId}`);
     return deleteDoc(threadDoc);
+  }
+
+  setCurrentThread(thread: any) {
+    this.currentThreadSubject.next(thread);
+  }
+
+  getCurrentThread(): Observable<any> {
+    return this.currentThread$;
   }
 }
