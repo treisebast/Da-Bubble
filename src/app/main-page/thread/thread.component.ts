@@ -22,6 +22,7 @@ export class ThreadComponent {
   private threadService = inject(ThreadService);
   messages: Message[] = [];
   newMessageText = '';
+  currentMessageToOpen: any;
 
   ngOnInit() {
     this.chatService.currentChat$.subscribe(chat => {
@@ -33,8 +34,12 @@ export class ThreadComponent {
       if (Array.isArray(currentThread)) {
         this.messages = currentThread;
       } else {
-        this.messages = []; // Leeres Array setzen, wenn currentThread kein Array ist
+        this.messages = [];
       }
+    });
+
+    this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
+      this.currentMessageToOpen = chatMessage;
     });
   }
 
@@ -45,7 +50,7 @@ export class ThreadComponent {
   }
 
   sendMessage() {
-    if (this.newMessageText.trim() === '') {
+    /*if (this.newMessageText.trim() === '') {
       return;
     }
 
@@ -62,7 +67,9 @@ export class ThreadComponent {
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage)
     }
-    this.newMessageText = '';
+    this.newMessageText = '';*/
+
+    console.log(this.currentChat);
   }
 
   close() {

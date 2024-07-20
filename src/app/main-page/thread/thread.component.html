@@ -9,9 +9,32 @@
 
 
 <div class="chat-container" #chatContainer>
+
+  <div *ngIf="messages.length === 0" class="singelMessageContainer message-left">
+    <div class="message-header">
+      <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
+      <span class="name">{{ currentMessageToOpen.senderId }}</span>
+    </div>
+
+    <div class="message-content">
+      <p>{{ currentMessageToOpen.content }}</p>
+    </div>
+  </div>
+
   <div *ngFor="let message of messages; let i = index">
     <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
       <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
+    </div>
+
+    <div *ngIf="i === 0 || messages.length === 0" class="singelMessageContainer message-left">
+      <div class="message-header">
+        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
+        <span class="name">{{ currentMessageToOpen.senderId }}</span>
+      </div>
+
+      <div class="message-content">
+        <p>{{ currentMessageToOpen.content }}</p>
+      </div>
     </div>
 
     <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat?.name, 'message-right': message.senderId === currentChat?.name}">

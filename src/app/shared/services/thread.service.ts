@@ -13,6 +13,9 @@ export class ThreadService {
   currentThread$ = this.currentThreadSubject.asObservable();
   
   currentMessageId:string = '';
+  
+  private currentMessageToOpenSubject = new BehaviorSubject<Message | null>(null);
+  currentMessageToOpen$ = this.currentMessageToOpenSubject.asObservable();
 
   constructor(private firestore: Firestore) {}
 
@@ -47,5 +50,13 @@ export class ThreadService {
 
   getCurrentThread(): Observable<any> {
     return this.currentThread$;
+  }
+
+  setCurrentMessageToOpen(message: Message) {
+    this.currentMessageToOpenSubject.next(message);
+  }
+
+  getCurrentMessageToOpen(): Observable<Message | null> {
+    return this.currentMessageToOpen$;
   }
 }

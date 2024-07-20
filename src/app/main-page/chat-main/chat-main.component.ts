@@ -25,7 +25,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
 
   newMessageText = '';
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService) { }
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -92,10 +92,13 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       return;
     }
     this.threadService.getThreads(this.currentChat.id, message.id)
-    .subscribe(currentThread => {
-      this.currentThreadData = currentThread;
-      this.threadService.setCurrentThread(currentThread);
-      if (message.id) this.threadService.currentMessageId = message.id;
+      .subscribe(currentThread => {
+        this.currentThreadData = currentThread;
+        this.threadService.setCurrentThread(currentThread);
+        if (message.id) {
+          this.threadService.currentMessageId = message.id;
+          this.threadService.setCurrentMessageToOpen(message);
+        }
       });
   }
 }
