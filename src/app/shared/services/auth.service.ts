@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
+import { updateProfile } from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -56,5 +57,16 @@ export class AuthService {
   getUser(): Observable<FirebaseUser | null> {
     return authState(this.auth);
   }
-}
 
+
+  /**
+   * Updates the user's profile.
+   *
+   * @param {FirebaseUser} user - The user whose profile is being updated.
+   * @param {Object} profile - The profile updates.
+   * @returns {Observable<void>} - An observable that completes when the profile is updated.
+   */
+  updateUserProfile(user: FirebaseUser, profile: { displayName?: string, photoURL?: string }): Observable<void> {
+    return from(updateProfile(user, profile));
+  }
+}

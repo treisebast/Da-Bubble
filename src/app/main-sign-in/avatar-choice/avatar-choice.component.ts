@@ -10,7 +10,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { CommonModule } from '@angular/common';
-import { User } from '../../shared/models/user.model'; // Passe den Pfad an
+import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
+import { User } from '../../shared/models/user.model';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -34,6 +35,7 @@ export class AvatarChoiceComponent {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private storageService: FirebaseStorageService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
@@ -79,7 +81,14 @@ export class AvatarChoiceComponent {
       const userId = currentUser.uid;
       console.log('Current User ID:', userId);
   
-      const updatedUser: Partial<User> = { avatar: this.selectedAvatar };
+      let avatarUrl = this.selectedAvatar;
+      const fileInputElement = this.fileInput!.nativeElement;
+      if (fileInputElement.files && fileInputElement.files[0]) {
+        const file = fileInputElement.files[0];
+        avatarUrl = await firstValueFrom(this.storageService.uploadFile(file, `avatars/${userId}`));
+      }
+  
+      const updatedUser: Partial<User> = { avatar: avatarUrl };
   
       try {
         const userDoc = await firstValueFrom(this.userService.getUser(userId));

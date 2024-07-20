@@ -57,25 +57,34 @@ export class SignUpComponent {
     return this.signUpForm.get('password')!;
   }
 
-  async onSubmit() {
+  async onSubmit(event: Event) {
+    event.preventDefault();
+  
     if (this.signUpForm.valid && this.isPrivacyPolicyAccepted) {
       const { name, email, password } = this.signUpForm.value;
-
+  
       try {
         const credential = await firstValueFrom(this.authService.signUp(email, password));
-        const userId = credential.user?.uid;
-        console.log('New User ID:', userId);
-
-        const user: User = {
-          userId: userId!,
+        const user = credential.user;
+        console.log('New User ID:', user?.uid);
+  
+        if (user) {
+          const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
+          const photoURL = userDoc?.avatar || '';
+          await firstValueFrom(this.authService.updateUserProfile(user, { displayName: name, photoURL }));
+          console.log('User profile updated with display name and photoURL');
+        }
+  
+        const userObj: User = {
+          userId: user!.uid,
           name: name,
           email: email,
           avatar: '',
           status: 'online',
           lastSeen: new Date()
         };
-
-        await this.userService.addUser(user);
+  
+        await this.userService.addUser(userObj);
         this.dialog.open(ConfirmationDialogComponent, {
           data: { message: 'Konto erfolgreich erstellt!' },
         });
@@ -92,4 +101,7 @@ export class SignUpComponent {
       }
     }
   }
+  
+  
+  
 }

@@ -12,7 +12,8 @@
     background-color: var(--light-purple);
     transition: border 0.3s ease, background-color 0.3s ease;
 
-    >a {
+    >span {
+        font-size: 14px;
         color: var(--purple-one);
         text-decoration: none;
     }
@@ -50,8 +51,16 @@
     }
 }
 
-@media (min-width: 500px) {
+@media(min-width:1200px) {
+    .google-login {
+        >span {
+            font-size: 18px;
+        }
+    }
+}
 
+
+@media (min-width: 500px) {
     mat-card-title {
         font-size: 28px;
     }

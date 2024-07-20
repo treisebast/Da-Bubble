@@ -5,7 +5,7 @@
     <mat-card-title>Konto erstellen</mat-card-title>
     <mat-card-subtitle>Mit deinem Namen und deiner E-Mail-Adresse hast du dein neues DABubble-Konto.</mat-card-subtitle>
 
-    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit($event)">
         <div class="input-container" [ngClass]="{ 'invalid-border': name.invalid && (name.dirty || name.touched) }"
             required>
             <img src="/assets/img/front-page/person_filled.svg" alt="user icon">

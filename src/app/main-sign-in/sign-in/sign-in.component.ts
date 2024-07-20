@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
+import { firstValueFrom, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-sign-in',
@@ -16,7 +18,6 @@ import { AuthService } from '../../shared/services/auth.service';
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.scss']
 })
-
 export class SignInComponent {
   signInForm: FormGroup;
   formSubmitted = false;
@@ -25,7 +26,8 @@ export class SignInComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -41,26 +43,38 @@ export class SignInComponent {
     return this.signInForm.get('password')!;
   }
 
-  onSubmit() {
+  async onSubmit() {
     this.formSubmitted = true;
     if (this.signInForm.valid) {
       const { email, password } = this.signInForm.value;
-      this.authService.signIn(email, password).subscribe({
-        next: (res: any) => {
-          console.log('Sign-In Successful', res);
-          this.router.navigate(['/main']);
-        },
-        error: (err: any) => {
-          console.error('Sign-In Error', err);
-          if (err.code === 'auth/wrong-password') {
-            this.signInError = 'Falsches Passwort.';
-          } else if (err.code === 'auth/user-not-found') {
-            this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
-          } else {
-            this.signInError = 'Fehler bei der Anmeldung.';
-          }
+      try {
+        const credential = await firstValueFrom(
+          this.authService.signIn(email, password).pipe(
+            switchMap(async (res) => {
+              const user = res.user;
+              if (user) {
+                const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
+                const photoURL = userDoc?.avatar || '';
+                await firstValueFrom(this.authService.updateUserProfile(user, { photoURL }));
+                console.log('User profile updated with photoURL');
+              }
+              return res;
+            })
+          )
+        );
+
+        console.log('Sign-In Successful', credential);
+        this.router.navigate(['/main']);
+      } catch (err: any) {
+        console.error('Sign-In Error', err);
+        if (err.code === 'auth/wrong-password') {
+          this.signInError = 'Falsches Passwort.';
+        } else if (err.code === 'auth/user-not-found') {
+          this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
+        } else {
+          this.signInError = 'Fehler bei der Anmeldung.';
         }
-      });
+      }
     }
   }
 
