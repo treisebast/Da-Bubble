@@ -10,7 +10,7 @@
 
 <div class="chat-container" #chatContainer>
 
-  <div *ngIf="messages.length === 0" class="singelMessageContainer message-left">
+  <div *ngIf="currentMessageToOpen && messages.length === 0" class="singelMessageContainer"  [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
     <div class="message-header">
       <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
       <span class="name">{{ currentMessageToOpen.senderId }}</span>
@@ -26,7 +26,7 @@
       <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
     </div>
 
-    <div *ngIf="i === 0 || messages.length === 0" class="singelMessageContainer message-left">
+    <div *ngIf="i === 0 || messages.length === 0" class="singelMessageContainer" [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
       <div class="message-header">
         <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
         <span class="name">{{ currentMessageToOpen.senderId }}</span>

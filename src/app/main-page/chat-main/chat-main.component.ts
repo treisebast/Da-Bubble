@@ -100,5 +100,6 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
           this.threadService.setCurrentMessageToOpen(message);
         }
       });
+      
   }
 }

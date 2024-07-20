@@ -25,6 +25,10 @@ export class ThreadComponent {
   currentMessageToOpen: any;
 
   ngOnInit() {
+    this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
+      this.currentMessageToOpen = chatMessage;
+    });
+
     this.chatService.currentChat$.subscribe(chat => {
       console.log('Current Chat:', chat); // Debugging output
       this.currentChat = chat as ChatUserProfile;
@@ -37,10 +41,6 @@ export class ThreadComponent {
         this.messages = [];
       }
     });
-
-    this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
-      this.currentMessageToOpen = chatMessage;
-    });
   }
 
   @Output() closeThread = new EventEmitter<void>();
@@ -50,7 +50,7 @@ export class ThreadComponent {
   }
 
   sendMessage() {
-    /*if (this.newMessageText.trim() === '') {
+    if (this.newMessageText.trim() === '') {
       return;
     }
 
@@ -67,9 +67,7 @@ export class ThreadComponent {
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage)
     }
-    this.newMessageText = '';*/
-
-    console.log(this.currentChat);
+    this.newMessageText = '';
   }
 
   close() {
