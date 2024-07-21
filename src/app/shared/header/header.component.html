@@ -1,31 +1,34 @@
 <header>
   <div class="max-width">
-    <a [routerLink]="['start']"><img src="./assets/img/logo.svg" alt="" class="logo" /></a>
+    <a [routerLink]="['start']"
+      ><img src="./assets/img/logo.svg" alt="" class="logo"
+    /></a>
 
     <div class="searchbar">
       <input type="text" placeholder="Durchsuchen" />
       <mat-icon matSuffix>search</mat-icon>
     </div>
 
-    <div class="profile" [matMenuTriggerFor]="menu" #menuTrigger>
+    <div class="profile" mat-button (click)="toggleContent()">
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
         <img src="{{ currentUser.imgSrc }}" alt="" class="profile-img" />
-        <img *ngIf="currentUser.online" src="./assets/img/online.png" alt="" class="online"/>
-        <img *ngIf="!currentUser.online" src="./assets/img/offline.png" alt="" class="online"/>
+        <img
+          *ngIf="currentUser.online"
+          src="./assets/img/online.png"
+          alt=""
+          class="online"
+        />
+        <img
+          *ngIf="!currentUser.online"
+          src="./assets/img/offline.png"
+          alt=""
+          class="online"
+        />
       </div>
-
       <mat-icon fontIcon="keyboard_arrow_down"></mat-icon>
-      <div class="menu">
-        <mat-menu #menu="matMenu">
-          <div class="dialog-btn"  (click)="openDialog()">
-            Profil
-          </div>
-          <button class="dialog-btn" (click)="openDialog()"> 
-            Log out
-          </button>
-        </mat-menu>
-      </div>
     </div>
   </div>
 </header>
+
+<app-menu class="menu-container" #MenuContent *ngIf="showContent"></app-menu>
