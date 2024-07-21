@@ -24,5 +24,10 @@ import { MatCardModule } from '@angular/material/card';
   styleUrl: './profil.component.scss',
 })
 export class ProfilComponent {
+  hrefEmailString: string = "mailto:contact@sebastian-treittinger.de"
+  emailAddress: string = "contact@sebastian-treittinger.de"
+  
+  constructor() { }
+
   
 }

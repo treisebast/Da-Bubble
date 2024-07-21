@@ -1,0 +1,164 @@
+@import "./../../../styles/mixins.scss";
+@import "./../../../fonts.scss";
+
+.profil-card {
+  display: inline-flex;
+  padding: 40px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 30px;
+  background: var(--White, rgb(255, 255, 255));
+  box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  .profil-card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 45px;
+    width: 420px;
+  }
+}
+
+.profil-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  mat-card-title {
+    text-align: start;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black, rgb(0, 0, 0));
+  }
+
+  .close-img {
+    width: 40px;
+    height: 40px;
+    background-image: url(./../../../assets/img/profilecard/close.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+
+    &:hover {
+      background-image: url(./../../../assets/img/profilecard/close_hover.svg);
+    }
+  }
+}
+
+.profil-img-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: contain;
+  }
+}
+
+.profil-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  mat-card-title {
+    color: var(--Black, #000);
+    font-size: 32px;
+    text-align: start;
+    font-weight: 700;
+  }
+
+  .profil-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    mat-card-subtitle {
+      color: var(--online-green, rgb(146, 200, 62));
+      font-size: 20px;
+      margin: 0;
+    }
+  }
+}
+
+.mail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  .mail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    mat-card-subtitle {
+      color: var(--Black, #000);
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+  }
+
+  .mail-address {
+    a {
+      color: var(--mail-address, rgb(19, 129, 255));
+      margin-left: 42px;
+      font-size: 18px;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 20px;
+    }
+
+    a:hover {
+      background-color: var(--light-purple, rgb(236, 238, 254));
+    }
+  }
+}
+
+.message-btn-container {
+  display: flex;
+  justify-content: center;
+
+  .message-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 50px;
+    background: var(--Purple-one, #444df2);
+    width: fit-content;
+
+    span {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--White, rgb(255, 255, 255));
+    }
+
+    &:hover {
+      background: var(--Purple-two, rgb(121, 126, 243));
+    }
+  }
+}
+
+mat-card-subtitle {
+  text-align: start;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--black, rgb(0, 0, 0));
+}
+
+@media (min-width: 1200px) {
+  mat-card-title {
+    font-size: 34px;
+  }
+
+  mat-card-subtitle {
+    font-size: 20px;
+    font-weight: 400;
+  }
+}

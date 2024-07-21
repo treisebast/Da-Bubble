@@ -1,13 +1,15 @@
 :root {
   --main-background: rgb(235, 239, 254);
   --error-color: rgb(255, 0, 0);
-  --purple-one: #444df2;
+  --purple-one: rgb(68, 77, 242);
   --purple-two: #797ef3;
   --purple-three: #535af1;
-  --light-purple: #eceefe;
+  --light-purple: rgb(236, 238, 254);
   --shadow: rgba(0, 0, 0, 0.1);
-  --bg-color: #FFFFFF;
-  --ligth-purple-lines:#ADB0D9;
-  --white: #FFFFFF;
-  --black: #000000;
+  --bg-color: #ffffff;
+  --ligth-purple-lines: #adb0d9;
+  --white: rgb(255, 255, 255);
+  --black: rgb(0, 0, 0);
+  --online-green: rgb(146, 200, 62);
+  --mail-address: rgb(19, 129, 255);
 }

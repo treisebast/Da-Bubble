@@ -1,6 +1,6 @@
 @mixin btn-hover() {
   &:hover {
-    background: var(--light-purple, #eceefe);
+    background: var(--light-purple, rgb(236, 238, 254));
     cursor: pointer;
   }
 }
