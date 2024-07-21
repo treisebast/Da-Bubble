@@ -5,17 +5,12 @@
     <mat-card-title class="m-20">Wähle deinen<span class="break"> Avatar</span></mat-card-title>
     <div class="avatar-big">
         <img #uploadedImage [src]="selectedAvatar" alt="main avatar">
-        <h1>Frederik Beck</h1>
+        <h1>{{ userName }}</h1>
     </div>
     <div>
         <p>Aus der Liste wählen</p>
         <div class="avatar-choices">
-            <img src="/assets/img/profile/1.svg" alt="first avatar" (click)="selectAvatar('/assets/img/profile/1.svg')">
-            <img src="/assets/img/profile/2.svg" alt="second avatar" (click)="selectAvatar('/assets/img/profile/2.svg')">
-            <img src="/assets/img/profile/3.svg" alt="third avatar" (click)="selectAvatar('/assets/img/profile/3.svg')">
-            <img src="/assets/img/profile/4.svg" alt="fourth avatar" (click)="selectAvatar('/assets/img/profile/4.svg')">
-            <img src="/assets/img/profile/5.svg" alt="fifth avatar" (click)="selectAvatar('/assets/img/profile/5.svg')">
-            <img src="/assets/img/profile/6.svg" alt="sixth avatar" (click)="selectAvatar('/assets/img/profile/6.svg')">
+            <img *ngFor="let avatar of avatars" [src]="avatar" alt="avatar" (click)="selectAvatar(avatar)">
         </div>
         <div class="alt-choice">
             <p>eigenes Bild verwenden</p>

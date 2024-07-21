@@ -1,8 +1,5 @@
 import { Routes } from '@angular/router';
-//import { canActivate, redirectUnauthorizedTo } from '@angular/fire/auth-guard';
 
-
-// Die Version die aktuell funktioniert!
  export const routes: Routes = [
      {
          path: "",
@@ -28,9 +25,10 @@ import { Routes } from '@angular/router';
 
 
 
+// EXPERIMENTAL
 
+//import { canActivate, redirectUnauthorizedTo } from '@angular/fire/auth-guard';
 
-// Die Version die aktuell NICHT funktioniert und Hilfe benötigt!
 // const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['']);
 // export const routes: Routes = [
 //     {

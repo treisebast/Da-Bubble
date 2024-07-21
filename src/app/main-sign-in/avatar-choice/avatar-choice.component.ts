@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, ElementRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,8 +26,10 @@ import { firstValueFrom } from 'rxjs';
   styleUrls: ['./avatar-choice.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AvatarChoiceComponent {
-  selectedAvatar: string = '/assets/img/front-page/avatar.svg';
+export class AvatarChoiceComponent implements OnInit {
+  selectedAvatar: string = '';
+  avatars: string[] = [];
+  userName: string = 'Max Mustermann';
   @ViewChild('uploadedImage', { static: false }) uploadedImage!: ElementRef<HTMLImageElement>;
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
   fileError: string = '';
@@ -38,8 +40,44 @@ export class AvatarChoiceComponent {
     private storageService: FirebaseStorageService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    /**
+     * Initializes the component and sets the userName if available in the navigation state.
+     * @private
+     */
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation && navigation.extras.state) {
+      this.userName = navigation.extras.state['userName'] || this.userName;
+    }
+  }
 
+  /**
+ * Lifecycle hook that is called after Angular has initialized all data-bound properties.
+ * It calls the method to load avatars.
+ */
+  ngOnInit() {
+    this.loadAvatars();
+  }
+
+
+  /**
+ * Loads the avatar images from specified paths and sets the first one as the selected avatar.
+ * Updates the component's state after loading avatars.
+ * @async
+ */
+  async loadAvatars() {
+    const avatarPaths = ['avatars/1.svg', 'avatars/2.svg', 'avatars/3.svg', 'avatars/4.svg', 'avatars/5.svg', 'avatars/6.svg'];
+    this.avatars = await Promise.all(avatarPaths.map(path => firstValueFrom(this.storageService.getFileUrl(path))));
+    this.selectedAvatar = this.avatars[0];
+    this.cdr.detectChanges();
+  }
+
+
+  /**
+ * Selects an avatar and updates the component's state.
+ * If a file input is present, it resets the input value.
+ * @param {string} avatar - The URL of the selected avatar.
+ */
   selectAvatar(avatar: string) {
     this.selectedAvatar = avatar;
     if (this.fileInput) {
@@ -48,63 +86,128 @@ export class AvatarChoiceComponent {
     this.cdr.detectChanges();
   }
 
+
+  /**
+ * Handles the file selection event. Validates the file type and reads the file if valid.
+ * @param {Event} event - The file selection event.
+ */
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      const fileType = file.type;
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
-
-      if (!validImageTypes.includes(fileType)) {
+      if (!this.isValidImageType(file.type)) {
         this.fileError = 'Bitte nur JPG, PNG oder SVG Dateien hochladen.';
         return;
-      } else {
-        this.fileError = '';
       }
-
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.selectedAvatar = e.target.result;
-        if (this.uploadedImage && this.uploadedImage.nativeElement) {
-          this.uploadedImage.nativeElement.src = e.target.result;
-          this.cdr.detectChanges();
-        }
-      };
-      reader.readAsDataURL(file);
+      this.fileError = '';
+      this.readFile(file);
     }
   }
 
+
+  /**
+ * Checks if the given file type is a valid image type.
+ * @param {string} fileType - The MIME type of the file.
+ * @returns {boolean} True if the file type is valid, false otherwise.
+ */
+  isValidImageType(fileType: string): boolean {
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
+    return validImageTypes.includes(fileType);
+  }
+
+
+  /**
+ * Reads the selected file and updates the selected avatar with the file's data URL.
+ * @param {File} file - The selected file.
+ */
+  readFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.updateSelectedAvatar(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+
+  /**
+ * Updates the selected avatar URL and updates the component's state.
+ * If an uploaded image element is present, it sets its source to the new avatar URL.
+ * @param {string} avatarUrl - The URL of the new avatar.
+ */
+  updateSelectedAvatar(avatarUrl: string) {
+    this.selectedAvatar = avatarUrl;
+    if (this.uploadedImage && this.uploadedImage.nativeElement) {
+      this.uploadedImage.nativeElement.src = avatarUrl;
+      this.cdr.detectChanges();
+    }
+  }
+
+
+  /**
+ * Logs the selected avatar to the console, retrieves the current user,
+ * and updates the user's avatar URL in the database.
+ * Navigates to the main page after updating.
+ * @async
+ */
   async logSelectedAvatar() {
     console.log('Selected Avatar:', this.selectedAvatar);
-  
-    const currentUser = await firstValueFrom(this.authService.getUser());
-    if (currentUser) {
-      const userId = currentUser.uid;
-      console.log('Current User ID:', userId);
-  
-      let avatarUrl = this.selectedAvatar;
-      const fileInputElement = this.fileInput!.nativeElement;
-      if (fileInputElement.files && fileInputElement.files[0]) {
-        const file = fileInputElement.files[0];
-        avatarUrl = await firstValueFrom(this.storageService.uploadFile(file, `avatars/${userId}`));
+    try {
+      const currentUser = await this.getCurrentUser();
+      if (currentUser) {
+        const avatarUrl = await this.getAvatarUrl(currentUser.uid);
+        await this.updateUserAvatar(currentUser.uid, avatarUrl);
+        this.router.navigate(['/main-page']);
+      } else {
+        console.error('No authenticated user found');
       }
-  
-      const updatedUser: Partial<User> = { avatar: avatarUrl };
-  
-      try {
-        const userDoc = await firstValueFrom(this.userService.getUser(userId));
-        console.log('User document fetched:', userDoc);
-        if (userDoc) {
-          await this.userService.updateUser({ ...updatedUser, userId } as User);
-          console.log('Avatar updated successfully');
-          this.router.navigate(['/main-page']);
-        } else {
-          console.error('No document found for user:', userId);
-        }
-      } catch (error) {
-        console.error('Error updating avatar:', error);
-      }
+    } catch (error) {
+      console.error('Error during avatar logging process:', error);
+    }
+  }
+
+
+  /**
+ * Retrieves the currently authenticated user.
+ * @returns {Promise<any>} The current user.
+ * @async
+ */
+  async getCurrentUser() {
+    return await firstValueFrom(this.authService.getUser());
+  }
+
+
+  /**
+ * Gets the avatar URL for the specified user ID.
+ * If a file is selected in the file input, it uploads the file and returns its URL.
+ * Otherwise, it returns the currently selected avatar URL.
+ * @param {string} userId - The ID of the user.
+ * @returns {Promise<string>} The avatar URL.
+ * @async
+ */
+  async getAvatarUrl(userId: string): Promise<string> {
+    const fileInputElement = this.fileInput.nativeElement;
+    if (fileInputElement.files && fileInputElement.files[0]) {
+      const file = fileInputElement.files[0];
+      return await firstValueFrom(this.storageService.uploadFile(file, `avatars/${userId}`));
+    }
+    return this.selectedAvatar;
+  }
+
+
+  /**
+ * Updates the user's avatar URL in the database.
+ * Logs success or error messages based on the update result.
+ * @param {string} userId - The ID of the user.
+ * @param {string} avatarUrl - The new avatar URL.
+ * @async
+ */
+  async updateUserAvatar(userId: string, avatarUrl: string) {
+    const updatedUser: Partial<User> = { avatar: avatarUrl };
+    const userDoc = await firstValueFrom(this.userService.getUser(userId));
+    if (userDoc) {
+      await this.userService.updateUser({ ...updatedUser, userId } as User);
+      console.log('Avatar updated successfully');
     } else {
-      console.error('No authenticated user found');
+      console.error('No document found for user:', userId);
     }
   }
 }
