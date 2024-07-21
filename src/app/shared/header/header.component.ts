@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule } from '@angular/router';
 import { MenuComponent } from './menu/menu.component';
+import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
+import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-header',
@@ -20,23 +23,34 @@ import { MenuComponent } from './menu/menu.component';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
 
-  currentUser = {
-    name: "Tobias Wall",
-    imgSrc: "./assets/img/profile/3.svg",
-    online: true
+  currentUser: Partial<User> = {
+    name: "",
+    avatar: "",
+    status: ""
+  };
+
+  constructor(private auth: AuthService, private userService: UserService) {}
+
+  ngOnInit() {
+    this.auth.getUser().subscribe(firebaseUser => {
+      if (firebaseUser?.uid) {
+        this.userService.getUser(firebaseUser.uid).subscribe(user => {
+          if (user) {
+            this.currentUser = user;
+          }
+        });
+      }
+    });
   }
 
-  constructor() { }
   @ViewChild(MenuComponent) MenuContent!: MenuComponent;
 
-  showContent = false;
+  showMenu = false;
 
-  toggleContent() {
-    console.log(this.showContent);
-    this.showContent = !this.showContent;
+  toggleMenu() {
+    console.log(this.showMenu);
+    this.showMenu = !this.showMenu;
   }
-
-
 }

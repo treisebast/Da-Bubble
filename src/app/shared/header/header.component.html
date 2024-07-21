@@ -9,18 +9,18 @@
       <mat-icon matSuffix>search</mat-icon>
     </div>
 
-    <div class="profile" mat-button (click)="toggleContent()">
+    <div class="profile" mat-button (click)="toggleMenu()">
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
-        <img src="{{ currentUser.imgSrc }}" alt="" class="profile-img" />
+        <img src="{{ currentUser.avatar }}" alt="" class="profile-img" />
         <img
-          *ngIf="currentUser.online"
+          *ngIf="currentUser.status"
           src="./assets/img/online.png"
           alt=""
           class="online"
         />
         <img
-          *ngIf="!currentUser.online"
+          *ngIf="!currentUser.status"
           src="./assets/img/offline.png"
           alt=""
           class="online"
@@ -31,4 +31,4 @@
   </div>
 </header>
 
-<app-menu class="menu-container" #MenuContent *ngIf="showContent"></app-menu>
+<app-menu class="menu-container" #MenuContent *ngIf="showMenu"></app-menu>
