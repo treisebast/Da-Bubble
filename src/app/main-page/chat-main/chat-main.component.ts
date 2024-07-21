@@ -7,6 +7,7 @@ import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore';
 
 @Component({
@@ -23,9 +24,11 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   currentThreadData: any;
   private threadService = inject(ThreadService);
 
-
   newMessageText = '';
-  constructor(private chatService: ChatService) { }
+  currentUserId = '';
+  currentUserName = '';
+
+  constructor(private chatService: ChatService, private authService: AuthService) {}
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -42,6 +45,13 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit() {
+    this.authService.getUser().subscribe(user => {
+      if (user) {
+        this.currentUserId = user.uid;
+        this.currentUserName = user.displayName || '';
+      }
+    });
+
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat;
     });
@@ -71,7 +81,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
     const newMessage: Message = {
       content: this.newMessageText,
-      senderId: 'Current User',  // Hier sollte die aktuelle Benutzer-ID verwendet werden
+      senderId: this.currentUserName,
       timestamp: serverTimestamp()
     };
 
@@ -100,6 +110,5 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
           this.threadService.setCurrentMessageToOpen(message);
         }
       });
-      
   }
 }
