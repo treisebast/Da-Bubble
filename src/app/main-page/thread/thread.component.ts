@@ -46,7 +46,7 @@ export class ThreadComponent implements OnInit {
 
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
-        this.messages = currentThread;
+        this.messages = this.sortMessagesByTimestamp(currentThread);
       } else {
         this.messages = [];
       }
@@ -74,6 +74,14 @@ export class ThreadComponent implements OnInit {
       this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage);
     }
     this.newMessageText = '';
+  }
+
+  sortMessagesByTimestamp(messages: Message[]): Message[] {
+    return messages.sort((a, b) => {
+      const dateA = this.convertToDate(a.timestamp);
+      const dateB = this.convertToDate(b.timestamp);
+      return dateA.getTime() - dateB.getTime();
+    });
   }
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
