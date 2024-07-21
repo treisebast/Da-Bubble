@@ -205,17 +205,26 @@
 .message-left,
 .message-right {
   display: flex;
-  align-items: flex-start;
   margin: 8px 0;
 }
 
-.message-left {
-  flex-direction: row-reverse;
-}
 
 .message-right {
-  flex-direction: row;
+  padding-left: 88px;
+  align-items: flex-end;
+  .profile-img {
+    left: 16px;
+  }
 }
+
+.message-left {
+  padding-right: 88px;
+  align-items: flex-start;
+  .profile-img {
+    right: 16px;
+  }
+}
+
 
 .message-header {
   display: flex;
@@ -277,21 +286,6 @@
   z-index: 2;
 }
 
-.message-right {
-  padding-left: 88px;
-  align-items: flex-start;
-  .profile-img {
-    left: 16px;
-  }
-}
-
-.message-left {
-  padding-right: 88px;
-  align-items: flex-end;
-  .profile-img {
-    right: 16px;
-  }
-}
 
 .message-left .message-content {
   background: rgb(121, 126, 243);
