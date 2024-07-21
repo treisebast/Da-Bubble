@@ -38,7 +38,7 @@
   
       <div class="login-actions">
         <button type="submit" class="prio-button">Anmelden</button>
-        <button routerLink="main" class="alt-button">Gäste-Login</button>
+        <button (click)="guestLogin($event)" class="alt-button">Gäste-Login</button>
       </div>
     </form>
   </mat-card>

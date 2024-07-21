@@ -19,7 +19,7 @@ import { firstValueFrom, switchMap } from 'rxjs';
   styleUrls: ['./sign-in.component.scss']
 })
 export class SignInComponent {
-  signInForm: FormGroup;
+  signInForm!: FormGroup;
   formSubmitted = false;
   signInError: string = '';
 
@@ -29,55 +29,139 @@ export class SignInComponent {
     private authService: AuthService,
     private userService: UserService
   ) {
+    this.initializeForm();
+  }
+
+
+  /**
+   * Gets the email form control.
+   * @returns {FormGroup} The email form control.
+   */
+  get email() {
+    return this.signInForm.get('email')!;
+  }
+
+
+  /**
+   * Gets the password form control.
+   * @returns {FormGroup} The password form control.
+   */
+  get password() {
+    return this.signInForm.get('password')!;
+  }
+
+
+  /**
+   * Initializes the sign-in form with form controls and validation rules.
+   * @private
+   */
+  private initializeForm() {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
     });
   }
 
-  get email() {
-    return this.signInForm.get('email')!;
+
+  /**
+    * Updates the user profile with additional information.
+    * @param {any} user - The user object.
+    * @private
+    */
+  private async updateUserProfile(user: any) {
+    const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
+    const photoURL = userDoc?.avatar || '';
+    await firstValueFrom(this.authService.updateUserProfile(user, { photoURL }));
+    console.log('User profile updated with photoURL');
   }
 
-  get password() {
-    return this.signInForm.get('password')!;
+
+  /**
+    * Handles errors during the sign-in process.
+    * @param {any} err - The error object.
+    * @private
+    */
+  private handleError(err: any) {
+    console.error('Sign-In Error', err);
+    if (err.code === 'auth/wrong-password') {
+      this.signInError = 'Falsches Passwort.';
+    } else if (err.code === 'auth/user-not-found') {
+      this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
+    } else {
+      this.signInError = 'Fehler bei der Anmeldung.';
+    }
   }
 
+
+  /**
+   * Signs in the user with the given email and password.
+   * @param {string} email - The user's email address.
+   * @param {string} password - The user's password.
+   * @private
+   */
+  private async signIn(email: string, password: string) {
+    const credential = await firstValueFrom(
+      this.authService.signIn(email, password).pipe(
+        switchMap(async (res) => {
+          const user = res.user;
+          if (user) {
+            await this.updateUserProfile(user);
+          }
+          return res;
+        })
+      )
+    );
+
+    console.log('Sign-In Successful', credential);
+    this.router.navigate(['/main']);
+  }
+
+
+  /**
+   * Signs in a guest user with predefined credentials.
+   * @param {string} guestEmail - The guest email address.
+   * @param {string} guestPassword - The guest password.
+   * @private
+   */
+  private async signInGuest(guestEmail: string, guestPassword: string) {
+    const credential = await firstValueFrom(
+      this.authService.signIn(guestEmail, guestPassword).pipe(
+        switchMap(async (res) => {
+          const user = res.user;
+          if (user) {
+            await this.updateUserProfile(user);
+          }
+          return res;
+        })
+      )
+    );
+
+    console.log('Guest Sign-In Successful', credential);
+    this.router.navigate(['/main']);
+  }
+
+
+  /**
+ * Handles form submission for user sign-in.
+ * @async
+ */
   async onSubmit() {
     this.formSubmitted = true;
     if (this.signInForm.valid) {
       const { email, password } = this.signInForm.value;
       try {
-        const credential = await firstValueFrom(
-          this.authService.signIn(email, password).pipe(
-            switchMap(async (res) => {
-              const user = res.user;
-              if (user) {
-                const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
-                const photoURL = userDoc?.avatar || '';
-                await firstValueFrom(this.authService.updateUserProfile(user, { photoURL }));
-                console.log('User profile updated with photoURL');
-              }
-              return res;
-            })
-          )
-        );
-
-        console.log('Sign-In Successful', credential);
-        this.router.navigate(['/main']);
+        await this.signIn(email, password);
       } catch (err: any) {
-        console.error('Sign-In Error', err);
-        if (err.code === 'auth/wrong-password') {
-          this.signInError = 'Falsches Passwort.';
-        } else if (err.code === 'auth/user-not-found') {
-          this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
-        } else {
-          this.signInError = 'Fehler bei der Anmeldung.';
-        }
+        this.handleError(err);
       }
     }
   }
 
+
+  /**
+ * Signs in the user with Google authentication.
+ * @param {Event} event - The event object.
+ */
   signInWithGoogle(event: Event) {
     event.preventDefault();
     this.authService.signInWithGoogle().subscribe({
@@ -89,5 +173,23 @@ export class SignInComponent {
         console.error('Google Sign-In Error', err);
       }
     });
+  }
+
+
+  /**
+ * Signs in as guest.
+ * @param {Event} event - The event object.
+ * @async
+ */
+  async guestLogin(event: Event) {
+    event.preventDefault();
+    const guestEmail = 'guest@email.com';
+    const guestPassword = 'guestDaBubble';
+    try {
+      await this.signInGuest(guestEmail, guestPassword);
+    } catch (err: any) {
+      this.handleError(err);
+      this.signInError = 'Fehler beim Gäste-Login.';
+    }
   }
 }
