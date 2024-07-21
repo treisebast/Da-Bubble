@@ -80,6 +80,7 @@ export class AvatarChoiceComponent implements OnInit {
  */
   selectAvatar(avatar: string) {
     this.selectedAvatar = avatar;
+    this.fileError = '';
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
@@ -96,6 +97,10 @@ export class AvatarChoiceComponent implements OnInit {
     if (file) {
       if (!this.isValidImageType(file.type)) {
         this.fileError = 'Bitte nur JPG, PNG oder SVG Dateien hochladen.';
+        return;
+      }
+      if (file.size > 4 * 1024 * 1024) {
+        this.fileError = 'Die Datei darf maximal 4MB groß sein.';
         return;
       }
       this.fileError = '';
@@ -209,5 +214,14 @@ export class AvatarChoiceComponent implements OnInit {
     } else {
       console.error('No document found for user:', userId);
     }
+  }
+
+
+  /**
+ * Determines if the continue button should be enabled.
+ * @returns {boolean} True if the button should be enabled, false otherwise.
+ */
+  isContinueButtonDisabled(): boolean {
+    return this.fileError !== '';
   }
 }

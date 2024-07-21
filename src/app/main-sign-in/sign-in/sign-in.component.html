@@ -5,7 +5,7 @@
     <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
       <div class="input-container" [ngClass]="{ 'invalid-border': email.invalid && (email.dirty || email.touched || formSubmitted) }">
         <img src="/assets/img/front-page/mail.svg" alt="email icon">
-        <input type="email" formControlName="email" placeholder="beispielname@email.com">
+        <input type="email" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" formControlName="email" placeholder="beispielname@email.com">
       </div>
       <span class="validMsg" [class.hidden]="!(email.invalid && (email.touched || formSubmitted))">
         Bitte geben Sie eine gültige E-Mail-Adresse ein.

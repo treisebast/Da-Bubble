@@ -22,6 +22,6 @@
         <span *ngIf="fileError" class="validMsg">{{fileError}}</span>
     </div>
     <div class="login-actions jc-end">
-        <button (click)="logSelectedAvatar()" class="prio-button">Weiter</button>
+        <button (click)="logSelectedAvatar()" class="prio-button" [disabled]="isContinueButtonDisabled()">Weiter</button>
     </div>
 </mat-card>
