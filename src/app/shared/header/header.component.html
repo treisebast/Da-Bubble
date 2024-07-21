@@ -14,13 +14,13 @@
       <div class="profil-img-div">
         <img src="{{ currentUser.avatar }}" alt="" class="profile-img" />
         <img
-          *ngIf="currentUser.status"
+          *ngIf="currentUser.status === 'online'"
           src="./assets/img/online.png"
           alt=""
           class="online"
         />
         <img
-          *ngIf="!currentUser.status"
+          *ngIf="currentUser.status === 'offline'"
           src="./assets/img/offline.png"
           alt=""
           class="online"
