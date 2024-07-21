@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
@@ -24,10 +24,13 @@ import { MatCardModule } from '@angular/material/card';
   styleUrl: './profil.component.scss',
 })
 export class ProfilComponent {
-  hrefEmailString: string = "mailto:contact@sebastian-treittinger.de"
-  emailAddress: string = "contact@sebastian-treittinger.de"
-  
-  constructor() { }
+  hrefEmailString: string = 'mailto:contact@sebastian-treittinger.de';
+  emailAddress: string = 'contact@sebastian-treittinger.de';
 
-  
+  constructor() {}
+  @Output() closeProfileCard = new EventEmitter();
+
+  closeProfil() {
+    this.closeProfileCard.emit();
+  }
 }

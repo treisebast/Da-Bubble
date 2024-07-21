@@ -9,7 +9,7 @@
       <mat-icon matSuffix>search</mat-icon>
     </div>
 
-    <div class="profile" mat-button (click)="toggleMenu()">
+    <div class="profile" mat-button cdkFocusInitial (click)="openMenu()">
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
         <img src="{{ currentUser.avatar }}" alt="" class="profile-img" />
@@ -31,4 +31,14 @@
   </div>
 </header>
 
-<app-menu class="menu-container" #MenuContent *ngIf="showMenu"></app-menu>
+<app-menu
+  (closeMenu)="closeMenu()"
+  (openProfile)="openProfil()"
+  *ngIf="isMenuOpen"
+></app-menu>
+
+<app-profil
+  #profil
+  *ngIf="isProfilOpen"
+  (closeProfileCard)="closeProfil()"
+></app-profil>

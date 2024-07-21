@@ -1,18 +1,20 @@
-<div class="menu-container">
-  <div
-    class="profil-btn"
-    mat-button
-    cdkFocusInitial
-    (click)="openProfilDialog()"
-  >
-    <span class="span">Profil</span>
-  </div>
-  <div
-    class="logout-btn"
-    mat-button
-    cdkFocusInitial
-    (click)="openLogoutDialog()"
-  >
-    <span>Log out</span>
+<div class="modal-background" (click)="close()">
+  <div class="menu-container" (click)="$event.stopPropagation()">
+    <div
+      class="profil-btn"
+      mat-button
+      cdkFocusInitial
+      (click)="openProfilContent()"
+    >
+      <span class="span">Profil</span>
+    </div>
+    <div
+      class="logout-btn"
+      mat-button
+      cdkFocusInitial
+      (click)="openLogoutDialog()"
+    >
+      <span>Log out</span>
+    </div>
   </div>
 </div>
