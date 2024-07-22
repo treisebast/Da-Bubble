@@ -10,6 +10,8 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
   providedIn: 'root',
 })
 export class ChatService {
+  private _selectedChat = new BehaviorSubject<boolean>(false);
+
   private currentChatSource = new BehaviorSubject<ChatUserProfile | Channel | null>(null);
   currentChat$ = this.currentChatSource.asObservable();
 
@@ -66,5 +68,13 @@ export class ChatService {
 
   getChannelStatus() {
     return this.isChannel$;
+  }
+
+  get selectedChat$() {
+    return this._selectedChat.asObservable();
+  }
+
+  setSelectedChat(value: boolean) {
+    this._selectedChat.next(value);
   }
 }

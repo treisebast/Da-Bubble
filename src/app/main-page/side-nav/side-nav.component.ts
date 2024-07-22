@@ -83,4 +83,12 @@ export class SideNavComponent implements OnInit {
     console.log('Showing direct message:', directMessage);
     this.chatService.setCurrentChat(directMessage);
   }
+
+  setSelectedMessage() {
+    this.chatService.setSelectedChat(true);
+  }
+
+  newMessage() {
+    this.chatService.setSelectedChat(false);
+  }
 }

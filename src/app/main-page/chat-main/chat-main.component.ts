@@ -22,6 +22,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   currentChat: any = null;
   messages: Message[] = [];
   currentThreadData: any;
+  selectedChat: boolean = false;
   private threadService = inject(ThreadService);
 
   newMessageText = '';
@@ -57,6 +58,9 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     });
     this.chatService.messages$.subscribe(messages => {
       this.messages = messages;
+    });
+    this.chatService.selectedChat$.subscribe(chat => {
+      this.selectedChat = chat;
     });
   }
 

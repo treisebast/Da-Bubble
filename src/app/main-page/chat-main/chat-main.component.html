@@ -1,4 +1,26 @@
-<div class="wrapper" *ngIf="currentChat">
+<div *ngIf="!selectedChat" class="newMessageChatContainer">
+  <div class="header column">
+    <h2>Neue Nachricht</h2>
+    <input type="text" placeholder="An: #channel, oder @jemand oder E-Mail Adresse">
+  </div>
+
+
+  <div class="messageBox absolute-bottom">
+    <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"></textarea>
+    <div class="messageBoxBottom">
+      <div class="iconsLeft">
+        <div class="addIcon"></div>
+        <div class="border"></div>
+        <div class="emoji"></div>
+        <div class="iconMarkUser"></div>
+      </div>
+      <div (click)="sendMessage()" class="sendMessage"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
     <div class="profileImg">
       <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.imgScr }}" alt="">
@@ -9,24 +31,26 @@
   </div>
 
   <div class="chat-container" #chatContainer>
-    <div *ngFor="let message of messages; let i = index">
-      <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
-        <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
-      </div>
-
-      <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentUserName, 'message-right': message.senderId === currentUserName}" (click)="openThread(message)">
-        <div class="message-header">
-          <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
-          <span class="name">{{ message.senderId }}</span>
+    <ng-container *ngIf="selectedChat">
+      <div *ngFor="let message of messages; let i = index">
+        <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+          <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
         </div>
-
-        <div class="message-content">
-          <p>{{ message.content }}</p>
+  
+        <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentUserName, 'message-right': message.senderId === currentUserName}" (click)="openThread(message)">
+          <div class="message-header">
+            <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
+            <span class="name">{{ message.senderId }}</span>
+          </div>
+  
+          <div class="message-content">
+            <p>{{ message.content }}</p>
+          </div>
+  
+          <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.senderId }}" class="profile-img">
         </div>
-
-        <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.senderId }}" class="profile-img">
       </div>
-    </div>
+    </ng-container>
   </div>
 
   <div class="messageBox">
