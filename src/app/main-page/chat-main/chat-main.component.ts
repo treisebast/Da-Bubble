@@ -23,6 +23,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   messages: Message[] = [];
   currentThreadData: any;
   selectedChat: boolean = false;
+  hoverStates: { [key: string]: boolean } = {};
   private threadService = inject(ThreadService);
 
   newMessageText = '';
@@ -114,5 +115,13 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
           this.threadService.setCurrentMessageToOpen(message);
         }
       });
+  }
+
+  onMouseEnter(propertyName: string) {
+    this.hoverStates[propertyName] = true;
+  }
+
+  onMouseLeave(propertyName: string) {
+    this.hoverStates[propertyName] = false;
   }
 }

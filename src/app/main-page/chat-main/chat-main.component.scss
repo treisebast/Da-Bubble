@@ -246,11 +246,19 @@
   .profile-img {
     left: 16px;
   }
+
+  .reactionBar {
+    left: 16px;
+  }
 }
 
 .message-left {
   align-items: flex-start;
   .profile-img {
+    right: 16px;
+  }
+
+  .reactionBar {
     right: 16px;
   }
 }
@@ -305,6 +313,10 @@
     &::before {
       background-color: var(--main-background); /* Ändere Hintergrundfarbe beim Hover */
     }
+
+    .reactionBar {
+      display: flex;
+    }
   }
 
   .message-content {
@@ -356,6 +368,62 @@
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.reactionBar {
+  display: none;
+  align-items: center;
+  width: fit-content;
+  height: fit-content;
+  border: solid 1px rgb(213,215,235);
+  z-index: 100;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom-left-radius: 16px;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: white;
+  position: absolute;
+  top: -32px;
+  
+  div {
+    height: 32px;
+    width: 32px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    
+    &:hover {
+      background-color: rgb(236, 238, 254);
+      border-radius: 50%;
+    }
+  }
+
+  .check {
+    background-image: url(../../../assets/img/chatChannel/check.svg);
+  }
+  
+  .handsUp {
+    background-image: url(../../../assets/img/chatChannel/handsUp.svg);
+  }
+
+  .reaction {
+    background-image: url(../../../assets/img/chatChannel/add_reaction.svg);
+    &:hover {
+      background-image: url(../../../assets/img/chatChannel/add_reaction_hover.svg);
+    }
+  }
+
+  .comment {
+    background-image: url(../../../assets/img/chatChannel/comment.svg);
+    &:hover {
+      background-image: url(../../../assets/img/chatChannel/comment_hover.svg);
+    }
+  }
+
+  .vertPoints {
+    background-image: url(../../../assets/img/chatChannel/more_vert.svg);
+  }
+
 }
 
 @media (max-width: 700px) {

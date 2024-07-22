@@ -42,7 +42,15 @@
             <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
             <span class="name">{{ message.senderId }}</span>
           </div>
-  
+          
+          <div class="reactionBar">
+            <div class="check"></div>
+            <div class="handsUp"></div>
+            <div class="reaction"></div>
+            <div class="comment"></div>
+            <div class="vertPoints"></div>
+          </div>
+
           <div class="message-content">
             <p>{{ message.content }}</p>
           </div>
