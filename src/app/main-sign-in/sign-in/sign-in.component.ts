@@ -87,6 +87,8 @@ export class SignInComponent {
       this.signInError = 'Falsches Passwort.';
     } else if (err.code === 'auth/user-not-found') {
       this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
+    } else if (err.code === 'auth/invalid-email') {
+      this.signInError = 'Ungültige E-Mail-Adresse.';
     } else {
       this.signInError = 'Fehler bei der Anmeldung.';
     }

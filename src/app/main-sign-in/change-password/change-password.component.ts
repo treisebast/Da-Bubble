@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../shared/services/auth.service';
+
 
 @Component({
   selector: 'app-change-password',
@@ -28,12 +30,23 @@ import { CommonModule } from '@angular/common';
 })
 export class ChangePasswordComponent {
   changePasswordForm: FormGroup;
+  oobCode: string | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private authService: AuthService // AuthService injizieren
+  ) {
     this.changePasswordForm = this.fb.group({
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+  }
+
+  ngOnInit(): void {
+    // Extrahiere das oobCode-Parameter aus der URL
+    this.oobCode = this.route.snapshot.queryParamMap.get('oobCode');
   }
 
   get newPassword() {
@@ -60,9 +73,18 @@ export class ChangePasswordComponent {
   };
 
   onSubmit() {
-    if (this.changePasswordForm.valid) {
-      console.log('Changed Password in Firebase', this.changePasswordForm.value);
-      // Code for changing Password
+    if (this.changePasswordForm.valid && this.oobCode) {
+      const newPassword = this.changePasswordForm.value.newPassword;
+      this.authService.confirmPasswordReset(this.oobCode, newPassword).subscribe({
+        next: () => {
+          console.log('Password has been successfully changed');
+          this.router.navigate(['/login']); // Nach erfolgreicher Passwortänderung weiterleiten
+        },
+        error: (error: any) => {
+          console.error('Error resetting password', error);
+          // Fehlerbehandlung hinzufügen
+        }
+      });
     }
   }
 }

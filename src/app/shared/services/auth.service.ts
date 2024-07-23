@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider } from '@angular/fire/auth';
+import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider, sendPasswordResetEmail, confirmPasswordReset } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
 import { updateProfile } from '@angular/fire/auth';
 
@@ -7,7 +7,7 @@ import { updateProfile } from '@angular/fire/auth';
   providedIn: 'root'
 })
 export class AuthService {
-  constructor(private auth: Auth) {}
+  constructor(private auth: Auth) { }
 
   /**
    * Signs up a new user with email and password.
@@ -19,7 +19,7 @@ export class AuthService {
   signUp(email: string, password: string): Observable<any> {
     return from(createUserWithEmailAndPassword(this.auth, email, password));
   }
-  
+
 
   /**
    * Signs in an existing user with email and password.
@@ -37,8 +37,8 @@ export class AuthService {
     const provider = new GoogleAuthProvider();
     return from(signInWithPopup(this.auth, provider));
   }
-  
-  
+
+
   /**
    * Signs out the currently authenticated user.
    *
@@ -68,5 +68,32 @@ export class AuthService {
    */
   updateUserProfile(user: FirebaseUser, profile: { displayName?: string, photoURL?: string }): Observable<void> {
     return from(updateProfile(user, profile));
+  }
+
+
+  /**
+ * Sends a password reset email to the given email address.
+ *
+ * @param {string} email - The email address to send the password reset email to.
+ * @returns {Observable<void>} - An observable that completes when the email is sent.
+ */
+  sendPasswordResetEmail(email: string): Observable<void> {
+    const actionCodeSettings = {
+      url: 'http://localhost:4200/change-password', // Needs the actual App-HTTPS-Address once we're done
+      handleCodeInApp: true
+    };
+    return from(sendPasswordResetEmail(this.auth, email, actionCodeSettings));
+  }
+
+
+  /**
+    * Confirms the password reset with the given code and new password.
+    *
+    * @param {string} code - The password reset code.
+    * @param {string} newPassword - The new password.
+    * @returns {Observable<void>} - An observable that completes when the password is reset.
+    */
+  confirmPasswordReset(code: string, newPassword: string): Observable<void> {
+    return from(confirmPasswordReset(this.auth, code, newPassword));
   }
 }
