@@ -9,20 +9,22 @@ import { MatInputModule } from '@angular/material/input';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../shared/services/auth.service';
-
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-change-password',
   standalone: true,
   imports: [
-    MatFormFieldModule, 
-    MatInputModule, 
-    MatButtonModule, 
-    CommonModule, 
-    MatIconModule, 
-    MatCardModule, 
-    RouterOutlet, 
-    RouterModule, 
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatDialogModule,
+    CommonModule,
+    MatIconModule,
+    MatCardModule,
+    RouterOutlet,
+    RouterModule,
     ReactiveFormsModule
   ],
   templateUrl: './change-password.component.html',
@@ -36,7 +38,8 @@ export class ChangePasswordComponent {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService // AuthService injizieren
+    private authService: AuthService,
+    private dialog: MatDialog
   ) {
     this.changePasswordForm = this.fb.group({
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -45,7 +48,6 @@ export class ChangePasswordComponent {
   }
 
   ngOnInit(): void {
-    // Extrahiere das oobCode-Parameter aus der URL
     this.oobCode = this.route.snapshot.queryParamMap.get('oobCode');
   }
 
@@ -78,13 +80,22 @@ export class ChangePasswordComponent {
       this.authService.confirmPasswordReset(this.oobCode, newPassword).subscribe({
         next: () => {
           console.log('Password has been successfully changed');
-          this.router.navigate(['/login']); // Nach erfolgreicher Passwortänderung weiterleiten
+          this.showConfirmationDialog();
+          this.router.navigate(['/login']);
         },
         error: (error: any) => {
           console.error('Error resetting password', error);
-          // Fehlerbehandlung hinzufügen
         }
       });
     }
+  }
+
+  showConfirmationDialog() {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: 'Ihr Passwort wurde erfolgreich geändert.',
+        image: ''
+      }
+    });
   }
 }
