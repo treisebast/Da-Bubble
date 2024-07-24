@@ -13,6 +13,9 @@ import { CommonModule } from '@angular/common';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { User } from '../../shared/models/user.model';
 import { firstValueFrom } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+
 
 @Component({
   selector: 'app-avatar-choice',
@@ -39,7 +42,8 @@ export class AvatarChoiceComponent implements OnInit {
     private userService: UserService,
     private storageService: FirebaseStorageService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private dialog: MatDialog
   ) {
     /**
      * Initializes the component and sets the userName if available in the navigation state.
@@ -160,6 +164,7 @@ export class AvatarChoiceComponent implements OnInit {
       if (currentUser) {
         const avatarUrl = await this.getAvatarUrl(currentUser.uid);
         await this.updateUserAvatar(currentUser.uid, avatarUrl);
+        this.showConfirmationDialog();
         this.router.navigate(['/main-page']);
       } else {
         console.error('No authenticated user found');
@@ -167,6 +172,16 @@ export class AvatarChoiceComponent implements OnInit {
     } catch (error) {
       console.error('Error during avatar logging process:', error);
     }
+  }
+
+
+  /**
+ * Displays a confirmation dialog indicating that the avatar has been selected.
+ */
+  showConfirmationDialog() {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: { message: 'Avatar ausgewählt' }
+    });
   }
 
 

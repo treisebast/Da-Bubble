@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,8 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { firstValueFrom, switchMap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-sign-in',
@@ -27,7 +29,8 @@ export class SignInComponent {
     private fb: FormBuilder,
     private router: Router,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private dialog: MatDialog
   ) {
     this.initializeForm();
   }
@@ -35,18 +38,18 @@ export class SignInComponent {
 
   /**
    * Gets the email form control.
-   * @returns {FormGroup} The email form control.
+   * @returns {AbstractControl} The email form control.
    */
-  get email() {
+  get email(): AbstractControl {
     return this.signInForm.get('email')!;
   }
 
 
   /**
    * Gets the password form control.
-   * @returns {FormGroup} The password form control.
+   * @returns {AbstractControl} The password form control.
    */
-  get password() {
+  get password(): AbstractControl {
     return this.signInForm.get('password')!;
   }
 
@@ -115,7 +118,17 @@ export class SignInComponent {
     );
 
     console.log('Sign-In Successful', credential);
+    this.showConfirmationDialog();
     this.router.navigate(['/main']);
+  }
+
+
+  private showConfirmationDialog() {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: 'Erfolgreich angemeldet'
+      }
+    });
   }
 
 
@@ -139,6 +152,7 @@ export class SignInComponent {
     );
 
     console.log('Guest Sign-In Successful', credential);
+    this.showConfirmationDialog();
     this.router.navigate(['/main']);
   }
 
