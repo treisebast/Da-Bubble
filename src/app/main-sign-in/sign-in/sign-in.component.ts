@@ -86,15 +86,7 @@ export class SignInComponent {
     */
   private handleError(err: any) {
     console.error('Sign-In Error', err);
-    if (err.code === 'auth/wrong-password') {
-      this.signInError = 'Falsches Passwort.';
-    } else if (err.code === 'auth/user-not-found') {
-      this.signInError = 'Kein Benutzer mit dieser E-Mail-Adresse gefunden.';
-    } else if (err.code === 'auth/invalid-email') {
-      this.signInError = 'Ungültige E-Mail-Adresse.';
-    } else {
-      this.signInError = 'Fehler bei der Anmeldung.';
-    }
+    this.signInError = err.message;
   }
 
 
@@ -123,6 +115,10 @@ export class SignInComponent {
   }
 
 
+  /**
+ * Opens a confirmation dialog upon successful sign-in.
+ * @private
+ */
   private showConfirmationDialog() {
     this.dialog.open(ConfirmationDialogComponent, {
       data: {

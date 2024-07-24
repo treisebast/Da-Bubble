@@ -52,6 +52,17 @@
     }
 }
 
+.error-message {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
 @media(min-width:1200px) {
     .google-login {
         >span {
