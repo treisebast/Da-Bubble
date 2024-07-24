@@ -47,18 +47,38 @@ export class ChangePasswordComponent {
     }, { validators: this.passwordMatchValidator });
   }
 
+
+  /**
+   * Initializes the component by retrieving the oobCode from the query parameters.
+   */
   ngOnInit(): void {
     this.oobCode = this.route.snapshot.queryParamMap.get('oobCode');
   }
 
-  get newPassword() {
+
+  /**
+    * Getter for the newPassword form control.
+    * @returns {AbstractControl} The newPassword form control.
+    */
+  get newPassword(): AbstractControl {
     return this.changePasswordForm.get('newPassword')!;
   }
 
-  get confirmPassword() {
+  /**
+   * Getter for the confirmPassword form control.
+   * @returns {AbstractControl} The confirmPassword form control.
+   */
+  get confirmPassword(): AbstractControl {
     return this.changePasswordForm.get('confirmPassword')!;
   }
 
+
+
+  /**
+   * Validator function to check if the newPassword and confirmPassword fields match.
+   * @param {AbstractControl} control - The form group control containing the newPassword and confirmPassword fields.
+   * @returns {ValidationErrors | null} A ValidationErrors object if the passwords do not match, otherwise null.
+   */
   passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const newPassword = control.get('newPassword')!.value;
     const confirmPassword = control.get('confirmPassword')!.value;
@@ -74,6 +94,13 @@ export class ChangePasswordComponent {
     }
   };
 
+
+  /**
+   * Submits the form to change the password.
+   * If the form is valid and an oobCode is present, calls the AuthService to reset the password.
+   * On success, shows a confirmation dialog and navigates to the login page.
+   * On error, logs the error to the console.
+   */
   onSubmit() {
     if (this.changePasswordForm.valid && this.oobCode) {
       const newPassword = this.changePasswordForm.value.newPassword;
@@ -90,6 +117,10 @@ export class ChangePasswordComponent {
     }
   }
 
+
+  /**
+  * Displays a confirmation dialog to the user indicating that the password has been successfully changed.
+  */
   showConfirmationDialog() {
     this.dialog.open(ConfirmationDialogComponent, {
       data: {
