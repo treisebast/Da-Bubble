@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -10,7 +10,7 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
-import { AuthService } from '../../shared/services/auth.service'; // Importiere AuthService
+import { AuthService } from '../../shared/services/auth.service';
 
 
 @Component({
@@ -45,34 +45,61 @@ export class ResetPasswordComponent {
     });
   }
 
-  get email() {
+  /**
+    * Gets the email form control.
+    * @returns {AbstractControl} The email form control.
+    */
+  get email(): AbstractControl {
     return this.resetPasswordForm.get('email')!;
   }
 
-  onSubmit() {
+
+  /**
+   * Handles the form submission.
+   */
+  onSubmit(): void {
     if (this.resetPasswordForm.valid) {
-      const email = this.email.value;
-      console.log(`Attempting to send reset password email to: ${email}`);
-      this.authService.sendPasswordResetEmail(email).subscribe({
-        next: () => {
-          console.log('Reset Password Form Submitted', this.resetPasswordForm.value);
-          this.dialog.open(ConfirmationDialogComponent, {
-            data: {
-              message: 'E-Mail gesendet',
-              image: './assets/img/front-page/send.svg'
-            }
-          });
-        },
-        error: (error: any) => {
-          console.error('Error sending reset password email', error);
-          this.dialog.open(ConfirmationDialogComponent, {
-            data: {
-              message: 'Fehler beim Senden der E-Mail',
-              image: './assets/img/front-page/error.svg'
-            }
-          });
-        }
-      });
+      this.handlePasswordReset(this.email.value);
     }
+  }
+
+  /**
+   * Initiates the password reset process.
+   * @param {string} email - The email address to send the reset link to.
+   */
+  private handlePasswordReset(email: string): void {
+    console.log(`Attempting to send reset password email to: ${email}`);
+    this.authService.sendPasswordResetEmail(email).subscribe({
+      next: () => this.onPasswordResetSuccess(),
+      error: (error: any) => this.onPasswordResetError(error)
+    });
+  }
+
+  /**
+   * Handles successful password reset email submission.
+   */
+  private onPasswordResetSuccess(): void {
+    console.log('Reset Password Form Submitted', this.resetPasswordForm.value);
+    this.openDialog('E-Mail gesendet', './assets/img/front-page/send.svg');
+  }
+
+  /**
+   * Handles error during password reset email submission.
+   * @param {any} error - The error object.
+   */
+  private onPasswordResetError(error: any): void {
+    console.error('Error sending reset password email', error);
+    this.openDialog('Fehler beim Senden der E-Mail', '');
+  }
+
+  /**
+   * Opens a dialog with the given message and image.
+   * @param {string} message - The message to display.
+   * @param {string} image - The image to display.
+   */
+  private openDialog(message: string, image: string): void {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: { message, image }
+    });
   }
 }
