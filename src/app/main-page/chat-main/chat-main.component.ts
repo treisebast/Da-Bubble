@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -9,28 +9,36 @@ import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore';
+import { UserService } from '../../shared/services/user.service';
+import { User } from '../../shared/models/user.model';
+import { MessageComponent } from '../message/message.component';
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss']
 })
 export class ChatMainComponent implements OnInit, AfterViewChecked {
-  @ViewChild('chatContainer') private chatContainer!: ElementRef;
   currentChat: any = null;
   messages: Message[] = [];
   currentThreadData: any;
   selectedChat: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
-  private threadService = inject(ThreadService);
-
   newMessageText = '';
   currentUserId = '';
   currentUserName = '';
+  userProfiles: { [key: string]: ChatUserProfile } = {};
 
-  constructor(private chatService: ChatService, private authService: AuthService) {}
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
+
+  constructor(
+    private chatService: ChatService,
+    private authService: AuthService,
+    private userService: UserService,
+    private threadService: ThreadService
+  ) {}
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -56,9 +64,9 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat;
-    });
-    this.chatService.messages$.subscribe(messages => {
-      this.messages = messages;
+      if (this.currentChat) {
+        this.loadMessages();
+      }
     });
     this.chatService.selectedChat$.subscribe(chat => {
       this.selectedChat = chat;
@@ -79,6 +87,29 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  loadMessages() {
+    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      this.chatService.getMessages(this.currentChat.id).subscribe((messages: Message[]) => {
+        this.messages = messages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
+        this.loadUserProfiles();
+        setTimeout(() => this.scrollToBottom(), 100);
+      });
+    }
+  }
+
+  loadUserProfiles() {
+    const userIds = [...new Set(this.messages.map(message => message.senderId))];
+    userIds.forEach(userId => {
+      this.userService.getUser(userId).subscribe((user: User) => {
+        this.userProfiles[userId] = {
+          name: user.name,
+          imgScr: user.avatar,
+          online: user.status === 'online'
+        };
+      });
+    });
+  }
+
   sendMessage() {
     if (this.newMessageText.trim() === '') {
       return;
@@ -86,7 +117,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
     const newMessage: Message = {
       content: this.newMessageText,
-      senderId: this.currentUserName,
+      senderId: this.currentUserId,
       timestamp: serverTimestamp()
     };
 
@@ -123,5 +154,9 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
   onMouseLeave(propertyName: string) {
     this.hoverStates[propertyName] = false;
+  }
+
+  getUserName(senderId: string): string {
+    return this.userProfiles[senderId]?.name || 'Unknown User';
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { ChatUserProfile } from '../models/chat-user-profile.model';
 import { Channel } from '../models/channel.model';
 import { ChannelMessageService } from './channel-message.service';
@@ -32,13 +32,16 @@ export class ChatService {
     const channelId = (chat as Channel).id;
     if (channelId) {
       this.channelMessageService.getChannelMessages(channelId).subscribe((messages: Message[]) => {
-        // Sortiere die Nachrichten nach ihrem Timestamp
         messages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
         this.messagesSource.next(messages);
       });
     } else {
       // Implementiere Logik zum Laden direkter Nachrichten
     }
+  }
+
+  getMessages(channelId: string): Observable<Message[]> {
+    return this.channelMessageService.getChannelMessages(channelId);
   }
 
   addMessage(channelId: string, message: Message) {

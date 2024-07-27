@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collection, addDoc, setDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collection, setDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
@@ -30,7 +30,6 @@ export class UserService {
     return docData(userDoc, { idField: 'userId' }) as Observable<User>;
   }
 
-
   /**
    * Adds a new user to the Firestore collection.
    * @param {User} user - The user to add.
@@ -41,7 +40,6 @@ export class UserService {
     return setDoc(userDoc, user);
   }
 
-
   /**
    * Updates an existing user in the Firestore collection.
    * @param {User} user - The user to update.
@@ -51,7 +49,6 @@ export class UserService {
     const userDoc = doc(this.firestore, `users/${user.userId}`);
     return updateDoc(userDoc, { ...user });
   }
-
 
   /**
    * Deletes a user from the Firestore collection by ID.
