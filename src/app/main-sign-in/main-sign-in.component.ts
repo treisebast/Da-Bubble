@@ -7,11 +7,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
+import { IntroComponent } from './intro/intro.component';
 
 @Component({
   selector: 'app-main-sign-in',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
+  imports: [MatFormFieldModule, MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule,IntroComponent],
   templateUrl: './main-sign-in.component.html',
   styleUrl: './main-sign-in.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,7 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 export class MainSignInComponent {
   showSignUpDiv: boolean = true;
   showFooterDiv: boolean = true;
+  showIntro: boolean = true;
 
   constructor(private router: Router) { }
 
@@ -33,4 +35,12 @@ export class MainSignInComponent {
     });
   }
 
+
+      /**
+   * Handles the completion of the intro animation.
+   * @param {boolean} isComplete - The completion status of the intro animation.
+   */
+      handleIntroComplete(isComplete: boolean) {
+        this.showIntro = !isComplete;
+      }
 }
