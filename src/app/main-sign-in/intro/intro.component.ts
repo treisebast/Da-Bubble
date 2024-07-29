@@ -21,13 +21,16 @@ export class IntroComponent implements OnInit {
       this.startAnimation(logo, 'logo-animate', 400)
           .then(() => this.startAnimation(text, 'text-animate', 1250))
           .then(() => Promise.all([
-              this.startAnimation(background, 'background-animate', 1500),
+              this.startAnimation(background, 'background-animate', 800),
               this.startAnimation(logo, 'logo-top-left', 800)
           ]))
-          .then(() => this.introComplete.emit(true))
+          .then(() => {
+              this.renderer.addClass(background, 'hidden');
+              this.introComplete.emit(true);
+          })
           .catch(error => console.error('Animation error:', error));
-  }, 750);
-}
+    }, 750);
+  }
 
   startAnimation(element: any, animationClass: string, duration: number): Promise<void> {
     return new Promise((resolve, reject) => {

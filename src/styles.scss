@@ -1,17 +1,12 @@
 /* Global fontstyle from Angular Material change to fonts Nunito */
 @use "@angular/material" as mat;
 
-$open-sans-typography: mat.define-typography-config(
-  $font-family: '"Nunito", sans-serif'
-);
+$open-sans-typography: mat.define-typography-config($font-family: '"Nunito", sans-serif'
+  );
 
 @include mat.typography-hierarchy($open-sans-typography);
 
-$app-theme: mat.define-light-theme(
-  (
-    typography: $open-sans-typography
-  )
-);
+$app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @include mat.all-component-themes($app-theme);
 
 /* Imports */
@@ -24,6 +19,14 @@ $app-theme: mat.define-light-theme(
   font-family: Nunito, sans-serif;
   scroll-behavior: smooth;
   box-sizing: border-box;
+}
+
+*.unselectable {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 html,
@@ -43,6 +46,20 @@ body {
   display: none !important;
 }
 
+.jc-end {
+  justify-content: end !important;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
 
 // scrollbar - width
 ::-webkit-scrollbar {
@@ -65,249 +82,8 @@ body {
   background: var(--purple-one);
 }
 
-
-/*---ab hier auslagern in komponenten, da nicht global, sondern Component-Spezifisch---*/
-
-.invalid-border input {
-  border-color: var(--error-color, rgb(255, 0, 0));
-}
-
-.validMsg {
-  color: var(--error-color, rgb(255, 0, 0));
-  font-size: 12px;
-  height: 16px;
-  margin-bottom: 8px;
-  padding-left: 16px;
-  display: block;
-}
-
-.validMsg.hidden {
-  visibility: hidden;
-}
-
-.jc-end {
-  justify-content: end !important;
-}
-
-mat-card-title {
-  text-align: center;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--purple-one);
-  margin-bottom: 8px;
-}
-
-mat-card-subtitle {
-  text-align: center;
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: var(--black, #000000);//variable machen
-}
-
-.full-width {
-  width: 100%;
-}
-
-.centered {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.login-card {
-  width: 90%;
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px var(--shadow, rgba(0, 0, 0, 0.1));
-}
-
-.login-actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-
-  > button {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 24.55px;
-    text-align: left;
-  }
-}
-
-.or-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 12px 0;
-  font-size: 12px;
-  color: var(--black, #000000);
-
-  .line {
-    flex: 1;
-    height: 1px;
-    background-color: var(--ligth-purple-lines);
-    margin: 0 8px;
-  }
-
-  > span {
-    font-size: 14px;
-  }
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  background-color: var(--light-purple);
-  border-radius: 25px;
-  padding: 8px 20px;
-  margin: 8px 0;
-  border: 1px solid transparent;
-  height: 41px;
-
-  &:hover {
-    border: 1px solid var(--purple-one);
-  }
-
-  > input {
-    width: 155px;
-  }
-}
-
-.input-container img {
-  margin-right: 16px;
-}
-
-.input-container input {
-  border: none;
-  outline: none;
-  background-color: transparent;
-  flex: 1;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.arrow-back {
-  position: absolute;
-  margin-top: -4px;
-
-  .arrow-back-img {
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    background-image: url(./assets/img/front-page/arrow_back.svg);
-    background-repeat: no-repeat;
-    background-position: center;
-
-    &:hover {
-      border-radius: 50px;
-      background: var(--light-purple);
-      background-image: url(./assets/img/front-page/arrow_back_hover.svg);
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-  }
-}
-
-.prio-button,
-.alt-button {
-  display: inline-block;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 45px;
-  cursor: pointer;
-  text-align: center;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
-  border: 1px solid var(--purple-one);
-}
-
-.prio-button {
-  background-color: var(--purple-one);
-  color: var(--white, #FFFFFF);
-  border: none;
-
-  &:hover {
-    background-color: var(--purple-two);
-  }
-}
-
-.prio-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.alt-button {
-  background-color: transparent;
-  color: var(--purple-one);
-  border: 1px solid var(--purple-one);
-
-  &:hover {
-    background-color: var(--purple-three);
-    color: var(--white, #FFFFFF);
-  }
-}
-
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
   display: none !important;
   opacity: 0 !important;
-}
-
-@media (min-width: 1200px) {
-  .login-card {
-    padding: 40px;
-    display: flex;
-  }
-
-  mat-card-title {
-    font-size: 34px;
-  }
-
-  mat-card-subtitle {
-    font-size: 20px;
-    font-weight: 400;
-  }
-
-  .input-container input,
-  .forgot-password,
-  .or-divider > span,
-  .google-login > a,
-  .login-actions > button,
-  .checkbox > span,
-  .checkbox > span > a {
-    font-size: 18px !important;
-  }
-
-  .input-container,
-  .google-login {
-    height: 55px;
-  }
-}
-
-::ng-deep .mat-dialog-container {
-  border-radius: 30px !important;
-  overflow: hidden !important;
-}
-
-@media (max-width: 500px) {
-  .validMsg {
-    font-size: 11px;
-  }
-
-  .arrow-back {
-    > img {
-      width: 25px;
-      cursor: pointer;
-    }
-  }
 }

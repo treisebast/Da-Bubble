@@ -1,3 +1,5 @@
+@import './../../../styles.scss';
+
 .logo {
     z-index: 2;
     display: flex;
@@ -5,26 +7,26 @@
     justify-content: center;
     position: absolute;
     top: calc(50% - 92px);
-    left: calc(50% - 155px);
+    left: calc(50% - 105px);
     color: white;
-    font-size: 100px;
-    font-weight: 600;
 
     img {
-        width: 150px;
-        height: 150px;
+        width: 75px;
+        height: 75px;
         transition: width 500ms, height 500ms;
     }
 }
 
 .logo-text {
-    width: 500px;
-    height: 200px;
+    width: 186px;
+    height: 100px;
     overflow-x: hidden;
     position: relative;
     z-index: 9999;
 
     >span {
+        font-size: 36px;
+        font-weight: 600;
         position: absolute;
         left: -100%;
         height: 100%;
@@ -38,10 +40,11 @@
 
 .background {
     z-index: 2;
+    display:block;
     position: absolute;
     top: 0;
     left: 0;
-    background: linear-gradient(1.46deg,#313AE6 1.22%,#797EF3 98.76%);
+    background: linear-gradient(1.46deg, #313AE6 1.22%, #797EF3 98.76%);
     width: 100%;
     height: 100%;
 }
@@ -59,7 +62,7 @@
 }
 
 .background-animate {
-    animation: opacityTransition 1500ms ease-in-out forwards; // Hintergrund-Animation dauert 1500ms
+    animation: opacityTransition 800ms ease-in-out forwards; // Hintergrund-Animation dauert 1500ms
 }
 
 @keyframes slideLogoLeft {
@@ -68,11 +71,31 @@
     }
 
     to {
-        transform: translateX(-20%);
+        transform: translateX(-30%);
     }
 }
 
 @keyframes slideTextRight {
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(105%);
+    }
+}
+
+@keyframes slideLogoLeftMobile {
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(-20%);
+    }
+}
+
+@keyframes slideTextRightMobile {
     from {
         transform: translateX(0%);
     }
@@ -105,5 +128,79 @@
         left: -100px;
         transform: translateX(0) scale(0.5);
         opacity: 0;
+    }
+}
+
+@keyframes moveToTopMobile {
+    0% {
+        top: calc(50% - 92px);
+        left: calc(50% - 105px);
+        transform: translateX(-20%) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0) scale(0.5);
+        opacity: 0;
+    }
+}
+
+
+
+@media(min-width:1200px) {
+    .logo {
+        top: calc(50% - 92px);
+        left: calc(50% - 100px);
+
+        img {
+            width: 150px;
+            height: 150px;
+            transition: width 500ms, height 500ms;
+        }
+    }
+
+    .logo-text {
+        width: 505px;
+        height: 200px;
+
+        >span {
+            font-size: 100px;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (max-width: 1199px){
+
+}
+
+
+@media (max-width: 799px) {
+    .logo {
+        left: calc(50% - 75px);
+
+        img {
+            width: 75px;
+            height: 75px;
+            transition: width 500ms, height 500ms;
+        }
+    }
+
+    .logo-animate {
+        animation: slideLogoLeftMobile 400ms forwards;
+    }
+
+    .text-animate {
+        animation: slideTextRightMobile 700ms forwards;
+    }
+
+    .background-animate {
+        animation: opacityTransition 800ms ease-in-out forwards;
+    }
+
+    .logo-top-left {
+        animation: moveToTopMobile 800ms forwards;
     }
 }
