@@ -25,6 +25,8 @@ export class IntroComponent implements OnInit {
               this.startAnimation(logo, 'logo-top-left', 800)
           ]))
           .then(() => {
+              this.renderer.addClass(logo, 'hidden');
+              this.renderer.addClass(text, 'hidden');
               this.renderer.addClass(background, 'hidden');
               this.introComplete.emit(true);
           })
