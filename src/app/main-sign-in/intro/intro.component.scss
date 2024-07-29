@@ -50,19 +50,19 @@
 }
 
 .text-animate {
-    animation: slideTextRight 700ms forwards; // Text-Animation dauert 700ms
+    animation: slideTextRight 700ms forwards;
 }
 
 .logo-animate {
-    animation: slideLogoLeft 400ms forwards; // Logo-Animation dauert 400ms
+    animation: slideLogoLeft 400ms forwards;
 }
 
 .logo-top-left {
-    animation: moveToTopLeft 800ms forwards; // Logo verschieben dauert 800ms
+    animation: moveToTopLeft 800ms forwards;
 }
 
 .background-animate {
-    animation: opacityTransition 800ms ease-in-out forwards; // Hintergrund-Animation dauert 1500ms
+    animation: opacityTransition 800ms ease-in-out forwards;
 }
 
 @keyframes slideLogoLeft {
@@ -167,24 +167,25 @@
 
         >span {
             font-size: 100px;
-            font-weight: 600;
         }
     }
 }
 
 @media (max-width: 1199px){
-
-}
-
-
-@media (max-width: 799px) {
     .logo {
         left: calc(50% - 75px);
 
         img {
-            width: 75px;
-            height: 75px;
+            width: 100px;
+            height: 100px;
             transition: width 500ms, height 500ms;
+        }
+    }
+
+    .logo-text {
+        width: 250px;
+        >span {
+            font-size: 48px;
         }
     }
 
@@ -202,5 +203,23 @@
 
     .logo-top-left {
         animation: moveToTopMobile 800ms forwards;
+    }
+}
+
+
+@media (max-width: 799px) {
+    .logo {
+        img {
+            width: 75px;
+            height: 75px;
+            transition: width 500ms, height 500ms;
+        }
+    }
+
+    .logo-text {
+        width: 186px;
+        >span {
+            font-size: 36px;
+        }
     }
 }
