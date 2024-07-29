@@ -2,18 +2,17 @@
   <div class="headline">
       <h2>Thread</h2>
       <img class="profileImg" src="" alt="">
-      <p>{{ currentChat?.name}}</p>
+      <p>{{ currentChat?.name }}</p>
   </div>
   <div (click)="onCloseThread()" class="close"></div>
 </div>
-
 
 <div class="chat-container" #chatContainer>
 
   <div *ngIf="currentMessageToOpen && messages.length === 0" class="singelMessageContainer"  [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
     <div class="message-header">
       <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
-      <span class="name">{{ currentMessageToOpen.senderId }}</span>
+      <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
     </div>
 
     <div class="message-content">
@@ -29,7 +28,7 @@
     <div *ngIf="i === 0 || messages.length === 0" class="singelMessageContainer" [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
       <div class="message-header">
         <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
-        <span class="name">{{ currentMessageToOpen.senderId }}</span>
+        <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
       </div>
 
       <div class="message-content">
@@ -40,22 +39,15 @@
     <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat?.name, 'message-right': message.senderId === currentChat?.name}">
       <div class="message-header">
         <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
-        <span class="name">{{ message.senderId }}</span>
+        <span class="name">{{ getUserName(message.senderId) }}</span>
       </div>
 
       <div class="message-content">
         <p>{{ message.content }}</p>
       </div>
-
     </div>
   </div>
 </div>
-
-
-
-
-
-
 
 <div class="messageBox">
   <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an" name="" id=""></textarea>

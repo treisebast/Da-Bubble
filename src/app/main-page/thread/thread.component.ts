@@ -8,6 +8,7 @@ import { Message } from '../../shared/models/message.model';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-thread',
@@ -21,12 +22,14 @@ export class ThreadComponent implements OnInit {
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
 
   messages: Message[] = [];
   newMessageText = '';
   currentMessageToOpen: any;
   currentUserId = '';
   currentUserName = '';
+  userNames: { [key: string]: string } = {};
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -38,6 +41,9 @@ export class ThreadComponent implements OnInit {
 
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
+      if (chatMessage) {
+        this.resolveUserName(chatMessage.senderId);
+      }
     });
 
     this.chatService.currentChat$.subscribe(chat => {
@@ -47,6 +53,7 @@ export class ThreadComponent implements OnInit {
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
+        this.resolveUserNames(this.messages);
       } else {
         this.messages = [];
       }
@@ -59,14 +66,20 @@ export class ThreadComponent implements OnInit {
     this.closeThread.emit();
   }
 
-  sendMessage() {
+  /**
+   * Sends a new message.
+   */
+  async sendMessage() {
     if (this.newMessageText.trim() === '') {
       return;
     }
 
+    const userName = await this.userService.getUserNameById(this.currentUserId);
+
     const newMessage: Message = {
       content: this.newMessageText,
-      senderId: this.currentUserName,
+      senderId: this.currentUserId,
+      senderName: userName,
       timestamp: serverTimestamp()
     };
 
@@ -76,6 +89,11 @@ export class ThreadComponent implements OnInit {
     this.newMessageText = '';
   }
 
+  /**
+   * Sorts messages by their timestamp.
+   * @param {Message[]} messages - The messages to sort.
+   * @returns {Message[]} The sorted messages.
+   */
   sortMessagesByTimestamp(messages: Message[]): Message[] {
     return messages.sort((a, b) => {
       const dateA = this.convertToDate(a.timestamp);
@@ -84,6 +102,12 @@ export class ThreadComponent implements OnInit {
     });
   }
 
+  /**
+   * Determines if the message is on a new day compared to the previous message.
+   * @param {Timestamp | FieldValue} timestamp - The timestamp of the current message.
+   * @param {number} index - The index of the current message.
+   * @returns {boolean} True if the message is on a new day, false otherwise.
+   */
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
     const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
@@ -91,10 +115,47 @@ export class ThreadComponent implements OnInit {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
+  /**
+   * Converts a Firestore timestamp to a JavaScript Date object.
+   * @param {Timestamp | FieldValue} timestamp - The Firestore timestamp.
+   * @returns {Date} The JavaScript Date object.
+   */
   convertToDate(timestamp: Timestamp | FieldValue): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
     }
     return new Date();
+  }
+
+  /**
+   * Resolves the usernames for all messages.
+   * @param {Message[]} messages - The messages whose usernames to resolve.
+   */
+  async resolveUserNames(messages: Message[]) {
+    const userIds = [...new Set(messages.map(msg => msg.senderId))];
+    for (const userId of userIds) {
+      this.resolveUserName(userId);
+    }
+  }
+
+  /**
+   * Resolves the username for a given user ID.
+   * @param {string} userId - The ID of the user.
+   */
+  async resolveUserName(userId: string) {
+    if (!this.userNames[userId]) {
+      const userName = await this.userService.getUserNameById(userId);
+      this.userNames[userId] = userName;
+    }
+  }
+  
+
+  /**
+   * Gets the username for a given user ID.
+   * @param {string} userId - The ID of the user.
+   * @returns {string} The username.
+   */
+  getUserName(userId: string): string {
+    return this.userNames[userId] || 'Unknown';
   }
 }

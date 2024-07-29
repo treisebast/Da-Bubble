@@ -23,11 +23,19 @@ export class ChatService {
 
   constructor(private channelMessageService: ChannelMessageService) {}
 
+  /**
+   * Sets the current chat and loads its messages.
+   * @param {ChatUserProfile | Channel} chat - The chat to set as current.
+   */
   setCurrentChat(chat: ChatUserProfile | Channel) {
     this.currentChatSource.next(chat);
     this.loadMessages(chat);
   }
 
+  /**
+   * Loads messages for the given chat.
+   * @param {ChatUserProfile | Channel} chat - The chat whose messages to load.
+   */
   private loadMessages(chat: ChatUserProfile | Channel) {
     const channelId = (chat as Channel).id;
     if (channelId) {
@@ -36,24 +44,38 @@ export class ChatService {
         this.messagesSource.next(messages);
       });
     } else {
-      // Implementiere Logik zum Laden direkter Nachrichten
+      // Implement logic for loading direct messages
     }
   }
 
+  /**
+   * Gets messages for the given channel ID.
+   * @param {string} channelId - The ID of the channel.
+   * @returns {Observable<Message[]>} An observable of the channel's messages.
+   */
   getMessages(channelId: string): Observable<Message[]> {
     return this.channelMessageService.getChannelMessages(channelId);
   }
 
+  /**
+   * Adds a message to the given channel.
+   * @param {string} channelId - The ID of the channel.
+   * @param {Message} message - The message to add.
+   */
   addMessage(channelId: string, message: Message) {
     this.channelMessageService.addChannelMessage(channelId, message).then(() => {
       const currentMessages = this.messagesSource.getValue();
       currentMessages.push(message);
-      // Sortiere die Nachrichten nach ihrem Timestamp
       currentMessages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
       this.messagesSource.next(currentMessages);
     });
   }
 
+  /**
+   * Converts a Firestore timestamp to a JavaScript Date object.
+   * @param {Timestamp | FieldValue} timestamp - The Firestore timestamp.
+   * @returns {Date} The JavaScript Date object.
+   */
   private convertToDate(timestamp: Timestamp | FieldValue): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
@@ -61,22 +83,40 @@ export class ChatService {
     return new Date();
   }
 
+  /**
+   * Sets the channel status to false.
+   */
   setChannelFalse() {
     this.isChannelSource.next(false);
   }
 
+  /**
+   * Sets the channel status to true.
+   */
   setChannelTrue() {
     this.isChannelSource.next(true);
   }
 
-  getChannelStatus() {
+  /**
+   * Gets the current channel status.
+   * @returns {Observable<boolean>} An observable of the channel status.
+   */
+  getChannelStatus(): Observable<boolean> {
     return this.isChannel$;
   }
 
-  get selectedChat$() {
+  /**
+   * Gets the selected chat status as an observable.
+   * @returns {Observable<boolean>} An observable of the selected chat status.
+   */
+  get selectedChat$(): Observable<boolean> {
     return this._selectedChat.asObservable();
   }
 
+  /**
+   * Sets the selected chat status.
+   * @param {boolean} value - The new value for the selected chat status.
+   */
   setSelectedChat(value: boolean) {
     this._selectedChat.next(value);
   }
