@@ -31,14 +31,24 @@
   </div>
 </header>
 
+<!-- Menucard -->
 <app-menu
   (closeMenu)="closeMenu()"
   (openProfile)="openProfil()"
   *ngIf="isMenuOpen"
 ></app-menu>
 
-<app-profil
+<!-- Profilcard -->
+<div
+  class="modal-background"
   #profil
   *ngIf="isProfilOpen"
-  (closeProfileCard)="closeProfil()"
-></app-profil>
+  (click)="closeProfil()"
+>
+  <div class="max-width">
+    <app-profil
+      (closeProfileCard)="closeProfil()"
+      (click)="$event.stopPropagation()"
+    ></app-profil>
+  </div>
+</div>
