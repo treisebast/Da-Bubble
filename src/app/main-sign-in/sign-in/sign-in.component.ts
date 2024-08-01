@@ -12,7 +12,7 @@ import { UserService } from '../../shared/services/user.service';
 import { firstValueFrom, switchMap } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
-
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-sign-in',
@@ -31,7 +31,8 @@ export class SignInComponent {
     private router: Router,
     private authService: AuthService,
     private userService: UserService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef // ChangeDetectorRef hinzufügen
   ) {
     this.initializeForm();
   }
@@ -86,9 +87,23 @@ export class SignInComponent {
     * @private
     */
   private handleError(err: any) {
-    console.error('Sign-In Error', err);
-    this.signInError = err.message;
+    switch (err.code) {
+      case 'auth/invalid-credential':
+        this.signInError = 'Ungültige Anmeldedaten.';
+        break;
+      case 'auth/user-not-found':
+        this.signInError = 'Benutzer nicht gefunden.';
+        break;
+      case 'auth/wrong-password':
+        this.signInError = 'Falsches Passwort.';
+        break;
+      default:
+        this.signInError = 'Anmeldefehler.';
+        break;
+    }
+    this.cdr.detectChanges();
   }
+  
 
 
   /**
