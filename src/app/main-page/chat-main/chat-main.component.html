@@ -34,16 +34,6 @@
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
           <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
         </div>
-<<<<<<< Updated upstream
-
-        <app-message 
-          *ngIf="userProfiles[message.senderId]"
-          [message]="message" 
-          [userProfile]="userProfiles[message.senderId]" 
-          [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)">
-        </app-message>
-=======
   
         <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentUserName, 'message-right': message.senderId === currentUserName}">
           <div class="message-header">
@@ -70,7 +60,6 @@
   
           <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.senderId }}" class="profile-img">
         </div>
->>>>>>> Stashed changes
       </div>
     </ng-container>
   </div>

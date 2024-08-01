@@ -6,6 +6,7 @@ import { ChannelService } from '../../shared/services/channel.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { Channel } from '../../shared/models/channel.model';
 import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
+import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-side-nav',
@@ -19,9 +20,13 @@ import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 export class SideNavComponent implements OnInit {
   menuChannelDropdown: boolean = true;
   directMessages: boolean = true;
-  readonly dialog = inject(MatDialog);
-  private channelService = inject(ChannelService);
-  private chatService = inject(ChatService);
+
+  constructor(
+    private channelService: ChannelService,
+    private chatService: ChatService,
+    private userService: UserService,
+    private dialog: MatDialog
+  ) {}
 
   allChannels: Channel[] = [];
   allDirectMessages: ChatUserProfile[] = [
@@ -50,6 +55,13 @@ export class SideNavComponent implements OnInit {
   ngOnInit() {
     this.channelService.getChannels().subscribe(channels => {
       this.allChannels = channels;
+    });
+    this.userService.getUsers().subscribe(users => {
+      this.allDirectMessages = users.map(user => ({
+        name: user.name,
+        imgScr: user.avatar,
+        online: user.status === 'online'
+      }));
     });
   }
 

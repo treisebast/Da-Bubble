@@ -15,9 +15,11 @@
 
 .wrapper {
   height: calc(100vh - 131px);
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   display: flex;
   flex-direction: column;
 }
@@ -26,9 +28,16 @@
   height: 48px;
   margin-right: 16px;
 
-  >img {
+  >img:nth-child(1) {
+    object-fit: cover;
     height: 48px;
+    width: 48px;
     border-radius: 100%;
+  }
+
+  >img:nth-child(2) {
+    object-fit: cover;
+    width: auto;
   }
 
   .online {
