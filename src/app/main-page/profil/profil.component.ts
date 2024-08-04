@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
@@ -7,11 +7,15 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { CommonModule } from '@angular/common';
+import { User } from '../../shared/models/user.model';
+import { EditProfilComponent } from './edit-profil/edit-profil.component';
 
 @Component({
   selector: 'app-profil',
   standalone: true,
   imports: [
+    CommonModule,
     MatButtonModule,
     MatDialogActions,
     MatDialogClose,
@@ -19,18 +23,26 @@ import { MatCardModule } from '@angular/material/card';
     MatDialogContent,
     MatCardModule,
     MatButtonModule,
+    EditProfilComponent,
   ],
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
 })
 export class ProfilComponent {
-  hrefEmailString: string = 'mailto:contact@sebastian-treittinger.de';
-  emailAddress: string = 'contact@sebastian-treittinger.de';
+  @Output() closeProfileCard = new EventEmitter();
+  @Input() ownUser: Partial<User> = {};
+
+  isEditing = false;
+  profiltext: string = 'Profil';
 
   constructor() {}
-  @Output() closeProfileCard = new EventEmitter();
 
   closeProfil() {
     this.closeProfileCard.emit();
+  }
+
+  editProfil() {
+    this.isEditing = true;
+    this.profiltext = 'Dein Profil bearbeiten';
   }
 }

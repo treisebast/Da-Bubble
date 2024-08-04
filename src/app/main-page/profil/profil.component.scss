@@ -67,11 +67,48 @@
   flex-direction: column;
   gap: 15px;
 
-  mat-card-title {
-    color: var(--Black, #000);
-    font-size: 32px;
-    text-align: start;
-    font-weight: 700;
+  .title-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    mat-card-title {
+      color: var(--Black, #000);
+      font-size: 32px;
+      text-align: start;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    // TODO: @Media display unset and .edit display none
+    .edit-icon {
+      display: none;
+      width: 24px;
+      height: 24px;
+      padding: 3px;
+      background-image: url(./../../../assets/img/profilecard/edit.svg);
+      background-repeat: no-repeat;
+      background-position: center center;
+
+      &:hover {
+        background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
+        cursor: pointer;
+      }
+    }
+
+    .edit {
+      color: var(--Purple-three, rgb(83, 90, 241));
+      font-size: 18px;
+      font-weight: 600;
+
+      &:hover {
+        cursor: pointer;
+        font-weight: 700;
+        transform-origin: left;
+      }
+    }
   }
 
   .profil-status {
@@ -84,21 +121,6 @@
       font-size: 20px;
       margin: 0;
     }
-  }
-}
-
-.title-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--Purple-three, rgb(83, 90, 241));
-  font-size: 18px;
-  font-weight: 600;
-
-  &:hover {
-    cursor: pointer;
-    font-weight: 700;
-    transform-origin: left;
   }
 }
 

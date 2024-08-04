@@ -1,5 +1,9 @@
-@import './../../../styles.scss';
-@import './../../../styles/front-page.scss';
+@import "./../../../styles.scss";
+@import "./../../../styles/front-page.scss";
+
+.invalid-border {
+    border-color: var(--error-color, rgb(255, 0, 0));
+}
 
 .google-login {
     display: flex;
@@ -11,10 +15,12 @@
     border: none;
     margin-bottom: 16px;
     background-color: var(--light-purple);
-    transition: border 0.3s ease, background-color 0.3s ease;
+    transition:
+        border 0.3s ease,
+        background-color 0.3s ease;
     cursor: pointer;
 
-    >span {
+    > span {
         font-size: 14px;
         color: var(--purple-one);
         text-decoration: none;
@@ -64,14 +70,13 @@
 //     margin-bottom: 10px;
 // }
 
-@media(min-width:1200px) {
+@media (min-width: 1200px) {
     .google-login {
-        >span {
+        > span {
             font-size: 18px;
         }
     }
 }
-
 
 @media (min-width: 500px) {
     mat-card-title {
@@ -94,7 +99,7 @@
 }
 
 @media (max-width: 499px) {
-    .input-container>img {
+    .input-container > img {
         width: 20px;
     }
 }

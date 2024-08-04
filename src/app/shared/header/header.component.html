@@ -34,7 +34,7 @@
 <!-- Menucard -->
 <app-menu
   (closeMenu)="closeMenu()"
-  (openProfile)="openProfil()"
+  (openProfile)="openProfil(currentUser)"
   *ngIf="isMenuOpen"
 ></app-menu>
 
@@ -47,6 +47,7 @@
 >
   <div class="max-width">
     <app-profil
+      [ownUser]="currentUser"
       (closeProfileCard)="closeProfil()"
       (click)="$event.stopPropagation()"
     ></app-profil>

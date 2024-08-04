@@ -70,9 +70,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isMenuOpen = false;
   }
 
-  openProfil() {
+  openProfil(User: Partial<User>) {
     this.isProfilOpen = true;
-    console.log('open profil');
+    console.log(User);
   }
 
   closeProfil() {
