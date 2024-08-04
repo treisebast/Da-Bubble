@@ -8,7 +8,7 @@
   // flex-direction: column;
   // align-items: center;
   // border-radius: 30px;
-  background: var(--White, rgb(255, 255, 255));
+  background: var(--white, rgb(255, 255, 255));
   box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
   position: absolute;
   // left: 0;
@@ -73,7 +73,7 @@
     justify-content: space-between;
 
     mat-card-title {
-      color: var(--Black, #000);
+      color: var(--black, #000);
       font-size: 32px;
       text-align: start;
       font-weight: 700;
@@ -91,6 +91,7 @@
       background-image: url(./../../../assets/img/profilecard/edit.svg);
       background-repeat: no-repeat;
       background-position: center center;
+      transition: ease-in-out 150ms;
 
       &:hover {
         background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
@@ -99,9 +100,10 @@
     }
 
     .edit {
-      color: var(--Purple-three, rgb(83, 90, 241));
+      color: var(--purple-three, rgb(83, 90, 241));
       font-size: 18px;
       font-weight: 600;
+      transition: ease-in-out 150ms;
 
       &:hover {
         cursor: pointer;
@@ -135,7 +137,7 @@
     gap: 20px;
 
     mat-card-subtitle {
-      color: var(--Black, #000);
+      color: var(--black, #000);
       font-size: 20px;
       font-weight: 700;
       margin: 0;
@@ -169,17 +171,17 @@
     justify-content: center;
     gap: 10px;
     border-radius: 50px;
-    background: var(--Purple-one, #444df2);
+    background: var(--purple-one, #444df2);
     width: fit-content;
 
     span {
       font-size: 18px;
       font-weight: 700;
-      color: var(--White, rgb(255, 255, 255));
+      color: var(--white, rgb(255, 255, 255));
     }
 
     &:hover {
-      background: var(--Purple-two, rgb(121, 126, 243));
+      background: var(--purple-two, rgb(121, 126, 243));
     }
   }
 }

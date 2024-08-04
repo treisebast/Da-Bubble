@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { User } from '../../../shared/models/user.model';
+import { UserService } from '../../../shared/services/user.service';
 
 @Component({
   selector: 'app-edit-profil',
@@ -18,6 +19,7 @@ import { User } from '../../../shared/models/user.model';
 })
 export class EditProfilComponent {
   @Input() ownUser: Partial<User> = {};
+  @Output() closeEditProfil = new EventEmitter<boolean>();
 
   editProfilForm = new FormGroup({
     name: new FormControl('', [Validators.minLength(3), Validators.required]),
@@ -28,7 +30,7 @@ export class EditProfilComponent {
     ]),
   });
 
-  constructor() {}
+  constructor(private userService: UserService) {}
 
   get name(): AbstractControl {
     return this.editProfilForm.get('name')!;
@@ -38,15 +40,19 @@ export class EditProfilComponent {
     return this.editProfilForm.get('email')!;
   }
 
-  save(): void {
+  onSubmitSave(): void {
     if (this.editProfilForm.valid) {
-      console.log('Form data:', this.editProfilForm.value);
-      // Hier kannst du die Logik zum Speichern der Daten einfügen
+      this.userService.updateUser({
+        ...this.ownUser,
+        ...this.editProfilForm.value,
+      } as User);
+      this.editProfilForm.reset();
+      this.closeEditProfil.emit(false);
     }
   }
 
   cancel(): void {
     this.editProfilForm.reset();
-    // Hier kannst du die Logik zum Abbrechen einfügen
+    this.closeEditProfil.emit(false);
   }
 }

@@ -45,4 +45,8 @@ export class ProfilComponent {
     this.isEditing = true;
     this.profiltext = 'Dein Profil bearbeiten';
   }
+
+  closeEditProfil(event: boolean) {
+    this.isEditing = event;
+  }
 }

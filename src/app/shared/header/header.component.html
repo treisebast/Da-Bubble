@@ -1,8 +1,6 @@
 <header>
   <div class="max-width">
-    <a [routerLink]="['start']"
-      ><img src="./assets/img/logo.svg" alt="" class="logo"
-    /></a>
+    <a [routerLink]="['start']"><img src="./assets/img/logo.svg" alt="" class="logo" /></a>
 
     <div class="searchbar">
       <input type="text" placeholder="Durchsuchen" />
@@ -13,18 +11,8 @@
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
         <img src="{{ currentUser.avatar }}" alt="" class="profile-img" />
-        <img
-          *ngIf="currentUser.status === 'online'"
-          src="./assets/img/online.png"
-          alt=""
-          class="online"
-        />
-        <img
-          *ngIf="currentUser.status === 'offline'"
-          src="./assets/img/offline.png"
-          alt=""
-          class="online"
-        />
+        <img *ngIf="currentUser.status === 'online'" src="./assets/img/online.png" alt="" class="online" />
+        <img *ngIf="currentUser.status === 'offline'" src="./assets/img/offline.png" alt="" class="online" />
       </div>
       <mat-icon fontIcon="keyboard_arrow_down"></mat-icon>
     </div>
@@ -32,24 +20,12 @@
 </header>
 
 <!-- Menucard -->
-<app-menu
-  (closeMenu)="closeMenu()"
-  (openProfile)="openProfil(currentUser)"
-  *ngIf="isMenuOpen"
-></app-menu>
+<app-menu (closeMenu)="closeMenu()" (openProfile)="openProfil(currentUser)" *ngIf="isMenuOpen"></app-menu>
 
 <!-- Profilcard -->
-<div
-  class="modal-background"
-  #profil
-  *ngIf="isProfilOpen"
-  (click)="closeProfil()"
->
+<div class="modal-background" #profil *ngIf="isProfilOpen" (click)="closeProfil()">
   <div class="max-width">
-    <app-profil
-      [ownUser]="currentUser"
-      (closeProfileCard)="closeProfil()"
-      (click)="$event.stopPropagation()"
-    ></app-profil>
+    <app-profil [ownUser]="currentUser" (closeProfileCard)="closeProfil()"
+      (click)="$event.stopPropagation()"></app-profil>
   </div>
 </div>

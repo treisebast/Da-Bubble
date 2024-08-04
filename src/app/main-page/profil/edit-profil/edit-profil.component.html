@@ -1,7 +1,7 @@
-<form [formGroup]="editProfilForm">
+<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()">
 
   <!-- Name -->
-  <div class="flex-container">
+  <div class=" flex-container">
     <div class="account-circle-icon"></div>
     <span class="h2text">Vollständiger Name</span>
   </div>
@@ -28,10 +28,11 @@
     Bitte geben Sie eine gültige E-Mail-Adresse ein.
   </span>
 
-  <!-- TODO: rework -->
   <!-- Save and Cancel -->
-  <!-- <div class="button-container">
-    <button type="button" (click)="save()">Speichern</button>
-    <button type="button" (click)="cancel()">Abbrechen</button>
-  </div> -->
+  <div class="width-100">
+    <div class="button-container">
+      <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
+      <button class="btn btn-save" type="submit">Speichern</button>
+    </div>
+  </div>
 </form>
