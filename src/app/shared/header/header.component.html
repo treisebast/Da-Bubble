@@ -23,7 +23,7 @@
 <app-menu (closeMenu)="closeMenu()" (openProfile)="openProfil(currentUser)" *ngIf="isMenuOpen"></app-menu>
 
 <!-- Profilcard -->
-<div class="modal-background" #profil *ngIf="isProfilOpen" (click)="closeProfil()">
+<div class="modal-background" *ngIf="isProfilOpen" (click)="closeProfil()">
   <div class="max-width">
     <app-profil [ownUser]="currentUser" (closeProfileCard)="closeProfil()"
       (click)="$event.stopPropagation()"></app-profil>

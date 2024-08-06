@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -39,8 +39,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
 
   constructor(private auth: AuthService, private userService: UserService) {}
-
-  @ViewChild(ProfilComponent) profil!: ProfilComponent;
 
   ngOnInit() {
     const authSub = this.auth.getUser().subscribe((firebaseUser) => {
