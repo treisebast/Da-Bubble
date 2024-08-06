@@ -3,7 +3,6 @@
     <h2>Neue Nachricht</h2>
     <input type="text" placeholder="An: #channel, oder @jemand oder E-Mail Adresse">
   </div>
-
   <div class="messageBox absolute-bottom">
     <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"></textarea>
     <div class="messageBoxBottom">
@@ -17,7 +16,6 @@
     </div>
   </div>
 </div>
-
 <div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
     <div class="profileImg">
@@ -27,43 +25,23 @@
     </div>
     <h2>{{ currentChat.name }}</h2>
   </div>
-
   <div class="chat-container" #chatContainer>
     <ng-container *ngIf="selectedChat">
       <div *ngFor="let message of messages; let i = index">
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
           <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
         </div>
-  
-        <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentUserName, 'message-right': message.senderId === currentUserName}">
-          <div class="message-header">
-            <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
-            <span class="name">{{ message.senderId }}</span>
-          </div>
-          
-          <div class="reactionBar">
-            <div class="check"></div>
-            <div class="handsUp"></div>
-            <div class="reaction"></div>
-            <div (click)="openThread(message)" class="comment"></div>
-            <div class="vertPoints"></div>
-          </div>
 
-          <div class="message-content">
-            <p>{{ message.content }}</p>
-          </div>
-
-          <div class="showReaction">
-            <div class="checksCount"></div>
-            
-          </div>
-  
-          <img *ngIf="isChatUserProfile(currentChat)" [src]="currentChat.imgScr" alt="{{ message.senderId }}" class="profile-img">
-        </div>
+        <app-message 
+          *ngIf="userProfiles[message.senderId]"
+          [message]="message" 
+          [userProfile]="userProfiles[message.senderId]" 
+          [isCurrentUser]="message.senderId === currentUserId"
+          (messageClicked)="openThread($event)">
+        </app-message>
       </div>
     </ng-container>
   </div>
-
   <div class="messageBox">
     <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"></textarea>
     <div class="messageBoxBottom">
