@@ -37,6 +37,7 @@
   }
 
   .close-img {
+    cursor: pointer;
     width: 40px;
     height: 40px;
     background-image: url(./../../../assets/img/profilecard/close.svg);
@@ -58,7 +59,7 @@
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    object-fit: contain;
+    object-fit: cover;
   }
 }
 
