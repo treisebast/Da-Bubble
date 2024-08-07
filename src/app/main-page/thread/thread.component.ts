@@ -9,6 +9,7 @@ import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-thread',
@@ -30,6 +31,7 @@ export class ThreadComponent implements OnInit {
   currentUserId = '';
   currentUserName = '';
   userNames: { [key: string]: string } = {};
+  userProfiles: { [key: string]: ChatUserProfile } = {};
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -38,22 +40,23 @@ export class ThreadComponent implements OnInit {
         this.currentUserName = user.displayName || '';
       }
     });
-
+  
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
       }
     });
-
+  
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat as ChatUserProfile;
     });
-
+  
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
         this.resolveUserNames(this.messages);
+        this.loadUserProfiles(this.messages);
       } else {
         this.messages = [];
       }
@@ -134,7 +137,7 @@ export class ThreadComponent implements OnInit {
   async resolveUserNames(messages: Message[]) {
     const userIds = [...new Set(messages.map(msg => msg.senderId))];
     for (const userId of userIds) {
-      this.resolveUserName(userId);
+      await this.resolveUserName(userId);
     }
   }
 
@@ -157,5 +160,25 @@ export class ThreadComponent implements OnInit {
    */
   getUserName(userId: string): string {
     return this.userNames[userId] || 'Unknown';
+  }
+
+
+  /**
+ * Loads user profiles for the given messages if not already loaded.
+ * @param {Message[]} messages - Array of messages to extract user IDs from.
+ */
+  loadUserProfiles(messages: Message[]) {
+    const userIds = [...new Set(messages.map(message => message.senderId))];
+    userIds.forEach(userId => {
+      if (!this.userProfiles[userId]) {
+        this.userService.getUser(userId).subscribe((user: User) => {
+          this.userProfiles[userId] = {
+            name: user.name,
+            imgScr: user.avatar,
+            online: user.status === 'online'
+          };
+        });
+      }
+    });
   }
 }

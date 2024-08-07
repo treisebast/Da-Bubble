@@ -227,12 +227,13 @@
   .message-header {
     display: flex;
     align-items: center;
+    justify-content: end;
     z-index: 2;
   }
   
   .profile-img {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     right: 4px;
     border-radius: 50%;
   }
@@ -253,6 +254,7 @@
     flex-direction: column;
     height: fit-content;
     .profile-img {
+      object-fit: cover;
       position: absolute;
       top: 8px;
     }
@@ -269,6 +271,12 @@
     display: flex;
     align-items: center;
     z-index: 2;
+  }
+
+  .message-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
   }
   
   .message-right {

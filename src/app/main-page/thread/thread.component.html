@@ -9,48 +9,46 @@
 
 <div class="chat-container" #chatContainer>
 
-  <div *ngIf="currentMessageToOpen && messages.length === 0" class="singelMessageContainer"  [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
-    <div class="message-header">
-      <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
-      <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
-    </div>
-
-    <div class="message-content">
-      <p>{{ currentMessageToOpen.content }}</p>
+  <!-- Original message, to which the thread belongs -->
+  <div *ngIf="currentMessageToOpen" class="singelMessageContainer" [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
+    <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.imgScr" [src]="userProfiles[currentMessageToOpen.senderId].imgScr" alt="{{ getUserName(currentMessageToOpen.senderId) }}" class="profile-img" />
+    <div class="message-wrapper">
+      <div class="message-header">
+        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
+        <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
+      </div>
+      <div class="message-content">
+        <p>{{ currentMessageToOpen.content }}</p>
+      </div>
     </div>
   </div>
 
+  <!-- Thread replies -->
   <div *ngFor="let message of messages; let i = index">
     <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
       <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
     </div>
 
-    <div *ngIf="i === 0 || messages.length === 0" class="singelMessageContainer" [ngClass]="{'message-left': currentMessageToOpen.senderId !== currentChat?.name, 'message-right': currentMessageToOpen.senderId === currentChat?.name}">
-      <div class="message-header">
-        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
-        <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
-      </div>
-
-      <div class="message-content">
-        <p>{{ currentMessageToOpen.content }}</p>
-      </div>
-    </div>
-
     <div class="singelMessageContainer" [ngClass]="{'message-left': message.senderId !== currentChat?.name, 'message-right': message.senderId === currentChat?.name}">
-      <div class="message-header">
-        <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
-        <span class="name">{{ getUserName(message.senderId) }}</span>
-      </div>
-
-      <div class="message-content">
-        <p>{{ message.content }}</p>
+      <img *ngIf="userProfiles[message.senderId]?.imgScr" 
+           [src]="userProfiles[message.senderId].imgScr" 
+           alt="{{ userProfiles[message.senderId].name }}" 
+           class="profile-img" />
+      <div class="message-wrapper">
+        <div class="message-header">
+          <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
+          <span class="name">{{ getUserName(message.senderId) }}</span>
+        </div>
+        <div class="message-content">
+          <p>{{ message.content }}</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <div class="messageBox">
-  <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an" name="" id=""></textarea>
+  <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}" name="" id=""></textarea>
   <div class="messageBoxBottom">
       <div class="iconsLeft">
           <div class="addIcon"></div>
