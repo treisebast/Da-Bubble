@@ -50,6 +50,18 @@ body {
   justify-content: end !important;
 }
 
+.jc-start {
+  justify-content: end !important;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
 .full-width {
   width: 100%;
 }
