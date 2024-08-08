@@ -278,7 +278,7 @@
 }
 
 .message-content {
-  max-width: 80%;
+  width: fit-content;
   background: rgb(236, 238, 254);
   border-radius: 30px;
   border-top-left-radius: 0;
@@ -293,6 +293,7 @@
 .message-wrapper {
   display: flex;
   flex-direction: column;
+  width: 85%;
 }
 
 .message-right {
