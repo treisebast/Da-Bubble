@@ -240,6 +240,7 @@
 
 .name {
   font-weight: bold;
+  font-size: 16px;
 }
 
 .timestamp {
@@ -317,4 +318,30 @@
 .message-actions {
   display: flex;
   gap: 4px;
+}
+
+.reply-divider {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  margin: 16px;
+  position: relative;
+}
+
+.reply-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--divider-purple);
+  z-index: 1;
+}
+
+.reply-divider .replies-count {
+  background: white;
+  padding: 0 8px;
+  z-index: 2;
+  color: var(--divider-purple);
+  font-size: 14px;
 }

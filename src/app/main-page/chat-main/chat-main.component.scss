@@ -168,7 +168,7 @@
   display: flex;
   flex-direction: column;
   gap: 35px;
-  padding: 16px;
+  padding: 16px 32px;
   justify-content: flex-start;
   max-height: calc(100% - 265px);
   overflow-y: auto;
@@ -197,7 +197,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 16px 0;
+  margin: 32px 0;
   position: relative;
 }
 
@@ -207,16 +207,24 @@
   left: 0;
   right: 0;
   top: 50%;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--divider-purple);
   z-index: 1;
 }
 
-.date-divider .date {
+.date-divider {
   background: white;
   padding: 0 8px;
   z-index: 2;
 }
 
+.date {
+  z-index: 2;
+  background: white;
+  border-radius: 30px;
+  border: 1px solid var(--divider-purple);
+  padding: 5px 15px;
+  font-size: 16px;
+}
 
 .message-actions {
   display: flex;
@@ -255,4 +263,14 @@
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+@media (max-width:500px) {
+  .chat-container {
+    padding: 16px 8px;
+  }
+
+  .date {
+    font-size: 14px;
+  }
 }

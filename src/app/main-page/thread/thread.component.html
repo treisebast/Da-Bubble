@@ -28,6 +28,11 @@
     </div>
   </div>
 
+  <!-- Divider für die Anzahl der Antworten -->
+<div *ngIf="totalReplies > 0" class="reply-divider">
+  <span class="replies-count">{{ totalReplies }} Antworten</span>
+</div>
+
   <!-- Thread replies -->
   <div *ngFor="let message of messages; let i = index" class="singelMessageContainer"
     [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">

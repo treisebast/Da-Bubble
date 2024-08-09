@@ -32,6 +32,7 @@ export class ThreadComponent implements OnInit {
   currentUserName = '';
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: ChatUserProfile } = {};
+  totalReplies: number = 0;
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -57,6 +58,7 @@ export class ThreadComponent implements OnInit {
         this.messages = this.sortMessagesByTimestamp(currentThread);
         this.resolveUserNames(this.messages);
         this.loadUserProfiles(this.messages);
+        this.totalReplies = this.messages.length;
       } else {
         this.messages = [];
       }
