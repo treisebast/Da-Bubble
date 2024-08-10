@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
 import { ChannelService } from '../../shared/services/channel.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { Channel } from '../../shared/models/channel.model';
-import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
-import { UserService } from '../../shared/services/user.service';
+import { DirectMessageService } from '../../shared/services/direct-message.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-side-nav',
@@ -24,44 +25,26 @@ export class SideNavComponent implements OnInit {
   constructor(
     private channelService: ChannelService,
     private chatService: ChatService,
-    private userService: UserService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private directMessageService: DirectMessageService,
+    private authService: AuthService
   ) {}
 
   allChannels: Channel[] = [];
-  allDirectMessages: ChatUserProfile[] = [
-    {
-      name: "Marco Amman",
-      imgScr: "./assets/img/profile/1.svg",
-      online: true
-    },
-    {
-      name: "Sebastian Treittinger",
-      imgScr: "./assets/img/profile/2.svg",
-      online: true
-    },
-    {
-      name: "Aristotelis Stratis",
-      imgScr: "./assets/img/profile/3.svg",
-      online: false
-    },
-    {
-      name: "Tobias Wall",
-      imgScr: "./assets/img/profile/4.svg",
-      online: false
-    }
-  ];
+  allDirectMessages: User[] = [];
 
   ngOnInit() {
     this.channelService.getChannels().subscribe(channels => {
       this.allChannels = channels;
     });
-    this.userService.getUsers().subscribe(users => {
-      this.allDirectMessages = users.map(user => ({
-        name: user.name,
-        imgScr: user.avatar,
-        online: user.status === 'online'
-      }));
+    this.authService.getUser().subscribe((currentUser) => {
+      if (currentUser) {
+        this.directMessageService
+          .getUsersWithDirectMessages(currentUser.uid)
+          .then((users) => {
+            this.allDirectMessages = users;
+          });
+      }
     });
   }
 
@@ -91,7 +74,7 @@ export class SideNavComponent implements OnInit {
     this.chatService.setCurrentChat(channel);
   }
 
-  showDirectMessage(directMessage: ChatUserProfile) {
+  showDirectMessage(directMessage: User) {
     console.log('Showing direct message:', directMessage);
     this.chatService.setCurrentChat(directMessage);
   }

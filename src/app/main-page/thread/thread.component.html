@@ -12,8 +12,8 @@
   <!-- Original message, to which the thread belongs -->
   <div *ngIf="currentMessageToOpen" class="singelMessageContainer"
   [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
-  <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.imgScr"
-      [src]="userProfiles[currentMessageToOpen.senderId].imgScr" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
+  <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
+      [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
       class="profile-img" />
   <div class="message-wrapper"
       [ngClass]="{'align-end': currentMessageToOpen.senderId === currentUserId, 'align-start': currentMessageToOpen.senderId !== currentUserId}">
@@ -42,7 +42,7 @@
   <!-- Thread replies -->
   <div *ngFor="let message of messages; let i = index" class="singelMessageContainer"
   [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
-  <img *ngIf="userProfiles[message.senderId]?.imgScr" [src]="userProfiles[message.senderId].imgScr"
+  <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
       alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
   <div class="message-wrapper"
       [ngClass]="{'align-end': message.senderId === currentUserId, 'align-start': message.senderId !== currentUserId}">

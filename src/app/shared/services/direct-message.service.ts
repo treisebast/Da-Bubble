@@ -13,14 +13,43 @@ import {
   where,
   getDocs,
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 import { Message } from '../models/message.model';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DirectMessageService {
   constructor(private firestore: Firestore) {}
+
+  /**
+   * Get all users with whom the current user has exchanged direct messages.
+   * @param {string} currentUserId - The ID of the current user.
+   * @returns {Promise<User[]>} - A promise that resolves with an array of users.
+   */
+  async getUsersWithDirectMessages(currentUserId: string): Promise<User[]> {
+    const directMessagesCollection = collection(this.firestore,'directMessages');
+
+    const q = query(directMessagesCollection, where('participants', 'array-contains', currentUserId));
+    const querySnapshot = await getDocs(q);
+
+    const users: User[] = [];
+    for (const messageDoc of querySnapshot.docs) {
+      const participants = messageDoc.data()['participants'];
+      const otherUserId = participants.find(
+        (id: string) => id !== currentUserId
+      );
+
+      if (otherUserId) {
+        const userDocRef = doc(this.firestore, `users/${otherUserId}`);
+        const userDoc = await firstValueFrom(docData(userDocRef));
+        users.push(userDoc as User);
+      }
+    }
+
+    return users;
+  }
 
   /**
    * Gets all direct messages in a specific chat.
@@ -33,7 +62,7 @@ export class DirectMessageService {
       `directMessages/${chatId}/messages`
     );
     return collectionData(messagesCollection, { idField: 'id' }) as Observable<
-    Message[]
+      Message[]
     >;
   }
 
@@ -43,10 +72,7 @@ export class DirectMessageService {
    * @param {string} messageId - The ID of the message.
    * @returns {Observable<DirectMessage>} - An observable of the direct message.
    */
-  getDirectMessage(
-    chatId: string,
-    messageId: string
-  ): Observable<Message> {
+  getDirectMessage(chatId: string, messageId: string): Observable<Message> {
     const messageDoc = doc(
       this.firestore,
       `directMessages/${chatId}/messages/${messageId}`
@@ -60,10 +86,7 @@ export class DirectMessageService {
    * @param {DirectMessage} message - The direct message to add.
    * @returns {Promise<void>} - A promise that resolves when the message is added.
    */
-  async addDirectMessage(
-    chatId: string,
-    message: Message
-  ): Promise<void> {
+  async addDirectMessage(chatId: string, message: Message): Promise<void> {
     const messagesCollection = collection(
       this.firestore,
       `directMessages/${chatId}/messages`
@@ -123,13 +146,16 @@ export class DirectMessageService {
 
     for (const chatDoc of chatDocs.docs) {
       const data = chatDoc.data();
-      if (data['participants'].includes(user1Id) && data['participants'].includes(user2Id)) {
+      if (
+        data['participants'].includes(user1Id) &&
+        data['participants'].includes(user2Id)
+      ) {
         return chatDoc.id;
       }
     }
 
     const chatDocRef = await addDoc(chatsCollection, {
-      participants: [user1Id, user2Id]
+      participants: [user1Id, user2Id],
     });
 
     return chatDocRef.id;

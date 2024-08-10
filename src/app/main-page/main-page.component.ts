@@ -44,7 +44,6 @@ export class MainPageComponent implements OnInit {
     this.checkMobileView();
 
     this.chatService.getChannelStatus().subscribe((status: boolean) => {
-      console.log('Channel Status:', status); // Debugging output
       this.showSecondary = status;
     });
   }

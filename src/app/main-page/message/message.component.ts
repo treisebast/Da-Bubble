@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, Output, EventEmitter, HostListener } from '@angular/core';
 import { Message } from '../../shared/models/message.model';
-import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-message',
@@ -13,11 +13,11 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
 })
 export class MessageComponent implements OnInit {
   @Input() message!: Message;
-  @Input() userProfile!: ChatUserProfile;
+  @Input() userProfile!: User;
   @Input() isCurrentUser!: boolean;
   @Output() messageClicked = new EventEmitter<Message>();
 
-  
+
   screenSmall: boolean = false;
 
   constructor() { }
@@ -32,7 +32,7 @@ export class MessageComponent implements OnInit {
   checkScreenWidth() {
     this.screenSmall = window.innerWidth <= 500;
   }
-  
+
   convertToDate(timestamp: Timestamp | FieldValue | undefined): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();

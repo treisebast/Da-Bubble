@@ -19,23 +19,26 @@
 <div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
     <div class="profileImg">
-      <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.imgScr }}" alt="">
-      <img *ngIf="isChatUserProfile(currentChat) && currentChat.online" src="./assets/img/online.png" alt="" class="online"/>
-      <img *ngIf="isChatUserProfile(currentChat) && !currentChat.online" src="./assets/img/offline.png" alt="" class="online"/>
+      <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.avatar }}" alt="">
+      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'online' " src="./assets/img/online.png" alt="" class="online"/>
+      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'offline'" src="./assets/img/offline.png" alt="" class="online"/>
     </div>
     <h2>{{ currentChat.name }}</h2>
   </div>
   <div class="chat-container" #chatContainer>
-    <ng-container *ngIf="selectedChat">
+    <div class="spinner" *ngIf="this.isLoading">
+      <mat-spinner></mat-spinner>
+    </div>
+    <ng-container *ngIf="selectedChat && !this.isLoading">
       <div *ngFor="let message of messages; let i = index">
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
           <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
         </div>
 
-        <app-message 
+        <app-message
           *ngIf="userProfiles[message.senderId]"
-          [message]="message" 
-          [userProfile]="userProfiles[message.senderId]" 
+          [message]="message"
+          [userProfile]="userProfiles[message.senderId]"
           [isCurrentUser]="message.senderId === currentUserId"
           (messageClicked)="openThread($event)">
         </app-message>

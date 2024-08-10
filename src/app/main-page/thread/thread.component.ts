@@ -1,5 +1,4 @@
 import { Component, EventEmitter, inject, Output, OnInit } from '@angular/core';
-import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
@@ -19,7 +18,7 @@ import { User } from '../../shared/models/user.model';
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent implements OnInit {
-  currentChat: ChatUserProfile | Channel | null = null;
+  currentChat: User | Channel | null = null;
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
@@ -31,7 +30,7 @@ export class ThreadComponent implements OnInit {
   currentUserId = '';
   currentUserName = '';
   userNames: { [key: string]: string } = {};
-  userProfiles: { [key: string]: ChatUserProfile } = {};
+  userProfiles: { [key: string]: User } = {};
   totalReplies: number = 0;
 
   ngOnInit() {
@@ -41,18 +40,18 @@ export class ThreadComponent implements OnInit {
         this.currentUserName = user.displayName || '';
       }
     });
-  
+
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
       }
     });
-  
+
     this.chatService.currentChat$.subscribe(chat => {
-      this.currentChat = chat as ChatUserProfile;
+      this.currentChat = chat as User;
     });
-  
+
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
@@ -153,7 +152,7 @@ export class ThreadComponent implements OnInit {
       this.userNames[userId] = userName;
     }
   }
-  
+
 
   /**
    * Gets the username for a given user ID.
@@ -174,11 +173,7 @@ export class ThreadComponent implements OnInit {
     userIds.forEach(userId => {
       if (!this.userProfiles[userId]) {
         this.userService.getUser(userId).subscribe((user: User) => {
-          this.userProfiles[userId] = {
-            name: user.name,
-            imgScr: user.avatar,
-            online: user.status === 'online'
-          };
+          console.log("user: ", user, " has been loaded")
         });
       }
     });

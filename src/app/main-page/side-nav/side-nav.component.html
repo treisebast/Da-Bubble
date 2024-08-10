@@ -23,11 +23,11 @@
 
   <table>
     <div *ngIf="!directMessages" class="channels">
-      <tr class="message-tr" *ngFor="let directMessage of allDirectMessages" (click)="showDirectMessage(directMessage); setSelectedMessage()">
-        <img class="table-profile-img" src="{{ directMessage.imgScr }}" alt="">
-        <img *ngIf="directMessage.online" src="./assets/img/online.png" alt="" class="online"/>
-        <img *ngIf="!directMessage.online" src="./assets/img/offline.png" alt="" class="online"/>
-        {{ directMessage.name }}
+      <tr class="message-tr" *ngFor="let user of allDirectMessages" (click)="showDirectMessage(user); setSelectedMessage()">
+        <img class="table-profile-img" src="{{ user.avatar }}" alt="">
+        <img *ngIf="user.status" src="./assets/img/online.png" alt="" class="online"/>
+        <img *ngIf="!user.status" src="./assets/img/offline.png" alt="" class="online"/>
+        {{ user.name }}
       </tr>
     </div>
   </table>

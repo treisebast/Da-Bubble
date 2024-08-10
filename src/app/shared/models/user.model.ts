@@ -3,6 +3,6 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
-  status: string;
+  status: string | boolean;
   lastSeen: any;
 }

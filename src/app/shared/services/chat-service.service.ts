@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChatUserProfile } from '../models/chat-user-profile.model';
 import { Channel } from '../models/channel.model';
 import { ChannelMessageService } from './channel-message.service';
 import { Message } from '../models/message.model';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +12,7 @@ import { FieldValue, Timestamp } from '@angular/fire/firestore';
 export class ChatService {
   private _selectedChat = new BehaviorSubject<boolean>(false);
 
-  private currentChatSource = new BehaviorSubject<ChatUserProfile | Channel | null>(null);
+  private currentChatSource = new BehaviorSubject<User | Channel | null>(null);
   currentChat$ = this.currentChatSource.asObservable();
 
   private isChannelSource = new BehaviorSubject<boolean>(false);
@@ -25,9 +25,9 @@ export class ChatService {
 
   /**
    * Sets the current chat and loads its messages.
-   * @param {ChatUserProfile | Channel} chat - The chat to set as current.
+   * @param {User | Channel} chat - The chat to set as current.
    */
-  setCurrentChat(chat: ChatUserProfile | Channel) {
+  setCurrentChat(chat: User | Channel) {
     this.currentChatSource.next(chat);
     this.loadMessages(chat);
   }
@@ -36,7 +36,7 @@ export class ChatService {
    * Loads messages for the given chat.
    * @param {ChatUserProfile | Channel} chat - The chat whose messages to load.
    */
-  private loadMessages(chat: ChatUserProfile | Channel) {
+  private loadMessages(chat: User | Channel) {
     const channelId = (chat as Channel).id;
     if (channelId) {
       this.channelMessageService.getChannelMessages(channelId).subscribe((messages: Message[]) => {

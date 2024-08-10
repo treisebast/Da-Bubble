@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../shared/models/channel.model';
-import { ChatUserProfile } from '../../shared/models/chat-user-profile.model';
 import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
@@ -12,11 +11,13 @@ import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore'
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss']
 })
@@ -29,7 +30,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   newMessageText = '';
   currentUserId = '';
   currentUserName = '';
-  userProfiles: { [key: string]: ChatUserProfile } = {};
+  userProfiles: { [key: string]: any} = {};
+  isLoading: boolean = false;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
@@ -55,6 +57,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit() {
+    this.isLoading = true;
+    console.log("ngOnInit starts...isLoading = ", this.isLoading)
     this.authService.getUser().subscribe(user => {
       if (user) {
         this.currentUserId = user.uid;
@@ -71,6 +75,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     this.chatService.selectedChat$.subscribe(chat => {
       this.selectedChat = chat;
     });
+    this.isLoading = false;
+    console.log("ngOnInit over...isLoading = ", this.isLoading)
   }
 
   ngAfterViewChecked() {
@@ -88,11 +94,19 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   loadMessages() {
+    this.isLoading = true;
+    console.log("loading Messages...isLoading = ", this.isLoading)
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      console.log("loading messages for Channel", `"${this.currentChat.name}"`);
+      console.log("getMessages from chatService gets called now...")
       this.chatService.getMessages(this.currentChat.id).subscribe((messages: Message[]) => {
         this.messages = messages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
         this.loadUserProfiles();
-        setTimeout(() => this.scrollToBottom(), 100);
+        if (this.messages && this.userProfiles) {
+          this.isLoading = false;
+          console.log("loading messages is over, isLoading = ", this.isLoading)
+          setTimeout(() => this.scrollToBottom(), 100);
+        }
       });
     }
   }
@@ -103,8 +117,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       this.userService.getUser(userId).subscribe((user: User) => {
         this.userProfiles[userId] = {
           name: user.name,
-          imgScr: user.avatar,
-          online: user.status === 'online'
+          avatar: user.avatar,
+          status: user.status === 'online'
         };
       });
     });
@@ -127,8 +141,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     this.newMessageText = '';
   }
 
-  isChatUserProfile(chat: ChatUserProfile | Channel): chat is ChatUserProfile {
-    return (chat as ChatUserProfile).imgScr !== undefined;
+  isChatUserProfile(chat: User | Channel): chat is User {
+    return (chat as User).avatar !== undefined;
   }
 
   async openThread(message: Message) {
