@@ -11,46 +11,54 @@
 
   <!-- Original message, to which the thread belongs -->
   <div *ngIf="currentMessageToOpen" class="singelMessageContainer"
-    [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
-    <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.imgScr"
+  [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
+  <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.imgScr"
       [src]="userProfiles[currentMessageToOpen.senderId].imgScr" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
       class="profile-img" />
-    <div class="message-wrapper"
+  <div class="message-wrapper"
       [ngClass]="{'align-end': currentMessageToOpen.senderId === currentUserId, 'align-start': currentMessageToOpen.senderId !== currentUserId}">
       <div class="message-header"
-        [ngClass]="{'jc-end': currentMessageToOpen.senderId === currentUserId, 'jc-start': currentMessageToOpen.senderId !== currentUserId}">
-        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date : "HH:mm" }} Uhr</span>
-        <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
+          [ngClass]="{'jc-end': currentMessageToOpen.senderId === currentUserId, 'jc-start': currentMessageToOpen.senderId !== currentUserId}">
+          <ng-container *ngIf="currentMessageToOpen.senderId === currentUserId; else otherUserHeader">
+              <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date : 'HH:mm' }} Uhr</span>
+              <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
+          </ng-container>
+          <ng-template #otherUserHeader>
+              <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
+              <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date : 'HH:mm' }} Uhr</span>
+          </ng-template>
       </div>
       <div class="message-content">
-        <p>{{ currentMessageToOpen.content }}</p>
+          <p>{{ currentMessageToOpen.content }}</p>
       </div>
-    </div>
   </div>
+</div>
 
-  <!-- Divider für die Anzahl der Antworten -->
+  <!-- Divider for replies count -->
 <div *ngIf="totalReplies > 0" class="reply-divider">
   <span class="replies-count">{{ totalReplies }} Antworten</span>
 </div>
 
   <!-- Thread replies -->
   <div *ngFor="let message of messages; let i = index" class="singelMessageContainer"
-    [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
-    <img *ngIf="userProfiles[message.senderId]?.imgScr" [src]="userProfiles[message.senderId].imgScr"
+  [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
+  <img *ngIf="userProfiles[message.senderId]?.imgScr" [src]="userProfiles[message.senderId].imgScr"
       alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
-    <div class="message-wrapper"
+  <div class="message-wrapper"
       [ngClass]="{'align-end': message.senderId === currentUserId, 'align-start': message.senderId !== currentUserId}">
-      <div class="message-header" [ngClass]="{
-        'jc-start': message.senderId === currentUserId && i === 0, 
-        'jc-end': message.senderId !== currentUserId || i !== 0
-      }">
-        <span class="timestamp">{{ convertToDate(message.timestamp) | date : "HH:mm" }} Uhr</span>
-        <span class="name">{{ getUserName(message.senderId) }}</span>
+      <div class="message-header">
+          <ng-container *ngIf="message.senderId === currentUserId; else otherUserHeader">
+              <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
+              <span class="name">{{ getUserName(message.senderId) }}</span>
+          </ng-container>
+          <ng-template #otherUserHeader>
+              <span class="name">{{ getUserName(message.senderId) }}</span>
+              <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
+          </ng-template>
       </div>
       <div class="message-content">
-        <p>{{ message.content }}</p>
+          <p>{{ message.content }}</p>
       </div>
-    </div>
   </div>
 </div>
 
