@@ -19,7 +19,7 @@
       [ngClass]="{'align-end': currentMessageToOpen.senderId === currentUserId, 'align-start': currentMessageToOpen.senderId !== currentUserId}">
       <div class="message-header"
         [ngClass]="{'jc-end': currentMessageToOpen.senderId === currentUserId, 'jc-start': currentMessageToOpen.senderId !== currentUserId}">
-        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date: 'shortTime' }}</span>
+        <span class="timestamp">{{ convertToDate(currentMessageToOpen.timestamp) | date : "HH:mm" }} Uhr</span>
         <span class="name">{{ getUserName(currentMessageToOpen.senderId) }}</span>
       </div>
       <div class="message-content">
@@ -44,7 +44,7 @@
         'jc-start': message.senderId === currentUserId && i === 0, 
         'jc-end': message.senderId !== currentUserId || i !== 0
       }">
-        <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'shortTime' }}</span>
+        <span class="timestamp">{{ convertToDate(message.timestamp) | date : "HH:mm" }} Uhr</span>
         <span class="name">{{ getUserName(message.senderId) }}</span>
       </div>
       <div class="message-content">

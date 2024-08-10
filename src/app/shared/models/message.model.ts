@@ -7,4 +7,6 @@ export interface Message {
   senderName?: string;
   timestamp: Timestamp | FieldValue;
   attachments?: string[];
+  threadCount?: number;
+  lastReplyTimestamp?: Timestamp | FieldValue;
 }

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Message } from '../models/message.model';
-import { addDoc } from 'firebase/firestore';
+import { addDoc, Timestamp } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +11,13 @@ import { addDoc } from 'firebase/firestore';
 export class ThreadService {
   private currentThreadSubject = new BehaviorSubject<Message[]>([]);
   currentThread$ = this.currentThreadSubject.asObservable();
-  
-  currentMessageId:string = '';
-  
+
+  currentMessageId: string = '';
+
   private currentMessageToOpenSubject = new BehaviorSubject<Message | null>(null);
   currentMessageToOpen$ = this.currentMessageToOpenSubject.asObservable();
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore) { }
 
   getThreads(channelId: string, messageId: string): Observable<any[]> {
     const threadsCollection = collection(this.firestore, `channels/${channelId}/messages/${messageId}/threads`);
@@ -31,7 +31,10 @@ export class ThreadService {
 
   addThread(channelId: string, messageId: string, thread: any): Promise<void> {
     const threadDoc = collection(this.firestore, `channels/${channelId}/messages/${messageId}/threads`);
-    return addDoc(threadDoc, thread).then(() => {});
+    return addDoc(threadDoc, thread).then(() => {
+      this.updateThreadCount(channelId, messageId);
+      this.updateLastReplyTimestamp(channelId, messageId, thread.timestamp);
+    });
   }
 
   updateThread(channelId: string, messageId: string, thread: any): Promise<void> {
@@ -58,5 +61,19 @@ export class ThreadService {
 
   getCurrentMessageToOpen(): Observable<Message | null> {
     return this.currentMessageToOpen$;
+  }
+
+  updateThreadCount(channelId: string, messageId: string): void {
+    const threadsCollection = collection(this.firestore, `channels/${channelId}/messages/${messageId}/threads`);
+    collectionData(threadsCollection).subscribe(threads => {
+      const threadCount = threads.length;
+      const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+      updateDoc(messageDoc, { threadCount });
+    });
+  }
+
+  updateLastReplyTimestamp(channelId: string, messageId: string, lastReplyTimestamp: Timestamp): void {
+    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+    updateDoc(messageDoc, { lastReplyTimestamp });
   }
 }

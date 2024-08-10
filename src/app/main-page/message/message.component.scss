@@ -53,9 +53,24 @@
 
 
 .timestamp {
-  font-size: 0.8em;
+  font-size: 14px;
   color: #888;
   margin-right: 8px;
+}
+
+.thread-count {
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--purple-one);
+  display: flex;
+  gap: 8px;
+}
+
+.last-reply-time {
+  margin-left: 10px;
+  font-size: 14px;
+  color: rgba(104, 104, 104, 1);
 }
 
 .profile-img {
@@ -257,6 +272,7 @@
 
   .singelMessageContainer {
     gap: 12px;
+
     &::before {
       left: unset;
       right: unset;

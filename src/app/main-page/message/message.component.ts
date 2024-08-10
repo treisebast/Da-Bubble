@@ -21,7 +21,7 @@ export class MessageComponent implements OnInit {
 
   ngOnInit(): void { }
 
-  convertToDate(timestamp: Timestamp | FieldValue): Date {
+  convertToDate(timestamp: Timestamp | FieldValue | undefined): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
     }

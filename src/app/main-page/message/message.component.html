@@ -11,22 +11,26 @@
   />
 
   <div class="message-wrapper">
-      <div class="message-header">
-        <span class="timestamp">{{convertToDate(message.timestamp) | date : "HH:mm"}} Uhr</span>
-        <span class="name">{{ userProfile.name }}</span>
-      </div>
-    
-      <div class="reactionBar">
-        <div class="check"></div>
-        <div class="handsUp"></div>
-        <div class="reaction"></div>
-        <div class="comment"></div>
-        <div class="vertPoints"></div>
-      </div>
-    
-      <div class="message-content">
-        <p>{{ message.content }}</p>
-      </div>
-  </div>
+    <div class="message-header">
+      <span class="timestamp">{{convertToDate(message.timestamp) | date : "HH:mm"}} Uhr</span>
+      <span class="name">{{ userProfile.name }}</span>
+    </div>
 
+    <div class="reactionBar">
+      <div class="check"></div>
+      <div class="handsUp"></div>
+      <div class="reaction"></div>
+      <div class="comment"></div>
+      <div class="vertPoints"></div>
+    </div>
+
+    <div class="message-content">
+      <p>{{ message.content }}</p>
+    </div>
+
+    <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count">
+      <span>{{ message.threadCount }} Antwort{{message.threadCount > 1 ? 'en' : ''}}</span>
+      <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date : "HH:mm" }}</span>
+    </div>
+  </div>
 </div>
