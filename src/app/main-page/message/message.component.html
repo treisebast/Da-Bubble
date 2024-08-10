@@ -1,7 +1,6 @@
 <div
   class="singelMessageContainer"
   [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }"
-  (click)="onMessageClick()"
 >
   <img
     *ngIf="userProfile.imgScr"
@@ -20,7 +19,7 @@
       <div class="check"></div>
       <div class="handsUp"></div>
       <div class="reaction"></div>
-      <div class="comment"></div>
+      <div class="comment" (click)="onMessageClick()"></div>
       <div class="vertPoints"></div>
     </div>
 
@@ -29,7 +28,7 @@
     </div>
 
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count">
-      <span>{{ message.threadCount }} Antwort{{message.threadCount > 1 ? 'en' : ''}}</span>
+      <span (click)="onMessageClick()">{{ message.threadCount }} Antwort{{message.threadCount > 1 ? 'en' : ''}}</span>
       <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date : "HH:mm" }}</span>
     </div>
   </div>

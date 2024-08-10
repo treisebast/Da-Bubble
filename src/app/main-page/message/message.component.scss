@@ -278,4 +278,15 @@
       right: unset;
     }
   }
+
+  .thread-count {
+    flex-direction: column;
+    margin-left: 10px;
+    font-size: 14px;
+  }
+
+  .last-reply-time {
+    margin-left: 0;
+    font-size: 12px;
+  }
 }
