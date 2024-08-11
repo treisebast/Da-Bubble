@@ -173,7 +173,8 @@ export class ThreadComponent implements OnInit {
     userIds.forEach(userId => {
       if (!this.userProfiles[userId]) {
         this.userService.getUser(userId).subscribe((user: User) => {
-          console.log("user: ", user, " has been loaded")
+          this.userProfiles[userId] = user;
+          console.log("user: ", user, " has been loaded");
         });
       }
     });
