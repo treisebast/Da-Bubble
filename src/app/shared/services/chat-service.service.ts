@@ -120,4 +120,35 @@ export class ChatService {
   setSelectedChat(value: boolean) {
     this._selectedChat.next(value);
   }
+
+   /**
+   * Edits a message in the given channel.
+   * @param {string} channelId - The ID of the channel.
+   * @param {string} messageId - The ID of the message.
+   * @param {string} newContent - The new content of the message.
+   */
+   editMessage(channelId: string, messageId: string, newContent: string) {
+    this.channelMessageService.editChannelMessage(channelId, messageId, newContent).then(() => {
+      const currentMessages = this.messagesSource.getValue();
+      const messageIndex = currentMessages.findIndex(msg => msg.id === messageId);
+      if (messageIndex > -1) {
+        currentMessages[messageIndex].content = newContent;
+        currentMessages[messageIndex].edited = true;
+        this.messagesSource.next(currentMessages);
+      }
+    });
+  }
+
+  /**
+   * Deletes a message in the given channel.
+   * @param {string} channelId - The ID of the channel.
+   * @param {string} messageId - The ID of the message.
+   */
+  deleteMessage(channelId: string, messageId: string) {
+    this.channelMessageService.deleteChannelMessage(channelId, messageId).then(() => {
+      const currentMessages = this.messagesSource.getValue();
+      const updatedMessages = currentMessages.filter(msg => msg.id !== messageId);
+      this.messagesSource.next(updatedMessages);
+    });
+  }
 }

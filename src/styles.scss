@@ -100,5 +100,12 @@ body {
   display: none !important;
   opacity: 0 !important;
 }
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.mat-mdc-menu-panel {
+  border-bottom-left-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+}

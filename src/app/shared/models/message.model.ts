@@ -9,4 +9,6 @@ export interface Message {
   attachments?: string[];
   threadCount?: number;
   lastReplyTimestamp?: Timestamp | FieldValue;
+  edited?: boolean;
+  chatId: string;
 }

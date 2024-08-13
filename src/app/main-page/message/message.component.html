@@ -11,16 +11,20 @@
 
   <div class="message-wrapper">
     <div class="message-header">
-      <span class="timestamp">{{convertToDate(message.timestamp) | date : "HH:mm"}} Uhr</span>
+      <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'HH:mm' }} Uhr</span>
       <span class="name">{{ userProfile.name }}</span>
     </div>
 
-    <div class="reactionBar">
+    <div 
+      class="reactionBar" 
+      [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">
       <div class="check"></div>
       <div class="handsUp"></div>
       <div class="reaction"></div>
       <div class="comment" (click)="onMessageClick()"></div>
-      <div class="vertPoints"></div>
+      <div class="vertPoints" [matMenuTriggerFor]="menu">
+        <!-- vertPoints icon -->
+      </div>
     </div>
 
     <div class="message-content">
@@ -35,8 +39,17 @@
         'thread-count-start': !isCurrentUser && screenSmall
       }"
     >
-      <span (click)="onMessageClick()">{{ message.threadCount }} Antwort{{message.threadCount > 1 ? 'en' : ''}}</span>
-      <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date : "HH:mm" }}</span>
+      <span (click)="onMessageClick()">
+        {{ message.threadCount }} Antwort{{ message.threadCount > 1 ? 'en' : '' }}
+      </span>
+      <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">
+        Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date: 'HH:mm' }}
+      </span>
     </div>
   </div>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="editMessage()">Nachricht bearbeiten</button>
+    <button mat-menu-item (click)="deleteMessage()">Nachricht löschen</button>
+  </mat-menu>
 </div>

@@ -128,13 +128,14 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     if (this.newMessageText.trim() === '') {
       return;
     }
-
+  
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      chatId: this.currentChat.id
     };
-
+  
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }

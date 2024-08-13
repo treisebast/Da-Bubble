@@ -70,28 +70,39 @@ export class ThreadComponent implements OnInit {
     this.closeThread.emit();
   }
 
-  /**
-   * Sends a new message.
-   */
+/**
+ * Sends a new message if the message text is not empty. Retrieves the current user's name
+ * and constructs a new message object. If the message is part of a chat, it is added to the 
+ * appropriate thread.
+ * @async
+ * @returns {Promise<void>} Resolves when the message has been sent or if the message text is empty.
+ */
   async sendMessage() {
     if (this.newMessageText.trim() === '') {
       return;
     }
-
+  
     const userName = await this.userService.getUserNameById(this.currentUserId);
-
+  
+    let chatId: string = '';
+    if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
+      chatId = (this.currentChat as Channel).id || '';
+    }
+  
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
       senderName: userName,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      chatId: chatId
     };
-
-    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
-      this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage);
+  
+    if (chatId) {
+      this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
     }
     this.newMessageText = '';
   }
+  
 
   /**
    * Sorts messages by their timestamp.
