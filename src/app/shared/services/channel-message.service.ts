@@ -24,9 +24,8 @@ export class ChannelMessageService {
     await updateDoc(messageDocRef, {
       content: updatedContent,
       edited: true,
-      timestamp: new Date()
     });
-  }
+}
 
   async deleteChannelMessage(channelId: string, messageId: string): Promise<void> {
     const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
