@@ -85,31 +85,36 @@ export class ThreadComponent implements OnInit {
  * @async
  * @returns {Promise<void>} Resolves when the message has been sent or if the message text is empty.
  */
-  async sendMessage() {
-    if (this.newMessageText.trim() === '') {
-      return;
-    }
-  
-    const userName = await this.userService.getUserNameById(this.currentUserId);
-  
-    let chatId: string = '';
-    if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
-      chatId = (this.currentChat as Channel).id || '';
-    }
-  
-    const newMessage: Message = {
-      content: this.newMessageText,
-      senderId: this.currentUserId,
-      senderName: userName,
-      timestamp: serverTimestamp(),
-      chatId: chatId
-    };
-  
-    if (chatId) {
-      this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
-    }
-    this.newMessageText = '';
+async sendMessage(event?: Event) {
+  if (event) {
+    event.preventDefault();  // Verhindert den Zeilenumbruch
   }
+
+  if (this.newMessageText.trim() === '') {
+    return;
+  }
+
+  const userName = await this.userService.getUserNameById(this.currentUserId);
+
+  let chatId: string = '';
+  if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
+    chatId = (this.currentChat as Channel).id || '';
+  }
+
+  const newMessage: Message = {
+    content: this.newMessageText,
+    senderId: this.currentUserId,
+    senderName: userName,
+    timestamp: serverTimestamp(),
+    chatId: chatId
+  };
+
+  if (chatId) {
+    this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
+  }
+  this.newMessageText = '';
+}
+
   
 
   /**

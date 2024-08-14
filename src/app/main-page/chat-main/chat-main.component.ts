@@ -124,7 +124,11 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  sendMessage() {
+  sendMessage(event?: Event) {
+    if (event) {
+      event.preventDefault();
+    }
+  
     if (this.newMessageText.trim() === '') {
       return;
     }

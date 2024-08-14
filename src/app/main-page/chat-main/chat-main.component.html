@@ -4,7 +4,8 @@
     <input type="text" placeholder="An: #channel, oder @jemand oder E-Mail Adresse">
   </div>
   <div class="messageBox absolute-bottom">
-    <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"></textarea>
+    <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"
+      (keydown.enter)="sendMessage($event)"></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon"></div>
@@ -20,8 +21,10 @@
   <div class="header">
     <div class="profileImg">
       <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.avatar }}" alt="">
-      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'online' " src="./assets/img/online.png" alt="" class="online"/>
-      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'offline'" src="./assets/img/offline.png" alt="" class="online"/>
+      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'online' " src="./assets/img/online.png"
+        alt="" class="online" />
+      <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'offline'" src="./assets/img/offline.png"
+        alt="" class="online" />
     </div>
     <h2>{{ currentChat.name }}</h2>
   </div>
@@ -35,18 +38,16 @@
           <span class="date">{{ convertToDate(message.timestamp) | date: 'fullDate' }}</span>
         </div>
 
-        <app-message
-          *ngIf="userProfiles[message.senderId]"
-          [message]="message"
-          [userProfile]="userProfiles[message.senderId]"
-          [isCurrentUser]="message.senderId === currentUserId"
+        <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
+          [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
           (messageClicked)="openThread($event)">
         </app-message>
       </div>
     </ng-container>
   </div>
   <div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"></textarea>
+    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
+      (keydown.enter)="sendMessage($event)"></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon"></div>

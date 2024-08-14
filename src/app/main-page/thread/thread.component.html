@@ -63,7 +63,11 @@
   </div>
 
   <div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}" name="" id=""></textarea>
+    <textarea [(ngModel)]="newMessageText" 
+              placeholder="Nachricht an {{ currentChat?.name }}" 
+              (keydown.enter)="sendMessage($event)" 
+              name="" id="">
+    </textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon"></div>
@@ -74,3 +78,4 @@
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
   </div>
+  
