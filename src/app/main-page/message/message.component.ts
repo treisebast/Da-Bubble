@@ -8,11 +8,12 @@ import { DialogEditMessageComponent } from '../dialog-edit-message/dialog-edit-m
 import { MatDialog } from '@angular/material/dialog';
 import { DialogOptionsComponent } from '../dialog-options/dialog-options.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-message',
   standalone: true,
-  imports: [CommonModule,MatMenuModule],
+  imports: [CommonModule,MatMenuModule, FormsModule],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss']
 })
@@ -24,6 +25,8 @@ export class MessageComponent implements OnInit {
 
 
   screenSmall: boolean = false;
+  isEditing: boolean = false;
+  editContent: string = '';
 
   constructor(private chatService: ChatService, private dialog: MatDialog) { }
 
@@ -49,7 +52,6 @@ export class MessageComponent implements OnInit {
     this.messageClicked.emit(this.message);
   }
 
-
   openOptionsDialog() {
     const dialogRef = this.dialog.open(DialogOptionsComponent, {
       width: '250px'
@@ -64,33 +66,34 @@ export class MessageComponent implements OnInit {
     });
   }
 
-  editMessage() {
-    if (this.message.chatId && this.message.id) {
-      const dialogRef = this.dialog.open(DialogEditMessageComponent, {
-        width: '300px',
-        data: { content: this.message.content }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result !== undefined && result.trim() !== '') {
-          this.chatService.editMessage(this.message.chatId!, this.message.id!, result);
-        }
-      });
-    } else {
-      console.error('chatId oder messageId ist undefined');
-    }
+  startEditing() {
+    this.isEditing = true;
+    this.editContent = this.message.content;
   }
-  
 
+
+  saveEdit() {
+    if (this.editContent.trim() !== '') {
+      this.chatService.editMessage(this.message.chatId!, this.message.id!, this.editContent);
+    }
+    this.isEditing = false;
+  }
+
+  cancelEdit() {
+    this.isEditing = false;
+  }
+
+  editMessage() {
+    if (this.isCurrentUser) {
+      this.startEditing();
+    } 
+  }
 
   deleteMessage() {
-    if (this.message.chatId && this.message.id) {
-      if (confirm("Möchtest du diese Nachricht wirklich löschen?")) {
-        this.chatService.deleteMessage(this.message.chatId, this.message.id);
-      }
+    if (this.isCurrentUser) {
+      this.chatService.deleteMessage(this.message.chatId!, this.message.id!);
     } else {
-      console.error("chatId oder messageId ist undefined");
+      console.error("Du kannst die Nachricht eines anderen Benutzers nicht löschen.");
     }
   }
-
 }

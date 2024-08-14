@@ -45,6 +45,14 @@ export class ThreadComponent implements OnInit {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
+
+        if (this.currentChat && 'id' in this.currentChat && chatMessage.id) {
+          const chatId = this.currentChat.id ?? '';
+          this.threadService.watchMessageChanges(chatId, chatMessage.id)
+            .subscribe(updatedMessage => {
+              this.currentMessageToOpen = updatedMessage;
+            });
+        }
       }
     });
 

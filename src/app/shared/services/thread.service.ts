@@ -1,7 +1,7 @@
 // src/app/services/thread.service.ts
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, map } from 'rxjs';
 import { Message } from '../models/message.model';
 import { addDoc, Timestamp } from 'firebase/firestore';
 
@@ -75,5 +75,17 @@ export class ThreadService {
   updateLastReplyTimestamp(channelId: string, messageId: string, lastReplyTimestamp: Timestamp): void {
     const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
     updateDoc(messageDoc, { lastReplyTimestamp });
+  }
+
+  watchMessageChanges(channelId: string, messageId: string): Observable<Message> {
+    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+    return docData(messageDoc, { idField: 'id' }).pipe(
+      map((data: any) => {
+        return {
+          ...data,
+          timestamp: data.timestamp ? (data.timestamp as Timestamp).toDate() : null,
+        } as Message;
+      })
+    );
   }
 }
