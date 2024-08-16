@@ -35,8 +35,8 @@ export class ThreadComponent implements OnInit {
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
   totalReplies: number = 0;
-  editingMessageId: string | null | undefined = null;  // Zustandsvariable für das Editieren
-  editContent: string = '';  // Inhalt für die Bearbeitung
+  editingMessageId: string | null | undefined = null;
+  editContent: string = '';
 
 
   ngOnInit() {
@@ -86,7 +86,7 @@ export class ThreadComponent implements OnInit {
 
   async sendMessage(event?: Event) {
     if (event) {
-      event.preventDefault();  // Verhindert den Zeilenumbruch
+      event.preventDefault();
     }
 
     if (this.newMessageText.trim() === '') {
@@ -198,7 +198,7 @@ export class ThreadComponent implements OnInit {
   
   startEditing(message: Message) {
     if (message.senderId === this.currentUserId) {
-      this.editingMessageId = message.id;  // Setzt die ID der Nachricht, die bearbeitet wird
+      this.editingMessageId = message.id;
       this.editContent = message.content;
     }
   }
@@ -216,10 +216,10 @@ export class ThreadComponent implements OnInit {
         console.error('Error updating message:', error);
       });
     }
-    this.editingMessageId = null;  // Setzt den Bearbeitungsmodus zurück
+    this.editingMessageId = null;
   }
 
   cancelEdit() {
-    this.editingMessageId = null;  // Setzt den Bearbeitungsmodus zurück
+    this.editingMessageId = null;
   }
 }
