@@ -1,3 +1,27 @@
+.popup-container {
+  display: flex;
+  box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  max-width: 800px;
+  border-radius: 25px;
+  background-color: white;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 40px;
+  z-index: 10;
+}
+
+.modal-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9;
+}
+
 mat-label {
   display: flex;
   align-items: center;
@@ -6,7 +30,8 @@ mat-label {
 }
 
 .optional {
-  color: #686868;
+  color: var(--text-grey);
+  font-weight: 400;
   margin: 0;
 }
 
@@ -14,32 +39,38 @@ input {
   width: 100%;
   height: 60px;
   border-radius: 30px;
-  border: 1px solid #adb0d9;
-  outline-color: rgb(83, 90, 241);
-  font-size: 18px;
+  border: 1px solid rgba(173, 176, 217, 1);
+  outline-color: var(--purple-one);
+  font-size: 16px;
   padding-left: 16px;
   color: #686868;
   margin-bottom: 16px;
 
   &:hover {
-    border-color: rgb(83, 90, 241);
+    border-color: var(--purple-one);
   }
 }
 
 .saveChannelBtn {
-  background-color: rgb(68, 77, 242);
+  background-color: var(--purple-one);
   height: 48px;
   border-radius: 24px;
   color: white;
+
+  &:hover {
+    background-color: var(--purple-two);
+    border: var(--purple-one);
+  }
 }
 
 p {
   color: var(--Black, #000);
   font-family: Nunito;
-  font-size: 18px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+  margin-bottom: 16px;
 }
 
 h2 {
@@ -49,6 +80,11 @@ h2 {
   font-style: normal;
   font-weight: 700 !important;
   line-height: normal;
+  margin: 0;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 0;
+  padding-bottom: 16px;
 }
 
 h4 {
@@ -62,4 +98,12 @@ h4 {
 
 mat-form-field {
   width: 100%;
+}
+
+mat-dialog-content {
+  padding: 8px !important;
+}
+
+::ng-deep .mat-mdc-dialog-surface.mdc-dialog__surface {
+  border-radius: 25px !important;
 }

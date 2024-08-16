@@ -33,11 +33,20 @@ export class DialogAddChannelComponent {
   loading = false;
   channelName = '';
   description = '';
+  isDialogOpen = false;
 
   constructor(
     public dialogRef: MatDialogRef<DialogAddChannelComponent>,
     private channelService: ChannelService
-  ) {}
+  ) {
+    this.dialogRef.afterOpened().subscribe(() => {
+      this.isDialogOpen = true;
+    });
+
+    this.dialogRef.afterClosed().subscribe(() => {
+      this.isDialogOpen = false;
+    });
+  }
 
   async saveChannel() {
     this.loading = true;
@@ -58,5 +67,9 @@ export class DialogAddChannelComponent {
     } finally {
       this.loading = false;
     }
+  }
+
+  closeDialog() {
+    this.dialogRef.close();
   }
 }
