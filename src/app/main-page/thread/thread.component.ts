@@ -9,11 +9,14 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogEditMessageComponent } from '../dialog-edit-message/dialog-edit-message.component';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatMenuModule],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss']
 })
@@ -23,6 +26,7 @@ export class ThreadComponent implements OnInit {
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private dialog = inject(MatDialog);
 
   messages: Message[] = [];
   newMessageText = '';
@@ -78,50 +82,36 @@ export class ThreadComponent implements OnInit {
     this.closeThread.emit();
   }
 
-/**
- * Sends a new message if the message text is not empty. Retrieves the current user's name
- * and constructs a new message object. If the message is part of a chat, it is added to the 
- * appropriate thread.
- * @async
- * @returns {Promise<void>} Resolves when the message has been sent or if the message text is empty.
- */
-async sendMessage(event?: Event) {
-  if (event) {
-    event.preventDefault();  // Verhindert den Zeilenumbruch
+  async sendMessage(event?: Event) {
+    if (event) {
+      event.preventDefault();  // Verhindert den Zeilenumbruch
+    }
+
+    if (this.newMessageText.trim() === '') {
+      return;
+    }
+
+    const userName = await this.userService.getUserNameById(this.currentUserId);
+
+    let chatId: string = '';
+    if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
+      chatId = (this.currentChat as Channel).id || '';
+    }
+
+    const newMessage: Message = {
+      content: this.newMessageText,
+      senderId: this.currentUserId,
+      senderName: userName,
+      timestamp: serverTimestamp(),
+      chatId: chatId
+    };
+
+    if (chatId) {
+      this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
+    }
+    this.newMessageText = '';
   }
 
-  if (this.newMessageText.trim() === '') {
-    return;
-  }
-
-  const userName = await this.userService.getUserNameById(this.currentUserId);
-
-  let chatId: string = '';
-  if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
-    chatId = (this.currentChat as Channel).id || '';
-  }
-
-  const newMessage: Message = {
-    content: this.newMessageText,
-    senderId: this.currentUserId,
-    senderName: userName,
-    timestamp: serverTimestamp(),
-    chatId: chatId
-  };
-
-  if (chatId) {
-    this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
-  }
-  this.newMessageText = '';
-}
-
-  
-
-  /**
-   * Sorts messages by their timestamp.
-   * @param {Message[]} messages - The messages to sort.
-   * @returns {Message[]} The sorted messages.
-   */
   sortMessagesByTimestamp(messages: Message[]): Message[] {
     return messages.sort((a, b) => {
       const dateA = this.convertToDate(a.timestamp);
@@ -130,12 +120,6 @@ async sendMessage(event?: Event) {
     });
   }
 
-  /**
-   * Determines if the message is on a new day compared to the previous message.
-   * @param {Timestamp | FieldValue} timestamp - The timestamp of the current message.
-   * @param {number} index - The index of the current message.
-   * @returns {boolean} True if the message is on a new day, false otherwise.
-   */
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
     const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
@@ -143,11 +127,6 @@ async sendMessage(event?: Event) {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
-  /**
-   * Converts a Firestore timestamp to a JavaScript Date object.
-   * @param {Timestamp | FieldValue} timestamp - The Firestore timestamp.
-   * @returns {Date} The JavaScript Date object.
-   */
   convertToDate(timestamp: Timestamp | FieldValue): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
@@ -155,10 +134,6 @@ async sendMessage(event?: Event) {
     return new Date();
   }
 
-  /**
-   * Resolves the usernames for all messages.
-   * @param {Message[]} messages - The messages whose usernames to resolve.
-   */
   async resolveUserNames(messages: Message[]) {
     const userIds = [...new Set(messages.map(msg => msg.senderId))];
     for (const userId of userIds) {
@@ -166,10 +141,6 @@ async sendMessage(event?: Event) {
     }
   }
 
-  /**
-   * Resolves the username for a given user ID.
-   * @param {string} userId - The ID of the user.
-   */
   async resolveUserName(userId: string) {
     if (!this.userNames[userId]) {
       const userName = await this.userService.getUserNameById(userId);
@@ -177,21 +148,10 @@ async sendMessage(event?: Event) {
     }
   }
 
-
-  /**
-   * Gets the username for a given user ID.
-   * @param {string} userId - The ID of the user.
-   * @returns {string} The username.
-   */
   getUserName(userId: string): string {
     return this.userNames[userId] || 'Unknown';
   }
 
-
-  /**
- * Loads user profiles for the given messages if not already loaded.
- * @param {Message[]} messages - Array of messages to extract user IDs from.
- */
   loadUserProfiles(messages: Message[]) {
     const userIds = [...new Set(messages.map(message => message.senderId))];
     userIds.forEach(userId => {
@@ -203,4 +163,53 @@ async sendMessage(event?: Event) {
       }
     });
   }
+
+  /**
+   * Opens the edit dialog for the selected message.
+   * @param {Message} message - The message to edit.
+   */
+  editMessage(message: Message) {
+    if (message.senderId === this.currentUserId) {
+      const dialogRef = this.dialog.open(DialogEditMessageComponent, {
+        width: '250px',
+        data: { content: message.content }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result !== undefined) {
+          message.content = result;
+          this.threadService.updateThread(
+            message.chatId!,
+            this.threadService.currentMessageId,
+            message
+          ).then(() => {
+            console.log('Message updated successfully');
+          }).catch(error => {
+            console.error('Error updating message:', error);
+          });
+        }
+      });
+    }
+  }
+
+  /**
+   * Deletes the selected message if the current user is the sender.
+   * @param {Message} message - The message to delete.
+   */
+  deleteMessage(message: Message) {
+    if (message.senderId === this.currentUserId) {
+      this.threadService.deleteThread(
+        message.chatId!,
+        this.threadService.currentMessageId,
+        message.id!
+      ).then(() => {
+        console.log('Message deleted successfully');
+      }).catch(error => {
+        console.error('Error deleting message:', error);
+      });
+    } else {
+      console.error("You cannot delete another user's message.");
+    }
+  }
+  
 }

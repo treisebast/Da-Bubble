@@ -31,6 +31,25 @@
       <div class="message-content">
         <p>{{ currentMessageToOpen.content }}</p>
       </div>
+      
+      <!-- Reaction Bar for the thread message -->
+      <div 
+        class="reactionBar" 
+        [ngClass]="{ 'reactionBar-left': currentMessageToOpen.senderId === currentUserId, 'reactionBar-right': currentMessageToOpen.senderId !== currentUserId }">
+        <div class="check"></div>
+        <div class="handsUp"></div>
+        <div class="reaction"></div>
+        <div *ngIf="currentMessageToOpen.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menu0">
+        </div>
+      </div>
+
+      <mat-menu #menu0="matMenu">
+        <ng-container *ngIf="currentMessageToOpen.senderId === currentUserId">
+          <button mat-menu-item (click)="editMessage(currentMessageToOpen)">Nachricht bearbeiten</button>
+          <button mat-menu-item (click)="deleteMessage(currentMessageToOpen)">Nachricht löschen</button>
+        </ng-container>
+      </mat-menu>
+
     </div>
   </div>
 
@@ -59,6 +78,25 @@
       <div class="message-content">
         <p>{{ message.content }}</p>
       </div>
+      
+      <!-- Reaction Bar for each thread reply -->
+      <div 
+        class="reactionBar" 
+        [ngClass]="{ 'reactionBar-left': message.senderId === currentUserId, 'reactionBar-right': message.senderId !== currentUserId }">
+        <div class="check"></div>
+        <div class="handsUp"></div>
+        <div class="reaction"></div>
+        <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
+        </div>
+      </div>
+
+      <mat-menu #menuTrigger="matMenu">
+        <ng-container *ngIf="message.senderId === currentUserId">
+          <button mat-menu-item (click)="editMessage(message)">Nachricht bearbeiten</button>
+          <button mat-menu-item (click)="deleteMessage(message)">Nachricht löschen</button>
+        </ng-container>
+      </mat-menu>
+
     </div>
   </div>
 
@@ -78,4 +116,4 @@
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
   </div>
-  
+</div>
