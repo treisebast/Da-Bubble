@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
 import { ChatService } from '../../shared/services/chat-service.service';
-import { DialogEditMessageComponent } from '../dialog-edit-message/dialog-edit-message.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogOptionsComponent } from '../dialog-options/dialog-options.component';
 import { MatMenuModule } from '@angular/material/menu';

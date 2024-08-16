@@ -10,7 +10,6 @@ import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogEditMessageComponent } from '../dialog-edit-message/dialog-edit-message.component';
 import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
@@ -36,6 +35,9 @@ export class ThreadComponent implements OnInit {
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
   totalReplies: number = 0;
+  editingMessageId: string | null | undefined = null;  // Zustandsvariable für das Editieren
+  editContent: string = '';  // Inhalt für die Bearbeitung
+
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -170,25 +172,7 @@ export class ThreadComponent implements OnInit {
    */
   editMessage(message: Message) {
     if (message.senderId === this.currentUserId) {
-      const dialogRef = this.dialog.open(DialogEditMessageComponent, {
-        width: '250px',
-        data: { content: message.content }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result !== undefined) {
-          message.content = result;
-          this.threadService.updateThread(
-            message.chatId!,
-            this.threadService.currentMessageId,
-            message
-          ).then(() => {
-            console.log('Message updated successfully');
-          }).catch(error => {
-            console.error('Error updating message:', error);
-          });
-        }
-      });
+      this.startEditing(message);  // Startet den Bearbeitungsmodus direkt
     }
   }
 
@@ -212,4 +196,30 @@ export class ThreadComponent implements OnInit {
     }
   }
   
+  startEditing(message: Message) {
+    if (message.senderId === this.currentUserId) {
+      this.editingMessageId = message.id;  // Setzt die ID der Nachricht, die bearbeitet wird
+      this.editContent = message.content;
+    }
+  }
+
+  saveEdit(message: Message) {
+    if (this.editContent.trim() !== '') {
+      message.content = this.editContent;
+      this.threadService.updateThread(
+        message.chatId!,
+        this.threadService.currentMessageId,
+        message
+      ).then(() => {
+        console.log('Message updated successfully');
+      }).catch(error => {
+        console.error('Error updating message:', error);
+      });
+    }
+    this.editingMessageId = null;  // Setzt den Bearbeitungsmodus zurück
+  }
+
+  cancelEdit() {
+    this.editingMessageId = null;  // Setzt den Bearbeitungsmodus zurück
+  }
 }

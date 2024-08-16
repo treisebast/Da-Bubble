@@ -75,8 +75,15 @@
           <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
         </ng-template>
       </div>
-      <div class="message-content">
-        <p>{{ message.content }}</p>
+      <div class="message-content" [ngClass]="{ 'editing': editingMessageId === message.id }">
+        <p *ngIf="editingMessageId !== message.id">{{ message.content }}</p>
+        <div *ngIf="editingMessageId === message.id" class="editing-container">
+          <input [(ngModel)]="editContent" />
+          <div class="message-controls">
+            <button class="cancel-button" (click)="cancelEdit()">Zurück</button>
+            <button class="save-button" (click)="saveEdit(message)">Speichern</button>
+          </div>
+        </div>
       </div>
       
       <!-- Reaction Bar for each thread reply -->
