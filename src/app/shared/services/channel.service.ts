@@ -3,6 +3,7 @@ import { Firestore, collectionData, doc, docData, updateDoc, deleteDoc, collecti
 import { Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
 import { Message } from '../models/message.model';
+import { query, orderBy } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class ChannelService {
   constructor(private firestore: Firestore) {}
 
   getChannels(): Observable<Channel[]> {
-    return collectionData(this.channelsCollection, { idField: 'id' }) as Observable<Channel[]>;
+    const channelsQuery = query(this.channelsCollection, orderBy('createdAt', 'asc'));
+    return collectionData(channelsQuery, { idField: 'id' }) as Observable<Channel[]>;
   }
 
   getChannel(id: string): Observable<Channel> {
