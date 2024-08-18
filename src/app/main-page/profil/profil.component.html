@@ -13,7 +13,9 @@
       <div class="profil-name-container">
         <div class="title-container">
           <mat-card-title>{{ ownUser.name }}</mat-card-title>
-          <div class="edit-icon" (click)="editProfil()"></div>
+          <div class="edit-icon-container">
+            <div class="edit-icon" (click)="editProfil()"></div>
+          </div>
           <span class="edit" (click)="editProfil()">Bearbeiten</span>
         </div>
         <div class="profil-status">

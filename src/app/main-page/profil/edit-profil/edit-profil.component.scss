@@ -84,4 +84,10 @@
       background: var(--purple-two, rgb(121, 126, 243));
     }
   }
+
+  @media (max-width: 600px) {
+    justify-content: space-between;
+    width: 100%;
+    gap: unset;
+  }
 }

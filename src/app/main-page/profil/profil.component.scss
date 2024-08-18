@@ -15,12 +15,22 @@
   // top: 0;
   // transform: translate(-50%, -50%);
   z-index: 20;
+  width: 500px;
 
   .profil-card-container {
     display: flex;
     flex-direction: column;
     gap: 45px;
-    width: 420px;
+  }
+
+  @media screen and (max-width: 600px) {
+    position: relative;
+    padding: 40px 20px;
+    width: 90vw;
+    max-width: 500px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -60,6 +70,11 @@
     height: 200px;
     border-radius: 50%;
     object-fit: cover;
+
+    @media (max-height: 750px) {
+      height: 150px;
+      width: 150px;
+    }
   }
 }
 
@@ -74,7 +89,7 @@
     justify-content: space-between;
 
     mat-card-title {
-      color: var(--black, #000);
+      color: var(--black, rgb(0, 0, 0));
       font-size: 32px;
       text-align: start;
       font-weight: 700;
@@ -84,23 +99,33 @@
     }
 
     // TODO: @Media display unset and .edit display none
-    .edit-icon {
+    .edit-icon-container {
       display: none;
-      width: 24px;
-      height: 24px;
       padding: 3px;
-      background-image: url(./../../../assets/img/profilecard/edit.svg);
-      background-repeat: no-repeat;
-      background-position: center center;
-      transition: ease-in-out 150ms;
+      border-radius: 40px;
+      background: var(--light-purple, rgb(236, 238, 254));
 
-      &:hover {
-        background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
-        cursor: pointer;
+      .edit-icon {
+        width: 24px;
+        height: 24px;
+        background-image: url(./../../../assets/img/profilecard/edit.svg);
+        background-repeat: no-repeat;
+        background-position: center center;
+        transition: ease-in-out 150ms;
+
+        &:hover {
+          background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
+          cursor: pointer;
+        }
+      }
+
+      @media screen and (max-width: 600px) {
+        display: block;
       }
     }
 
     .edit {
+      display: block;
       color: var(--purple-three, rgb(83, 90, 241));
       font-size: 18px;
       font-weight: 600;
@@ -110,6 +135,10 @@
         cursor: pointer;
         font-weight: 700;
         transform-origin: left;
+      }
+
+      @media screen and (max-width: 600px) {
+        display: none;
       }
     }
   }
@@ -138,7 +167,7 @@
     gap: 20px;
 
     mat-card-subtitle {
-      color: var(--black, #000);
+      color: var(--black, rgb(0, 0, 0));
       font-size: 20px;
       font-weight: 700;
       margin: 0;
@@ -149,6 +178,8 @@
     a {
       color: var(--mail-address, rgb(19, 129, 255));
       margin-left: 42px;
+      margin-bottom: 0;
+      margin-top: 7px;
       font-size: 18px;
       text-decoration: none;
       padding: 8px;
@@ -172,7 +203,7 @@
     justify-content: center;
     gap: 10px;
     border-radius: 50px;
-    background: var(--purple-one, #444df2);
+    background: var(--purple-one, rgb(68, 77, 242));
     width: fit-content;
 
     span {
