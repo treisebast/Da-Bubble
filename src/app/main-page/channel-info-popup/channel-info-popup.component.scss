@@ -1,0 +1,138 @@
+.channel-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 24px;
+  border-top-right-radius: 15px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  width: 800px;
+  z-index: 1000;
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--black);
+      margin: 0;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--black);
+    }
+  }
+
+  .popup-body {
+    margin-top: 20px;
+
+    .channel-name,
+    .channel-info {
+      border: 1px solid var(--divider-purple);
+      border-radius: 15px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: start;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+
+      .popup-headline {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      h3 {
+        display: block;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 18px;
+      }
+
+      p {
+        color: var(--black);
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .popup-text {
+        width: 100%;
+        display: flex;
+        justify-content: start;
+      }
+
+      .edit-button {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--purple-one);
+        text-decoration: none;
+        cursor: pointer;
+        background-color: transparent;
+        border: none;
+
+        &:hover {
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .divider {
+    width: 100%;
+    border-bottom: 1px solid var(--divider-purple);
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .createdBy-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .createdBy {
+    font-size: 20px !important;
+    color: var(--purple-one) !important;
+  }
+
+
+  .leave-container {
+    display: flex;
+    width: 100%;
+    justify-content: end;
+    align-items: center;
+  }
+
+  .leave-button {
+    display: block;
+    background-color: var(--purple-one);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    padding: 12px 16px;
+
+    &:hover {
+      background-color: var(--purple-two);
+    }
+  }
+}

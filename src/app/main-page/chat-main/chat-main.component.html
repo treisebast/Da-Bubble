@@ -26,7 +26,26 @@
       <img *ngIf="isChatUserProfile(currentChat) && currentChat.status === 'offline'" src="./assets/img/offline.png"
         alt="" class="online" />
     </div>
-    <h2>{{ currentChat.name }}</h2>
+
+
+    <div class="header-title">
+      <div class="header-channel-name">
+        <span class="hashtag">#</span>
+        <h2> {{ currentChat.name }}</h2>
+        <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info">
+      </div>
+
+      <div class="header-channel-info">
+        <div>
+          <img src="../assets/img/chatChannel/add_members_button.svg" alt="add user">
+        </div>
+      </div>
+    </div>
+
+
+
+
+
   </div>
   <div class="chat-container" #chatContainer>
     <div class="spinner" *ngIf="this.isLoading">

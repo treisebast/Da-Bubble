@@ -1,0 +1,36 @@
+<div *ngIf="channel" class="modal-background" (click)="closePopup()"></div>
+<div *ngIf="channel" class="channel-popup">
+    <div class="popup-header">
+        <h2><span class="hashtag">#</span> {{ channel.name }}</h2>
+        <button (click)="closePopup()" class="close-button">X</button>
+    </div>
+    <div class="popup-body">
+        <div class="channel-name">
+            <div class="popup-headline">
+                <h3>Channel-Name</h3>
+                <button class="edit-button">Bearbeiten</button>
+            </div>
+            <div class="popup-text">
+                <p> <span class="hashtag">#</span> {{ channel.name }}</p>
+            </div>
+        </div>
+
+        <div class="channel-info">
+            <div class="popup-headline">
+                <h3>Beschreibung</h3>
+                <button class="edit-button">Bearbeiten</button>
+            </div>
+            <div class="popup-text">
+                <p>{{ channel.description }}</p>
+            </div>
+            <div class="divider"></div>
+            <div class="createdBy-info">
+                <h3>Erstellt von</h3>
+                <p class="createdBy">{{ channel.createdBy }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="leave-container">
+        <button class="leave-button" (click)="closePopup()">Channel verlassen</button>
+    </div>
+</div>
