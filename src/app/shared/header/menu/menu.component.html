@@ -10,12 +10,18 @@
       </div>
     </div>
 
-    <!-- mobile menu TODO: make it responsive and design -->
-    <div class="mobile-menu-container" (click)="$event.stopPropagation()">
+    <!-- mobile menu -->
+    <div class="mobile-menu-container" (click)="$event.stopPropagation()"
+      [ngClass]="isMenuOpen ? 'slideIn' : 'slideOut'">
+      <div style="display: flex; justify-content: center" (click)="close()">
+        <div class="rectangle"></div>
+      </div>
       <div class="mobile-profil-btn" mat-button cdkFocusInitial (click)="openProfilContent()">
+        <div class="mobile-profil-icon"></div>
         <span>Profil</span>
       </div>
       <div class="mobile-logout-btn" mat-button cdkFocusInitial (click)="openLogoutDialog()">
+        <div class="mobile-logout-icon"></div>
         <span>Log out</span>
       </div>
     </div>
