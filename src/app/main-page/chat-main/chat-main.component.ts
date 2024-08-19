@@ -1,5 +1,5 @@
 import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../shared/models/channel.model';
@@ -11,8 +11,8 @@ import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore'
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import localeDe from '@angular/common/locales/de';
 
 @Component({
   selector: 'app-chat-main',
@@ -30,7 +30,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   newMessageText = '';
   currentUserId = '';
   currentUserName = '';
-  userProfiles: { [key: string]: any} = {};
+  userProfiles: { [key: string]: any } = {};
   isLoading: boolean = false;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
@@ -40,7 +40,9 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     private authService: AuthService,
     private userService: UserService,
     private threadService: ThreadService
-  ) {}
+  ) {
+    registerLocaleData(localeDe);
+  }
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -128,18 +130,18 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     if (event) {
       event.preventDefault();
     }
-  
+
     if (this.newMessageText.trim() === '') {
       return;
     }
-  
+
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
       chatId: this.currentChat.id
     };
-  
+
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }
