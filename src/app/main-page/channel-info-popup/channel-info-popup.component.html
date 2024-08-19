@@ -1,37 +1,46 @@
 <div *ngIf="channel" class="modal-background" (click)="closePopup()"></div>
-<div *ngIf="channel" class="channel-popup"(click)="$event.stopPropagation()">
+<div *ngIf="channel" class="channel-popup" (click)="$event.stopPropagation()">
     <div class="popup-header">
-        <h2><span class="hashtag">#</span> {{ channel.name }}</h2>
-        <button (click)="closePopup()" class="close-button">X</button>
+        <h2><img src="../../../assets/img/chatChannel/tag.svg"> {{ channel.name }}</h2>
+        <button (click)="closePopup()" class="close-button"></button>
     </div>
     <div class="popup-body">
-        <div class="channel-name">
+        <div [ngClass]="{'channel-name': true, 'no-padding-border': isEditingName}">
             <div class="popup-headline">
                 <h3>Channel-Name</h3>
-                <button class="edit-button">Bearbeiten</button>
+                <button *ngIf="!isEditingName" class="edit-button" (click)="startEditingName()">Bearbeiten</button>
+                <button *ngIf="isEditingName" class="edit-button" (click)="saveName()">Speichern</button>
             </div>
             <div class="popup-text">
-                <p> <span class="hashtag">#</span> {{ channel.name }}</p>
+                <p *ngIf="!isEditingName"> <img src="../../../assets/img/chatChannel/tag.svg"> {{ channel.name }}</p>
+                <div *ngIf="isEditingName" class="input-container">
+                    <input [(ngModel)]="editedName" class="edit-input with-hashtag" />
+                </div>
             </div>
         </div>
 
-        <div class="channel-info">
+        <div [ngClass]="{'channel-info': true, 'no-padding-border': isEditingDescription}">
             <div class="popup-headline">
                 <h3>Beschreibung</h3>
-                <button class="edit-button">Bearbeiten</button>
+                <button *ngIf="!isEditingDescription" class="edit-button"
+                    (click)="startEditingDescription()">Bearbeiten</button>
+                <button *ngIf="isEditingDescription" class="edit-button" (click)="saveDescription()">Speichern</button>
             </div>
             <div class="popup-text">
-                <p>{{ channel.description }}</p>
+                <p *ngIf="!isEditingDescription">{{ channel.description }}</p>
+                <input *ngIf="isEditingDescription" [(ngModel)]="editedDescription" class="edit-input"
+                    placeholder="Dein Text hier" />
             </div>
+
             <div class="divider"></div>
             <div class="createdBy-info">
                 <h3>Erstellt von</h3>
                 <p class="createdBy">{{ channel.createdBy }}</p>
             </div>
         </div>
+
     </div>
     <div class="leave-container">
-        <!-- button logic needs implementation -->
-        <button class="leave-button" (click)="closePopup()">Channel verlassen</button> 
+        <button class="leave-button" (click)="closePopup()">Channel verlassen</button>
     </div>
 </div>
