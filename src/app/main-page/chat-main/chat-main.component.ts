@@ -13,11 +13,12 @@ import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import localeDe from '@angular/common/locales/de';
+import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-popup.component';
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule,ChannelInfoPopupComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss']
 })
@@ -32,6 +33,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   currentUserName = '';
   userProfiles: { [key: string]: any } = {};
   isLoading: boolean = false;
+  selectedChannel: Channel | null = null;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
@@ -179,5 +181,13 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
   getUserName(senderId: string): string {
     return this.userProfiles[senderId]?.name || 'Unknown User';
+  }
+
+  openChannelInfoPopup() {
+    this.selectedChannel = this.currentChat as Channel;
+  }
+
+  closeChannelInfoPopup() {
+    this.selectedChannel = null;
   }
 }

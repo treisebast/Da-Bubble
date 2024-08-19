@@ -29,7 +29,7 @@
 
 
     <div class="header-title">
-      <div class="header-channel-name">
+        <div class="header-channel-name" (click)="openChannelInfoPopup()">
         <span class="hashtag">#</span>
         <h2> {{ currentChat.name }}</h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info">
@@ -41,9 +41,6 @@
         </div>
       </div>
     </div>
-
-
-
 
 
   </div>
@@ -78,3 +75,5 @@
     </div>
   </div>
 </div>
+
+<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel" (click)="closeChannelInfoPopup()"></app-channel-info-popup>
