@@ -100,8 +100,8 @@
 
   >img:nth-child(1) {
     object-fit: cover;
-    height: 48px;
-    width: 48px;
+    height: 50px;
+    width: 50px;
     border-radius: 100%;
   }
 
@@ -111,10 +111,10 @@
   }
 
   .online {
-    margin-left: -8px;
-    margin-top: 20px;
-    height: 12px;
-    margin-right: 8px;
+    height: 14px;
+    position: absolute;
+    top: 52px;
+    left: 52px;
   }
 }
 

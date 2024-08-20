@@ -1,13 +1,13 @@
 .channel-popup {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 38%;
+  left: 42%;
   transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 24px;
-  border-top-right-radius: 15px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  background-color: var(--white);
+  padding: 30px;
+  border-top-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   width: 700px;
   height: 525px;

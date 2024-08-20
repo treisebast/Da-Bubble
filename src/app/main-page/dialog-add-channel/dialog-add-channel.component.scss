@@ -3,7 +3,7 @@
   box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
   flex-direction: column;
   max-width: 800px;
-  border-radius: 25px;
+  border-radius: 30px;
   background-color: white;
   padding-top: 20px;
   padding-left: 20px;
@@ -33,7 +33,7 @@ input {
   outline-color: var(--purple-one);
   font-size: 16px;
   padding-left: 16px;
-  color: #686868;
+  color: var(--black);
   margin-bottom: 16px;
 
   &:hover {
