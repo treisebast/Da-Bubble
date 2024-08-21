@@ -55,7 +55,20 @@
         Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date: 'HH:mm' }}
       </span>
     </div>
-  </div>
+    
+    <div *ngIf="message.attachments && message.attachments.length > 0" class="attachments">
+      <div *ngFor="let attachment of message.attachments">
+        <ng-container *ngIf="isImage(attachment); else pdfTemplate">
+          <!-- PDF als Preview anzeigen -->
+          <img [src]="attachment" alt="Anhang" class="attachment-img" />
+      </ng-container>
+        <ng-template #pdfTemplate>
+          <!-- PDF als Link anzeigen -->
+          <a [href]="attachment" target="_blank">Anhänge ansehen</a>
+        </ng-template>
+      </div>
+    </div>
+    
 
   <mat-menu #menu="matMenu">
     <ng-container *ngIf="isCurrentUser">
@@ -63,5 +76,5 @@
       <button mat-menu-item (click)="deleteMessage()">Nachricht löschen</button>
     </ng-container>
   </mat-menu>
-  
+
 </div>

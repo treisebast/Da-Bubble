@@ -29,7 +29,13 @@ export class MessageComponent implements OnInit {
 
   constructor(private chatService: ChatService, private dialog: MatDialog) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void { 
+    console.log('Message Attachments:', this.message.attachments);
+    this.message.attachments?.forEach(attachment => {
+        console.log('Attachment:', attachment);
+        console.log('Is Image:', attachment.endsWith('.png') || attachment.endsWith('.jpg') || attachment.endsWith('.jpeg'));
+    });
+}
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -95,4 +101,9 @@ export class MessageComponent implements OnInit {
       console.error("Du kannst die Nachricht eines anderen Benutzers nicht löschen.");
     }
   }
+
+  isImage(url: string): boolean {
+    const imageTypes = ['.png', '.jpg', '.jpeg'];
+    return imageTypes.some(type => url.split('?')[0].endsWith(type));
+}
 }

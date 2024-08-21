@@ -29,8 +29,8 @@
 
 
     <div class="header-title">
-        <div class="header-channel-name" (click)="openChannelInfoPopup()">
-          <img src="../../../assets/img/chatChannel/tag.svg">
+      <div class="header-channel-name" (click)="openChannelInfoPopup()">
+        <img src="../../../assets/img/chatChannel/tag.svg">
         <h2> {{ currentChat.name }}</h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info">
       </div>
@@ -61,12 +61,37 @@
       </div>
     </ng-container>
   </div>
+
+
+  <!-- Vorschau des Anhangs -->
+  <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
+    <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
+      <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
+      <span *ngIf="attachmentUrl.endsWith('.pdf')">
+        <a [href]="attachmentUrl" target="_blank">PDF Vorschau ansehen</a>
+      </span>
+      <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
+    </div>
+    <ng-template #localPreview>
+      <div class="preview-image-wrapper" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Anhang Vorschau" class="attachment-preview" />
+        <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
+      </div>
+    </ng-template>
+  </div>
+
+
+
   <div class="messageBox">
     <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
       (keydown.enter)="sendMessage($event)"></textarea>
+
+
+
     <div class="messageBoxBottom">
       <div class="iconsLeft">
-        <div class="addIcon"></div>
+        <div class="addIcon" (click)="openFileDialog()"></div>
+        <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none;" />
         <div class="border"></div>
         <div class="emoji"></div>
         <div class="iconMarkUser"></div>
@@ -76,4 +101,5 @@
   </div>
 </div>
 
-<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel" (click)="closeChannelInfoPopup()"></app-channel-info-popup>
+<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
+  (click)="closeChannelInfoPopup()"></app-channel-info-popup>

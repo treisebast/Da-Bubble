@@ -485,3 +485,17 @@
     }
   }
 }
+
+.attachments {
+  margin-top: 10px;
+  color: black;
+  display: flex;
+  z-index: 10;
+
+  .attachment-img {
+    max-width: 250px;
+    border-radius: 30px;
+    height: auto;
+    display: block;
+  }
+}

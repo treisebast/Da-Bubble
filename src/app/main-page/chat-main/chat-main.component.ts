@@ -14,11 +14,14 @@ import { MessageComponent } from '../message/message.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import localeDe from '@angular/common/locales/de';
 import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-popup.component';
+import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
+import { Firestore, collection, doc } from '@angular/fire/firestore';  // Korrekte Importe
+
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule,ChannelInfoPopupComponent],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss']
 })
@@ -34,14 +37,20 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   userProfiles: { [key: string]: any } = {};
   isLoading: boolean = false;
   selectedChannel: Channel | null = null;
+  previewUrl: string | null = null;
+  attachmentUrl: string | null = null;
+  selectedFile: File | null = null;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
     private userService: UserService,
-    private threadService: ThreadService
+    private threadService: ThreadService,
+    private firebaseStorageService: FirebaseStorageService,
+    private firestore: Firestore
   ) {
     registerLocaleData(localeDe);
   }
@@ -132,22 +141,45 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     if (event) {
       event.preventDefault();
     }
-
-    if (this.newMessageText.trim() === '') {
+  
+    if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return;
     }
+  
+    if (this.selectedFile) {
+      const autoId = doc(collection(this.firestore, 'dummy')).id;
+      const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile.name}`;
+  
+      // Datei hochladen und Nachricht senden
+      this.firebaseStorageService.uploadFile(this.selectedFile, filePath).subscribe((downloadUrl) => {
+        this.attachmentUrl = downloadUrl;
+  
+        // Jetzt die Nachricht senden
+        this.createAndSendMessage();
+      });
+    } else {
+      // Keine Datei, einfach die Nachricht senden
+      this.createAndSendMessage();
+    }
+  }
 
+  createAndSendMessage() {
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
-      chatId: this.currentChat.id
+      chatId: this.currentChat.id,
+      attachments: this.attachmentUrl ? [this.attachmentUrl] : undefined // Einzelnen Anhang hinzufügen, wenn vorhanden
     };
-
+  
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }
+  
     this.newMessageText = '';
+    this.attachmentUrl = null; // Anhang zurücksetzen nach dem Senden
+    this.selectedFile = null;  // Datei zurücksetzen nach dem Senden
+    this.previewUrl = null; // Vorschau zurücksetzen nach dem Senden
   }
 
   isChatUserProfile(chat: User | Channel): chat is User {
@@ -190,4 +222,64 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   closeChannelInfoPopup() {
     this.selectedChannel = null;
   }
+
+  openFileDialog() {
+    this.fileInput.nativeElement.click();
+  }
+
+
+handleFileInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+
+    // Überprüfe die Dateigröße und den Typ
+    if (file.size > 500 * 1024) {
+      alert('Die Datei überschreitet die maximal erlaubte Größe von 500KB.');
+      return;
+    }
+
+    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
+      return;
+    }
+
+    // Vorschau erstellen
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+
+      // Setze die Datei, aber lade sie noch nicht hoch
+      this.attachmentUrl = null; // Wir setzen die URL zurück, falls vorher eine Datei hochgeladen wurde
+      this.selectedFile = file; // Hier speichern wir die Datei für später
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+  
+
+
+  addAttachmentToMessage(downloadUrl: string) {
+    // Speichere die URL in der neuen Nachricht
+    const newMessage: Message = {
+      content: this.newMessageText,
+      senderId: this.currentUserId,
+      timestamp: serverTimestamp(),
+      chatId: this.currentChat.id,
+      attachments: [downloadUrl]  // Anhänge hinzufügen
+    };
+
+    // Nachricht senden
+    this.chatService.addMessage(this.currentChat.id, newMessage);
+    this.newMessageText = '';
+  }
+
+  removePreview() {
+    this.previewUrl = null;
+    this.attachmentUrl = null; // Entferne den einzigen Anhang
+    this.fileInput.nativeElement.value = ''; // Resettet den Datei-Input
+  }
+
 }
