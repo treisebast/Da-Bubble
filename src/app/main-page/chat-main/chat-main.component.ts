@@ -171,7 +171,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       chatId: this.currentChat.id,
       attachments: this.attachmentUrl ? [this.attachmentUrl] : undefined // Einzelnen Anhang hinzufügen, wenn vorhanden
     };
-  
+
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }
