@@ -56,6 +56,7 @@ export class SideNavComponent implements OnInit {
         });
       }
     });
+    this.openMenuChannel();
   }
 
   /**

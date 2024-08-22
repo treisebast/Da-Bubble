@@ -1,15 +1,16 @@
 .channel-popup {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 38%;
+  left: 42%;
   transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 24px;
-  border-top-right-radius: 15px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  background-color: var(--white);
+  padding: 30px;
+  border-top-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-  width: 800px;
+  width: 700px;
+  height: 525px;
   z-index: 1000;
 
   .popup-header {
@@ -21,6 +22,9 @@
     padding-right: 8px;
 
     h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 24px;
       font-weight: 700;
       color: var(--black);
@@ -34,6 +38,20 @@
       font-weight: 700;
       cursor: pointer;
       color: var(--black);
+      width: 35px;
+      height: 35px;
+      border-radius: 35px;
+      background-image: url('../../../assets/img/chatChannel/close.svg');
+      background-size: 24px 24px;
+      background-repeat: no-repeat;
+      background-position: center;
+
+      &:hover {
+        background-color: var(--light-purple);
+        background-size: 24px 24px;
+        background-image: url('../../../assets/img/chatChannel/close_hover.svg');
+        ;
+      }
     }
   }
 
@@ -51,6 +69,7 @@
       flex-direction: column;
       gap: 12px;
       width: 100%;
+      transition: padding 225ms ease, border 225ms ease;
 
       .popup-headline {
         width: 100%;
@@ -61,15 +80,18 @@
       h3 {
         display: block;
         font-weight: bold;
-        color: #333;
+        color: var(--black);
         margin-bottom: 5px;
-        font-size: 18px;
+        font-size: 20px;
       }
 
       p {
         color: var(--black);
-        font-size: 16px;
+        font-size: 18px;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .popup-text {
@@ -135,4 +157,63 @@
       background-color: var(--purple-two);
     }
   }
+}
+
+.no-padding-border {
+  padding: 8px !important;
+  border: none !important;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid var(--divider-purple);
+  border-radius: 25px;
+  outline: none;
+  transition: border-color 225ms ease;
+  color: var(--black);
+  background-color: var(--white);
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  box-shadow: none;
+}
+
+.edit-input:focus {
+  border-color: var(--purple-two);
+  background-color: var(--white);
+}
+
+.edit-input::placeholder {
+  color: var(--text-grey);
+  font-weight: 400;
+}
+
+.edit-button {
+  background: none;
+  border: none;
+  color: var(--purple-one);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.edit-button:hover {
+  font-weight: 700;
+}
+
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+.with-hashtag {
+  padding-left: 36px;
+  background-image: url('../../../assets/img/chatChannel/tag.svg');
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  box-sizing: border-box;
 }

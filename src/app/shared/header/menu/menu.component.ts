@@ -6,11 +6,13 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
   imports: [
+    CommonModule,
     MatDialogActions,
     MatDialogClose,
     MatDialogContent,
@@ -23,11 +25,13 @@ import { MatButtonModule } from '@angular/material/button';
 export class MenuComponent {
   @Output() closeMenu = new EventEmitter<void>();
   @Output() openProfile = new EventEmitter<void>();
+  isMenuOpen: boolean = true;
 
   constructor() {}
 
   close() {
-    this.closeMenu.emit();
+    this.isMenuOpen = !this.isMenuOpen;
+    setTimeout(() => this.closeMenu.emit(), 300);
   }
 
   openProfilContent() {
