@@ -49,8 +49,11 @@
     background-repeat: no-repeat;
     background-position: center center;
 
+    @include btn-hover();
     &:hover {
       background-image: url(./../../../assets/img/profilecard/close_hover.svg);
+      background-repeat: no-repeat;
+      background-position: center center;
     }
   }
 }
