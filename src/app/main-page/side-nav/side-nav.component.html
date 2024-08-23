@@ -20,33 +20,33 @@
   </div>
 
   <div class="directMessages">
-    <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown">
-    </div>
-    <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown"
-      *ngIf="!directMessagesIsDropedDown">
-    </div>
+    <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown"></div>
+    <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown" *ngIf="!directMessagesIsDropedDown"></div>
 
     <table>
       <div class="channels" [hidden]="!directMessagesIsDropedDown">
         <tr class="message-tr" *ngFor="let user of workspaceUsers"
-          (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
+            (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
+
           <!-- Placeholder spinner while image is loading -->
           <mat-spinner *ngIf="!user.isImageLoaded" diameter="30"></mat-spinner>
 
           <!-- Profile Image with load event -->
-          <img *ngIf="user.avatar" class="table-profile-img" [src]="user.avatar" alt="profile image"
-            (load)="updateImageStatus(user.userId, true)" (error)="updateImageStatus(user.userId, false)"
-            [style.display]="user.isImageLoaded ? 'block' : 'none'" />
+          <img *ngIf="user.avatar" class="table-profile-img"
+               [src]="user.avatar" alt="profile image"
+               (load)="onImageLoad(user.userId)"
+               (error)="onImageError(user.userId)"
+               [style.display]="user.isImageLoaded ? 'block' : 'none'" />
 
           <!-- Status icons -->
           <img *ngIf="user.status === 'online'" src="./assets/img/online.png" alt="" class="online" />
           <img *ngIf="user.status !== 'online'" src="./assets/img/offline.png" alt="" class="online" />
 
-          <ng-container *ngIf="user.name != currentUser.name && user.name">{{ user.name }}</ng-container>
-          <ng-container *ngIf="user.name === currentUser.name && user.name">{{ user.name }} (Du)</ng-container>
+          <!-- Mark the current user with (Du) -->
+          <ng-container *ngIf="user.userId === currentUser.userId">{{ user.name }} (Du)</ng-container>
+          <ng-container *ngIf="user.userId !== currentUser.userId">{{ user.name }}</ng-container>
 
         </tr>
       </div>
     </table>
   </div>
-</div>

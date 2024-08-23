@@ -23,8 +23,8 @@ export class ChannelInfoPopupComponent {
 
   ngOnInit() {
     if (this.channel) {
-      this.editedName = this.channel.name;
-      this.editedDescription = this.channel.description;
+      this.editedName = this.channel.name ?? '';
+      this.editedDescription = this.channel.description ?? '';
     }
   }
 
