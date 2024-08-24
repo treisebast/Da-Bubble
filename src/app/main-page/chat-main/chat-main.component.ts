@@ -16,7 +16,7 @@ import localeDe from '@angular/common/locales/de';
 import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-popup.component';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore';  // Korrekte Importe
-
+import { SharedChannelService } from '../../shared/services/shared-channel.service';
 
 @Component({
   selector: 'app-chat-main',
@@ -40,6 +40,11 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
   selectedFile: File | null = null;
+  publicChannels: Channel[] = [];
+  privateChannels: Channel[] = [];
+  puplicChannels: Channel[] = [];
+  filteredChannels: Channel[] = [];
+  filteredPuplicChannels: Channel[] = [];
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -50,7 +55,8 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     private userService: UserService,
     private threadService: ThreadService,
     private firebaseStorageService: FirebaseStorageService,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private sharedChannelService: SharedChannelService
   ) {
     registerLocaleData(localeDe);
   }
@@ -90,6 +96,18 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     });
     this.isLoading = false;
     console.log("ngOnInit over...isLoading = ", this.isLoading)
+
+    this.loadChannelsForSearch()
+  }
+
+  loadChannelsForSearch() {
+    this.sharedChannelService.privateChannels$.subscribe(channels => {
+      this.privateChannels = channels;
+    });
+
+    this.sharedChannelService.puplicChannels$.subscribe(channels => {
+      this.puplicChannels = channels;
+    });
   }
 
   ngAfterViewChecked() {
@@ -286,5 +304,40 @@ handleFileInput(event: Event) {
     this.attachmentUrl = null; // Entferne den einzigen Anhang
     this.fileInput.nativeElement.value = ''; // Resettet den Datei-Input
   }
+
+  /**
+   * Handles the keyup event and filters the channels.
+   * @param event - Keyboard event from the input field
+   */
+  onKeyUp(event: KeyboardEvent): void {
+    const input = (event.target as HTMLInputElement).value;
+  
+    // Check if input contains an '@' followed by any letter
+    const matchPrivat = input.match(/@([a-zA-Z0-9]+)/);
+    const matchPuplic = input.match(/#([a-zA-Z0-9]+)/);
+  
+    if (matchPrivat) {
+      const letter = matchPrivat[1].toLowerCase();
+  
+      // Filter channels by checking if 'name' is defined and includes the letter
+      this.filteredChannels = this.privateChannels.filter(channel =>
+        channel.name && channel.name.toLowerCase().includes(letter)
+      );
+    } else {
+      this.filteredChannels = [];
+    }
+
+    if (matchPuplic) {
+      const letter = matchPuplic[1].toLowerCase();
+  
+      // Filter channels by checking if 'name' is defined and includes the letter
+      this.filteredPuplicChannels = this.puplicChannels.filter(channel =>
+        channel.name && channel.name.toLowerCase().includes(letter)
+      );
+    } else {
+      this.filteredPuplicChannels = [];
+    }
+  }
+  
 
 }

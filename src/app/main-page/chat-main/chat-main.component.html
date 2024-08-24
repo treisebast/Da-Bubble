@@ -1,7 +1,13 @@
 <div *ngIf="!selectedChat" class="newMessageChatContainer">
   <div class="header column">
     <h2>Neue Nachricht</h2>
-    <input type="text" placeholder="An: #channel, oder @jemand oder E-Mail Adresse">
+    <input type="text" (keyup)="onKeyUp($event)" placeholder="An: #channel, oder @jemand oder E-Mail Adresse">
+    <ul *ngIf="filteredChannels.length > 0">
+      <li *ngFor="let channel of filteredChannels">{{ channel.name }}</li>
+    </ul>
+    <ul *ngIf="filteredPuplicChannels.length > 0">
+      <li *ngFor="let channel of filteredPuplicChannels">{{ channel.name }}</li>
+    </ul>
   </div>
   <div class="messageBox absolute-bottom">
     <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"

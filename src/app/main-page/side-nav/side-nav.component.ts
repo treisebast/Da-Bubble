@@ -9,7 +9,7 @@ import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { Channel } from '../../shared/models/channel.model';
 import { User, UserWithImageStatus } from '../../shared/models/user.model';
-
+import { SharedChannelService } from '../../shared/services/shared-channel.service';
 
 @Component({
   selector: 'app-side-nav',
@@ -33,7 +33,8 @@ export class SideNavComponent implements OnInit {
     private chatService: ChatService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private sharedChannelService: SharedChannelService
   ) {}
 
   ngOnInit() {
@@ -63,6 +64,7 @@ export class SideNavComponent implements OnInit {
     try {
       this.channelService.getChannels(false).subscribe((channels) => {
         this.publicChannels = channels;
+        this.sharedChannelService.setPublicChannels(this.publicChannels);
         console.log('Public channels:', this.publicChannels);
       });
     } catch (error) {
@@ -79,6 +81,7 @@ export class SideNavComponent implements OnInit {
         this.privateChannels = channels.filter(
           (channel) => channel.createdBy === this.currentUser.userId && channel.id
         );
+        this.sharedChannelService.setPrivateChannels(this.privateChannels);
         console.log('Private channels:', this.privateChannels);
         this.loadPrivateChannelMembers();
       });
