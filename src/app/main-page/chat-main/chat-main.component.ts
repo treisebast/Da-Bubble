@@ -138,49 +138,62 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   sendMessage(event?: Event) {
+    console.log("sendMessage starts...")
     if (event) {
+      console.log("event is true, event.preventDefault() gets called...")
       event.preventDefault();
     }
-  
+
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
+      console.log("newMessageText is empty, return...")
       return;
     }
-  
+
     if (this.selectedFile) {
+      console.log("selectedFile is true, uploadFile gets called...")
       const autoId = doc(collection(this.firestore, 'dummy')).id;
       const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile.name}`;
-  
+
       // Datei hochladen und Nachricht senden
       this.firebaseStorageService.uploadFile(this.selectedFile, filePath).subscribe((downloadUrl) => {
         this.attachmentUrl = downloadUrl;
-  
+
         // Jetzt die Nachricht senden
         this.createAndSendMessage();
       });
     } else {
+      console.log("selectedFile is false, createAndSendMessage gets called...")
       // Keine Datei, einfach die Nachricht senden
       this.createAndSendMessage();
     }
   }
 
   createAndSendMessage() {
+    console.log("createAndSendMessage starts...");
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
       chatId: this.currentChat.id,
-      attachments: this.attachmentUrl ? [this.attachmentUrl] : undefined // Einzelnen Anhang hinzufügen, wenn vorhanden
     };
 
+    // Anhänge nur hinzufügen, wenn attachmentUrl existiert
+    if (this.attachmentUrl) {
+      newMessage.attachments = [this.attachmentUrl];
+    }
+
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      console.log("addMessage from chatService gets called now...");
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }
-  
+
+    // Nach dem Senden die Felder zurücksetzen
     this.newMessageText = '';
-    this.attachmentUrl = null; // Anhang zurücksetzen nach dem Senden
-    this.selectedFile = null;  // Datei zurücksetzen nach dem Senden
-    this.previewUrl = null; // Vorschau zurücksetzen nach dem Senden
-  }
+    this.attachmentUrl = null;  // Anhang zurücksetzen nach dem Senden
+    this.selectedFile = null;   // Datei zurücksetzen nach dem Senden
+    this.previewUrl = null;     // Vorschau zurücksetzen nach dem Senden
+    console.log("createAndSendMessage over...");
+}
 
   isChatUserProfile(chat: User | Channel): chat is User {
     return (chat as User).avatar !== undefined;
@@ -258,7 +271,7 @@ handleFileInput(event: Event) {
   }
 }
 
-  
+
 
 
   addAttachmentToMessage(downloadUrl: string) {
