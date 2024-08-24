@@ -8,11 +8,8 @@ import { ChatService } from '../../shared/services/chat-service.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { Channel } from '../../shared/models/channel.model';
-import { User } from '../../shared/models/user.model';
+import { User, UserWithImageStatus } from '../../shared/models/user.model';
 
-interface UserWithImageStatus extends User {
-  isImageLoaded?: boolean;
-}
 
 @Component({
   selector: 'app-side-nav',

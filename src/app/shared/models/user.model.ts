@@ -6,3 +6,7 @@ export interface User {
   status: string | boolean;
   lastSeen: any;
 }
+
+export interface UserWithImageStatus extends User {
+  isImageLoaded?: boolean;
+}

@@ -138,19 +138,15 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
   }
 
   sendMessage(event?: Event) {
-    console.log("sendMessage starts...")
     if (event) {
-      console.log("event is true, event.preventDefault() gets called...")
       event.preventDefault();
     }
 
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
-      console.log("newMessageText is empty, return...")
       return;
     }
 
     if (this.selectedFile) {
-      console.log("selectedFile is true, uploadFile gets called...")
       const autoId = doc(collection(this.firestore, 'dummy')).id;
       const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile.name}`;
 
@@ -162,14 +158,12 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
         this.createAndSendMessage();
       });
     } else {
-      console.log("selectedFile is false, createAndSendMessage gets called...")
       // Keine Datei, einfach die Nachricht senden
       this.createAndSendMessage();
     }
   }
 
   createAndSendMessage() {
-    console.log("createAndSendMessage starts...");
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
@@ -183,16 +177,14 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
 
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
-      console.log("addMessage from chatService gets called now...");
       this.chatService.addMessage(this.currentChat.id, newMessage);
     }
 
     // Nach dem Senden die Felder zurücksetzen
     this.newMessageText = '';
-    this.attachmentUrl = null;  // Anhang zurücksetzen nach dem Senden
-    this.selectedFile = null;   // Datei zurücksetzen nach dem Senden
-    this.previewUrl = null;     // Vorschau zurücksetzen nach dem Senden
-    console.log("createAndSendMessage over...");
+    this.attachmentUrl = null;
+    this.selectedFile = null;
+    this.previewUrl = null;
 }
 
   isChatUserProfile(chat: User | Channel): chat is User {
