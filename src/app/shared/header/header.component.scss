@@ -82,42 +82,6 @@ header {
   }
 }
 
-/* Profilcard*/
-.modal-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-}
-
-.max-width {
-  width: 100%;
-  max-width: 1920px;
-  height: 100%;
-  position: relative;
-}
-
-:host ::ng-deep .profil-card {
-  position: absolute;
-  top: 123px;
-  right: 8px;
-  border-radius: 30px 0px 30px 30px;
-
-  @media screen and (max-width: 600px) {
-    width: 90%;
-    padding: 20px;
-    display: block;
-    border-radius: 30px;
-    right: unset;
-    top: unset;
-  }
-}
-
 @media (max-width: 1200px) {
   .searchbar {
     width: 40% !important;

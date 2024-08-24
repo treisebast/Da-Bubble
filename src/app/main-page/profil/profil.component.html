@@ -1,53 +1,59 @@
-<mat-card class="profil-card">
-  <div class="profil-card-container">
-    <div class="profil-header">
-      <mat-card-title>{{ profiltext }}</mat-card-title>
-      <div class="close-img" (click)="closeProfil()"></div>
-    </div>
+<div class="modal-background" (click)="closeProfil()">
+  <div class="max-width">
 
-    <div class="profil-img-container">
-      <img [src]="ownUser.avatar" alt="Profilimage" *ngIf="ownUser" />
-    </div>
+    <mat-card class="profil-card" (click)="$event.stopPropagation()">
+      <div class="profil-card-container">
+        <div class="profil-header">
+          <mat-card-title>{{ profiltext }}</mat-card-title>
+          <div class="close-img" (click)="closeProfil()"></div>
+        </div>
 
-    <ng-template [ngIf]="!isEditing && ownUser">
-      <div class="profil-name-container">
-        <div class="title-container">
-          <mat-card-title>{{ ownUser.name }}</mat-card-title>
-          <div class="edit-icon-container">
-            <div class="edit-icon" (click)="editProfil()"></div>
+        <div class="profil-img-container">
+          <img [src]="ownUser.avatar" alt="Profilimage" *ngIf="ownUser" />
+        </div>
+
+        <ng-template [ngIf]="!isEditing && ownUser">
+          <div class="profil-name-container">
+            <div class="title-container">
+              <mat-card-title>{{ ownUser.name }}</mat-card-title>
+              <div class="edit-icon-container">
+                <div class="edit-icon" (click)="editProfil()"></div>
+              </div>
+              <span class="edit" (click)="editProfil()">Bearbeiten</span>
+            </div>
+            <div class="profil-status">
+              <img
+                [src]="ownUser.status === 'online' ? './../../../assets/img/profilecard/online.svg' : './../../../assets/img/profilecard/offline.svg'"
+                alt="Statusimage" />
+              <mat-card-subtitle>{{ ownUser.status }}</mat-card-subtitle>
+            </div>
           </div>
-          <span class="edit" (click)="editProfil()">Bearbeiten</span>
-        </div>
-        <div class="profil-status">
-          <img
-            [src]="ownUser.status === 'online' ? './../../../assets/img/profilecard/online.svg' : './../../../assets/img/profilecard/offline.svg'"
-            alt="Statusimage" />
-          <mat-card-subtitle>{{ ownUser.status }}</mat-card-subtitle>
-        </div>
-      </div>
 
-      <div class="mail-container">
-        <div class="mail-header">
-          <img src="./../../../assets/img/profilecard/mail.svg" alt="Emailimage" />
-          <mat-card-subtitle>E-Mail-Adresse</mat-card-subtitle>
-        </div>
-        <mat-card-subtitle class="mail-address">
-          <a [href]="'mailto:' + ownUser.email">{{ ownUser.email }}</a>
-        </mat-card-subtitle>
-      </div>
-    </ng-template>
+          <div class="mail-container">
+            <div class="mail-header">
+              <img src="./../../../assets/img/profilecard/mail.svg" alt="Emailimage" />
+              <mat-card-subtitle>E-Mail-Adresse</mat-card-subtitle>
+            </div>
+            <mat-card-subtitle class="mail-address">
+              <a [href]="'mailto:' + ownUser.email">{{ ownUser.email }}</a>
+            </mat-card-subtitle>
+          </div>
+        </ng-template>
 
-    <ng-template [ngIf]="isEditing && ownUser">
-      <app-edit-profil [ownUser]="ownUser" (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
-    </ng-template>
+        <ng-template [ngIf]="isEditing && ownUser">
+          <app-edit-profil [ownUser]="ownUser" (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
+        </ng-template>
 
-    <ng-template [ngIf]="!ownUser">
-      <div class="message-btn-container">
-        <div class="message-btn" mat-button mat-dialog-close cdkFocusInitial>
-          <img src="./../../../assets/img/profilecard/message.svg" alt="Buttonimage" />
-          <span>Nachricht</span>
-        </div>
+        <ng-template [ngIf]="!ownUser">
+          <div class="message-btn-container">
+            <div class="message-btn" mat-button mat-dialog-close cdkFocusInitial>
+              <img src="./../../../assets/img/profilecard/message.svg" alt="Buttonimage" />
+              <span>Nachricht</span>
+            </div>
+          </div>
+        </ng-template>
       </div>
-    </ng-template>
+    </mat-card>
+
   </div>
-</mat-card>
+</div>
