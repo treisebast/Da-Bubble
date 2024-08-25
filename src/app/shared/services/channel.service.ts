@@ -10,6 +10,7 @@ import {
   addDoc,
   query,
   orderBy,
+  DocumentReference,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
@@ -52,14 +53,11 @@ export class ChannelService {
    * @param channel - Channel object
    * @returns Promise<void>
    */
-  async addChannel(channel: Channel): Promise<void> {
-    try {
-      const collectionRef = channel.isPrivate ? this.directMessageCollection : this.channelsCollection;
-      const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
-      await this.addChannelToCollection(channel, collectionRef, collectionPath);
-    } catch (error) {
-      console.error('Error adding channel:', error);
-    }
+  async addChannel(channel: Channel): Promise<DocumentReference> {
+    const collectionRef = channel.isPrivate ? collection(this.firestore, 'directMessages') : collection(this.firestore, 'channels');
+    const docRef = await addDoc(collectionRef, channel);
+    await updateDoc(docRef, { id: docRef.id });
+    return docRef;
   }
 
   /**
