@@ -39,7 +39,7 @@ export class SideNavComponent implements OnInit {
 
   ngOnInit() {
     this.subscribeToCurrentUser();
-    this.sharedChannelService.privateChannels$.subscribe(channels => {
+    this.sharedChannelService.privateChannels$.subscribe((channels) => {
       this.privateChannels = channels;
     });
   }
@@ -187,71 +187,77 @@ export class SideNavComponent implements OnInit {
     this.directMessagesIsDropedDown = !this.directMessagesIsDropedDown;
   }
 
+
   /**
-   * Finds or creates a private channel with a user.
-   * @param {UserWithImageStatus} user - The user to find or create a private channel with.
+   * Finds or creates a private channel with the specified user.
+   *
+   * @param user - The user with whom the private channel should be created.
+   * @returns A Promise that resolves when the private channel is found or created.
    */
   async findOrCreatePrivateChannelWithUser(user: UserWithImageStatus) {
-    let privateChatBetweenUsers;
+    const isSelfChat = user.userId === this.currentUser.userId;
+    const privateChat = this.findExistingPrivateChannel(user, isSelfChat);
 
-    // Check if the user is the current user
-    if (user.userId === this.currentUser.userId) {
-      privateChatBetweenUsers = this.privateChannels.find(
-        (channel) =>
-          channel.members.length === 1 && channel.members.includes(this.currentUser.userId)
-      );
-
-      if (!privateChatBetweenUsers) {
-        const newChannel: Channel = {
-          name: `${user.name} (Notes)`,
-          description: 'Personal notes channel',
-          createdBy: this.currentUser.userId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          members: [this.currentUser.userId],
-          isPrivate: true,
-        };
-
-        try {
-          await this.channelService.addChannel(newChannel);
-          privateChatBetweenUsers = newChannel;
-          this.privateChannels.push(privateChatBetweenUsers);
-          this.loadPrivateChannelMembers();
-        } catch (error) {
-          console.error('Error creating private channel:', error);
-        }
-      }
+    if (!privateChat) {
+      const newChannel = this.createNewChannel(user, isSelfChat);
+      await this.addAndSetChannel(newChannel);
     } else {
-      privateChatBetweenUsers = this.privateChannels.find(
-        (channel) =>
-          channel.members.includes(this.currentUser.userId) &&
-          channel.members.includes(user.userId)
-      );
-
-      if (!privateChatBetweenUsers) {
-        const newChannel: Channel = {
-          name: `${user.name}`,
-          description: '',
-          createdBy: this.currentUser.userId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          members: [this.currentUser.userId, user.userId],
-          isPrivate: true,
-        };
-
-        try {
-          await this.channelService.addChannel(newChannel);
-          privateChatBetweenUsers = newChannel;
-          this.privateChannels.push(privateChatBetweenUsers);
-          this.loadPrivateChannelMembers();
-        } catch (error) {
-          console.error('Error creating private channel:', error);
-        }
-      }
+      this.chatService.setCurrentChat(privateChat, true);
     }
+  }
 
-    if (privateChatBetweenUsers) {
-      this.showChannel(privateChatBetweenUsers, true);
+
+  /**
+   * Finds an existing private channel based on the provided user and chat type.
+   *
+   * @param user - The user with image status.
+   * @param isSelfChat - A boolean indicating whether it is a self chat.
+   * @returns The found private channel, or undefined if not found.
+   */
+  findExistingPrivateChannel(user: UserWithImageStatus, isSelfChat: boolean): Channel | undefined {
+    return this.privateChannels.find(channel =>
+      isSelfChat
+        ? channel.members.length === 1 && channel.members.includes(this.currentUser.userId)
+        : channel.members.includes(this.currentUser.userId) && channel.members.includes(user.userId)
+    );
+  }
+
+
+  /**
+   * Creates a new channel.
+   *
+   * @param user - The user with image status.
+   * @param isSelfChat - Indicates if it is a self chat.
+   * @returns The newly created channel.
+   */
+  createNewChannel(user: UserWithImageStatus, isSelfChat: boolean): Channel {
+    return {
+      name: isSelfChat ? 'Personal Notes' : `${user.name}`,
+      description: isSelfChat ? 'Your personal space' : '',
+      createdBy: this.currentUser.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      members: isSelfChat ? [this.currentUser.userId] : [this.currentUser.userId, user.userId],
+      isPrivate: true,
+    };
+  }
+
+
+  /**
+   * Adds a new channel and sets it as the current chat.
+   *
+   * @param newChannel - The new channel to be added.
+   * @returns A Promise that resolves to void.
+   * @throws An error if there is an issue creating the private channel.
+   */
+  async addAndSetChannel(newChannel: Channel) {
+    try {
+      const docRef = await this.channelService.addChannel(newChannel);
+      const createdChannel = { ...newChannel, id: docRef.id };
+      this.privateChannels.push(createdChannel);
+      this.chatService.setCurrentChat(createdChannel, true);
+    } catch (error) {
+      console.error('Error creating private channel:', error);
     }
   }
 

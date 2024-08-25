@@ -59,14 +59,21 @@ export class UserService {
     return deleteDoc(userDoc);
   }
 
-  /**
-   * Gets the username by user ID from the Firestore collection.
-   * @param {string} userId - The ID of the user.
-   * @returns {Promise<string>} A promise that resolves with the username.
+
+    /**
+   * Fetches the name of the user by a specific user ID from the Firestore.
+   * @param userId The ID of the user to fetch.
+   * @returns A promise that resolves to the user's name.
    */
-  async getUserNameById(userId: string): Promise<string> {
-    const userDocRef = doc(this.firestore, `users/${userId}`);
-    const userDoc = await getDoc(userDocRef);
-    return userDoc.exists() ? userDoc.data()['name'] || 'Unknown' : 'Unknown';
-  }
+    async getUserNameById(userId: string): Promise<string | null> {
+      const userRef = doc(this.firestore, `users/${userId}`);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        return userData['name'];
+      } else {
+        return null;
+      }
+    }
 }

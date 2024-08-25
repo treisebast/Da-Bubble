@@ -37,7 +37,8 @@
     <div class="header-title">
       <div class="header-channel-name" (click)="openChannelInfoPopup()">
         <img src="../../../assets/img/chatChannel/tag.svg">
-        <h2 >{{ currentChat.name }}</h2>
+        <h2 *ngIf="!isCurrentChatPrivate" >{{ currentChat.name }}</h2>
+        <h2 *ngIf="isCurrentChatPrivate">{{ clickedUserName || 'Lade Benutzer...' }}</h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info">
       </div>
 

@@ -93,7 +93,7 @@ export class ThreadComponent implements OnInit {
       return;
     }
 
-    const userName = await this.userService.getUserNameById(this.currentUserId);
+    const userName = await this.userService.getUserNameById(this.currentUserId) || '';
 
     let chatId: string = '';
     if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
@@ -146,7 +146,7 @@ export class ThreadComponent implements OnInit {
   async resolveUserName(userId: string) {
     if (!this.userNames[userId]) {
       const userName = await this.userService.getUserNameById(userId);
-      this.userNames[userId] = userName;
+      this.userNames[userId] = userName as string;
     }
   }
 

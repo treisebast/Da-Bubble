@@ -33,10 +33,15 @@ export class ChatService {
    * @param {boolean} isPrivateOrNot - The chat type.
    */
   setCurrentChat(chat: Channel, isPrivateOrNot: boolean) {
+    if (!chat.id) {
+      console.error('No chat ID available, chat cannot be set.');
+      return;
+    }
+
     this.currentChatSubject.next(chat);
+
     this.loadMessages(chat, isPrivateOrNot);
   }
-
 
   /**
    * Sets the selected chat status.
@@ -54,22 +59,27 @@ export class ChatService {
   private loadMessages(chat: Channel, isPrivateOrNot: boolean) {
     const channelId = chat.id;
     if (channelId) {
-      this.channelMessageService.getChannelMessages(channelId, isPrivateOrNot).subscribe(messages => {
-        this.messagesSource.next(messages);
-        // Notify that loading is complete
-        this.setLoadingState(false);
-      }, error => {
-        console.error('Error loading messages:', error);
-        // Notify that loading is complete even if there's an error
-        this.setLoadingState(false);
-      });
+      this.channelMessageService
+        .getChannelMessages(channelId, isPrivateOrNot)
+        .subscribe(
+          (messages) => {
+            this.messagesSource.next(messages);
+            // Notify that loading is complete
+            this.setLoadingState(false);
+          },
+          (error) => {
+            console.error('Error loading messages:', error);
+            // Notify that loading is complete even if there's an error
+            this.setLoadingState(false);
+          }
+        );
     } else {
       // No channel ID, so no messages to load
       this.setLoadingState(false);
     }
   }
 
-  private setLoadingState(isLoading: boolean) {
+  setLoadingState(isLoading: boolean) {
     this.loadingStateSubject.next(isLoading);
   }
 
@@ -83,8 +93,14 @@ export class ChatService {
    * @param {boolean} isPrivateOrNot - The chat type.
    * @returns {Observable<Message[]>} An observable of the channel's messages.
    */
-  getMessages(channelId: string, isPrivateOrNot: boolean): Observable<Message[]> {
-    return this.channelMessageService.getChannelMessages(channelId, isPrivateOrNot);
+  getMessages(
+    channelId: string,
+    isPrivateOrNot: boolean
+  ): Observable<Message[]> {
+    return this.channelMessageService.getChannelMessages(
+      channelId,
+      isPrivateOrNot
+    );
   }
 
   /**
@@ -92,13 +108,23 @@ export class ChatService {
    * @param {string} channelId - The ID of the channel.
    * @param {Message} message - The message to add.
    */
-  addMessage(channelId: string, message: Message, isPrivateOrNot: boolean) {
-    this.channelMessageService.addChannelMessage(channelId, message, isPrivateOrNot).then(() => {
-      const currentMessages = this.messagesSource.getValue();
-      currentMessages.push(message);
-      currentMessages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
-      this.messagesSource.next(currentMessages);
-    });
+  addMessage(
+    channelId: string,
+    message: Message,
+    isPrivateOrNot: boolean
+  ): Promise<void> {
+    return this.channelMessageService
+      .addChannelMessage(channelId, message, isPrivateOrNot)
+      .then(() => {
+        const currentMessages = this.messagesSource.getValue();
+        currentMessages.push(message);
+        currentMessages.sort(
+          (a, b) =>
+            this.convertToDate(a.timestamp).getTime() -
+            this.convertToDate(b.timestamp).getTime()
+        );
+        this.messagesSource.next([...currentMessages]);
+      });
   }
 
   /**
@@ -135,25 +161,31 @@ export class ChatService {
     return this.isChannel$;
   }
 
-
-
-
-   /**
+  /**
    * Edits a message in the given channel.
    * @param {string} channelId - The ID of the channel.
    * @param {string} messageId - The ID of the message.
    * @param {string} newContent - The new content of the message.
    */
-   editMessage(channelId: string, messageId: string, newContent: string, isPrivateOrNot: boolean) {
-    this.channelMessageService.editChannelMessage(channelId, messageId, newContent, isPrivateOrNot).then(() => {
-      const currentMessages = this.messagesSource.getValue();
-      const messageIndex = currentMessages.findIndex(msg => msg.id === messageId);
-      if (messageIndex > -1) {
-        currentMessages[messageIndex].content = newContent;
-        currentMessages[messageIndex].edited = true;
-        this.messagesSource.next(currentMessages);
-      }
-    });
+  editMessage(
+    channelId: string,
+    messageId: string,
+    newContent: string,
+    isPrivateOrNot: boolean
+  ) {
+    this.channelMessageService
+      .editChannelMessage(channelId, messageId, newContent, isPrivateOrNot)
+      .then(() => {
+        const currentMessages = this.messagesSource.getValue();
+        const messageIndex = currentMessages.findIndex(
+          (msg) => msg.id === messageId
+        );
+        if (messageIndex > -1) {
+          currentMessages[messageIndex].content = newContent;
+          currentMessages[messageIndex].edited = true;
+          this.messagesSource.next(currentMessages);
+        }
+      });
   }
 
   /**
@@ -162,10 +194,14 @@ export class ChatService {
    * @param {string} messageId - The ID of the message.
    */
   deleteMessage(channelId: string, messageId: string, isPrivateOrNot: boolean) {
-    this.channelMessageService.deleteChannelMessage(channelId, messageId, isPrivateOrNot).then(() => {
-      const currentMessages = this.messagesSource.getValue();
-      const updatedMessages = currentMessages.filter(msg => msg.id !== messageId);
-      this.messagesSource.next(updatedMessages);
-    });
+    this.channelMessageService
+      .deleteChannelMessage(channelId, messageId, isPrivateOrNot)
+      .then(() => {
+        const currentMessages = this.messagesSource.getValue();
+        const updatedMessages = currentMessages.filter(
+          (msg) => msg.id !== messageId
+        );
+        this.messagesSource.next(updatedMessages);
+      });
   }
 }
