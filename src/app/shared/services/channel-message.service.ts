@@ -6,29 +6,41 @@ import { doc, updateDoc } from '@angular/fire/firestore';
 @Injectable({
   providedIn: 'root'
 })
-export class ChannelMessageService {
+export class ChannelMessageService{
+  collectionPath: string = '';
+
   constructor(private firestore: Firestore) {}
 
-  getChannelMessages(channelId: string): Observable<Message[]> {
-    const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+  getChannelMessages(channelId: string, isPrivate: boolean): Observable<Message[]> {
+    this.getCollectionPath(isPrivate);
+    const messagesCollection = collection(this.firestore, `${this.collectionPath}/${channelId}/messages`);
     return collectionData(messagesCollection, { idField: 'id' }) as Observable<Message[]>;
+
   }
 
-  async addChannelMessage(channelId: string, message: Message): Promise<void> {
-    const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+  async addChannelMessage(channelId: string, message: Message, isPrivate: boolean): Promise<void> {
+    this.getCollectionPath(isPrivate);
+    const messagesCollection = collection(this.firestore, `${this.collectionPath}/${channelId}/messages`);
     await addDoc(messagesCollection, message);
   }
 
-  async editChannelMessage(channelId: string, messageId: string, updatedContent: string): Promise<void> {
-    const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+  async editChannelMessage(channelId: string, messageId: string, updatedContent: string, isPrivate: boolean): Promise<void> {
+    this.getCollectionPath(isPrivate);
+    const messageDocRef = doc(this.firestore, `${this.collectionPath}/${channelId}/messages/${messageId}`);
     await updateDoc(messageDocRef, {
       content: updatedContent,
       edited: true,
     });
 }
 
-  async deleteChannelMessage(channelId: string, messageId: string): Promise<void> {
-    const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+  async deleteChannelMessage(channelId: string, messageId: string, isPrivate: boolean): Promise<void> {
+    this.getCollectionPath(isPrivate);
+    const messageDocRef = doc(this.firestore, `${this.collectionPath}/${channelId}/messages/${messageId}`);
     await deleteDoc(messageDocRef);
+  }
+
+  private getCollectionPath(isChannelPrivate: boolean): string {
+    this.collectionPath = isChannelPrivate ? 'directMessages' : 'channels';
+    return this.collectionPath;
   }
 }

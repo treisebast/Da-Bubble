@@ -39,6 +39,9 @@ export class SideNavComponent implements OnInit {
 
   ngOnInit() {
     this.subscribeToCurrentUser();
+    this.sharedChannelService.privateChannels$.subscribe(channels => {
+      this.privateChannels = channels;
+    });
   }
 
   /**
@@ -78,9 +81,7 @@ export class SideNavComponent implements OnInit {
   private async loadPrivateChats() {
     try {
       this.channelService.getChannels(true).subscribe((channels) => {
-        this.privateChannels = channels.filter(
-          (channel) => channel.createdBy === this.currentUser.userId && channel.id
-        );
+        this.privateChannels = channels;
         this.sharedChannelService.setPrivateChannels(this.privateChannels);
         console.log('Private channels:', this.privateChannels);
         this.loadPrivateChannelMembers();
@@ -97,18 +98,26 @@ export class SideNavComponent implements OnInit {
   private async showWorkspaceUsers() {
     try {
       this.userService.getUsers().subscribe((users) => {
-        this.workspaceUsers = users.map(user => ({
+        this.workspaceUsers = users.map((user) => ({
           ...user,
-          isImageLoaded: false
+          isImageLoaded: false,
         }));
 
-        const currentUserIndex = this.workspaceUsers.findIndex(user => user.userId === this.currentUser.userId);
+        const currentUserIndex = this.workspaceUsers.findIndex(
+          (user) => user.userId === this.currentUser.userId
+        );
         if (currentUserIndex !== -1) {
-          const currentUser = this.workspaceUsers.splice(currentUserIndex, 1)[0];
+          const currentUser = this.workspaceUsers.splice(
+            currentUserIndex,
+            1
+          )[0];
           this.workspaceUsers.unshift(currentUser);
         }
 
-        console.log('Workspace users (currentUser on top):', this.workspaceUsers);
+        console.log(
+          'Workspace users (currentUser on top):',
+          this.workspaceUsers
+        );
       });
     } catch (error) {
       console.error('Error loading workspace users:', error);
@@ -126,10 +135,16 @@ export class SideNavComponent implements OnInit {
       if (otherMemberId) {
         this.userService.getUser(otherMemberId).subscribe({
           next: (user) => {
-            this.privateChannelMembersMap[channel.id!] = { ...user, isImageLoaded: false };
+            this.privateChannelMembersMap[channel.id!] = {
+              ...user,
+              isImageLoaded: false,
+            };
           },
           error: (error) => {
-            console.error(`Failed to load user with ID: ${otherMemberId} for channel: ${channel.id}`, error);
+            console.error(
+              `Failed to load user with ID: ${otherMemberId} for channel: ${channel.id}`,
+              error
+            );
           },
         });
       }
@@ -144,7 +159,7 @@ export class SideNavComponent implements OnInit {
     if (this.privateChannelMembersMap[userId]) {
       this.privateChannelMembersMap[userId].isImageLoaded = true;
     }
-    const user = this.workspaceUsers.find(u => u.userId === userId);
+    const user = this.workspaceUsers.find((u) => u.userId === userId);
     if (user) {
       user.isImageLoaded = true;
     }
@@ -177,33 +192,66 @@ export class SideNavComponent implements OnInit {
    * @param {UserWithImageStatus} user - The user to find or create a private channel with.
    */
   async findOrCreatePrivateChannelWithUser(user: UserWithImageStatus) {
-    let privateChannel = this.privateChannels.find(
-      (channel) => channel.members.includes(user.userId)
-    );
+    let privateChatBetweenUsers;
 
-    if (!privateChannel) {
-      const newChannel: Channel = {
-        name: `${user.name}`,
-        description: '',
-        createdBy: this.currentUser.userId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        members: [this.currentUser.userId, user.userId],
-        isPrivate: true,
-      };
+    // Check if the user is the current user
+    if (user.userId === this.currentUser.userId) {
+      privateChatBetweenUsers = this.privateChannels.find(
+        (channel) =>
+          channel.members.length === 1 && channel.members.includes(this.currentUser.userId)
+      );
 
-      try {
-        await this.channelService.addChannel(newChannel);
-        privateChannel = newChannel;
-        this.privateChannels.push(privateChannel);
-        this.loadPrivateChannelMembers();
-      } catch (error) {
-        console.error('Error creating private channel:', error);
+      if (!privateChatBetweenUsers) {
+        const newChannel: Channel = {
+          name: `${user.name} (Notes)`,
+          description: 'Personal notes channel',
+          createdBy: this.currentUser.userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          members: [this.currentUser.userId],
+          isPrivate: true,
+        };
+
+        try {
+          await this.channelService.addChannel(newChannel);
+          privateChatBetweenUsers = newChannel;
+          this.privateChannels.push(privateChatBetweenUsers);
+          this.loadPrivateChannelMembers();
+        } catch (error) {
+          console.error('Error creating private channel:', error);
+        }
+      }
+    } else {
+      privateChatBetweenUsers = this.privateChannels.find(
+        (channel) =>
+          channel.members.includes(this.currentUser.userId) &&
+          channel.members.includes(user.userId)
+      );
+
+      if (!privateChatBetweenUsers) {
+        const newChannel: Channel = {
+          name: `${user.name}`,
+          description: '',
+          createdBy: this.currentUser.userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          members: [this.currentUser.userId, user.userId],
+          isPrivate: true,
+        };
+
+        try {
+          await this.channelService.addChannel(newChannel);
+          privateChatBetweenUsers = newChannel;
+          this.privateChannels.push(privateChatBetweenUsers);
+          this.loadPrivateChannelMembers();
+        } catch (error) {
+          console.error('Error creating private channel:', error);
+        }
       }
     }
 
-    if (privateChannel) {
-      this.showChannel(privateChannel);
+    if (privateChatBetweenUsers) {
+      this.showChannel(privateChatBetweenUsers, true);
     }
   }
 
@@ -232,12 +280,12 @@ export class SideNavComponent implements OnInit {
    * Shows a channel.
    * @param {Channel} channel - The channel to show.
    */
-  showChannel(channel: Channel) {
-    this.chatService.setCurrentChat(channel);
+  showChannel(channel: Channel, isPrivate: boolean = false) {
+    this.chatService.setCurrentChat(channel, isPrivate);
   }
 
   /**
-   * Sets the selected message.
+   * Sets the selected message to be displayed in the chat component.
    */
   setSelectedMessage() {
     this.chatService.setSelectedChat(true);

@@ -11,7 +11,7 @@
       <div class="check"></div>
       <div class="handsUp"></div>
       <div class="reaction"></div>
-      <div class="comment" (click)="onMessageClick()"></div>
+      <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
       <div *ngIf="isCurrentUser" class="vertPoints" [matMenuTriggerFor]="menu">
       </div>
     </div>

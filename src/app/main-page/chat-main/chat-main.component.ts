@@ -27,6 +27,7 @@ import { SharedChannelService } from '../../shared/services/shared-channel.servi
 })
 export class ChatMainComponent implements OnInit, AfterViewChecked {
   currentChat: any = null;
+  isCurrentChatPrivate: boolean = false;
   messages: Message[] = [];
   currentThreadData: any;
   selectedChat: boolean = false;
@@ -74,10 +75,10 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
     return new Date();
   }
+  
 
   ngOnInit() {
     this.isLoading = true;
-    console.log("ngOnInit starts...isLoading = ", this.isLoading)
     this.authService.getUser().subscribe(user => {
       if (user) {
         this.currentUserId = user.uid;
@@ -87,17 +88,25 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
 
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat;
+      console.log('currentChat:', this.currentChat);
       if (this.currentChat) {
-        this.loadMessages();
+        const isPrivateOrNot = this.currentChat.isPrivate;
+        this.loadMessages(isPrivateOrNot);
+      } else {
+        console.error('no chat selected');
       }
     });
+
     this.chatService.selectedChat$.subscribe(chat => {
       this.selectedChat = chat;
     });
-    this.isLoading = false;
-    console.log("ngOnInit over...isLoading = ", this.isLoading)
 
-    this.loadChannelsForSearch()
+    this.chatService.loadingState$.subscribe(isLoading => {
+      this.isLoading = isLoading;
+    });
+
+    this.isLoading = false;
+    this.loadChannelsForSearch();
   }
 
   loadChannelsForSearch() {
@@ -124,21 +133,24 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  loadMessages() {
+  async loadMessages(isPrivateOrNot: boolean) {
+    console.log("loadMessages starts...is Private: ", isPrivateOrNot, " ...currentChat= ", this.currentChat);
     this.isLoading = true;
-    console.log("loading Messages...isLoading = ", this.isLoading)
+    this.isCurrentChatPrivate = isPrivateOrNot;
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
-      console.log("loading messages for Channel", `"${this.currentChat.name}"`);
-      console.log("getMessages from chatService gets called now...")
-      this.chatService.getMessages(this.currentChat.id).subscribe((messages: Message[]) => {
+      await this.chatService.getMessages(this.currentChat.id, isPrivateOrNot).subscribe((messages: Message[]) => {
         this.messages = messages.sort((a, b) => this.convertToDate(a.timestamp).getTime() - this.convertToDate(b.timestamp).getTime());
         this.loadUserProfiles();
         if (this.messages && this.userProfiles) {
           this.isLoading = false;
-          console.log("loading messages is over, isLoading = ", this.isLoading)
           setTimeout(() => this.scrollToBottom(), 100);
         }
+      }, error => {
+        console.error('Error loading messages:', error);
+        this.isLoading = false;
       });
+    } else {
+      this.isLoading = false;
     }
   }
 
@@ -160,6 +172,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       event.preventDefault();
     }
 
+    // Wenn die Nachricht leer ist und keine Datei ausgewählt wurde, breche ab
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return;
     }
@@ -195,7 +208,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
 
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
-      this.chatService.addMessage(this.currentChat.id, newMessage);
+      this.chatService.addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate);
     }
 
     // Nach dem Senden die Felder zurücksetzen
@@ -295,7 +308,7 @@ handleFileInput(event: Event) {
     };
 
     // Nachricht senden
-    this.chatService.addMessage(this.currentChat.id, newMessage);
+    this.chatService.addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate);
     this.newMessageText = '';
   }
 
@@ -311,14 +324,14 @@ handleFileInput(event: Event) {
    */
   onKeyUp(event: KeyboardEvent): void {
     const input = (event.target as HTMLInputElement).value;
-  
+
     // Check if input contains an '@' followed by any letter
     const matchPrivat = input.match(/@([a-zA-Z0-9]+)/);
     const matchPuplic = input.match(/#([a-zA-Z0-9]+)/);
-  
+
     if (matchPrivat) {
       const letter = matchPrivat[1].toLowerCase();
-  
+
       // Filter channels by checking if 'name' is defined and includes the letter
       this.filteredChannels = this.privateChannels.filter(channel =>
         channel.name && channel.name.toLowerCase().includes(letter)
@@ -329,7 +342,7 @@ handleFileInput(event: Event) {
 
     if (matchPuplic) {
       const letter = matchPuplic[1].toLowerCase();
-  
+
       // Filter channels by checking if 'name' is defined and includes the letter
       this.filteredPuplicChannels = this.puplicChannels.filter(channel =>
         channel.name && channel.name.toLowerCase().includes(letter)
@@ -338,6 +351,6 @@ handleFileInput(event: Event) {
       this.filteredPuplicChannels = [];
     }
   }
-  
+
 
 }

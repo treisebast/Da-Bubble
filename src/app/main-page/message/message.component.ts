@@ -27,16 +27,19 @@ export class MessageComponent implements OnInit {
   @Input() message!: Message;
   @Input() userProfile!: User;
   @Input() isCurrentUser!: boolean;
+  @Input() isCurrentChatPrivate!: boolean;
   @Output() messageClicked = new EventEmitter<Message>();
 
   screenSmall: boolean = false;
   isEditing: boolean = false;
   editContent: string = '';
 
+
   constructor(private chatService: ChatService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     console.log('Message Attachments:', this.message.attachments);
+    console.log('this Chat is Private:', this.isCurrentChatPrivate);
     this.message.attachments?.forEach((attachment) => {
       console.log('Attachment:', attachment);
       console.log(
@@ -92,7 +95,8 @@ export class MessageComponent implements OnInit {
       this.chatService.editMessage(
         this.message.chatId!,
         this.message.id!,
-        this.editContent
+        this.editContent,
+        this.isCurrentChatPrivate
       );
     }
     this.isEditing = false;
@@ -110,7 +114,7 @@ export class MessageComponent implements OnInit {
 
   deleteMessage() {
     if (this.isCurrentUser) {
-      this.chatService.deleteMessage(this.message.chatId!, this.message.id!);
+      this.chatService.deleteMessage(this.message.chatId!, this.message.id!, this.isCurrentChatPrivate);
     } else {
       console.error(
         'Du kannst die Nachricht eines anderen Benutzers nicht löschen.'

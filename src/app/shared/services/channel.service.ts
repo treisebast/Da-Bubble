@@ -85,17 +85,6 @@ export class ChannelService {
     return deleteDoc(channelDoc);
   }
 
-  /**
-   * Get all messages for a specific channel (public or private)
-   * @param channelId - string channel id
-   * @param isPrivate - boolean indicating if the channel is private
-   * @returns Observable<Message[]>
-   */
-  getChannelMessages(channelId: string, isPrivate: boolean): Observable<Message[]> {
-    const collectionPath = isPrivate ? 'directMessages' : 'channels';
-    const messagesCollection = collection(this.firestore, `${collectionPath}/${channelId}/messages`);
-    return collectionData(messagesCollection, { idField: 'id' }) as Observable<Message[]>;
-  }
 
   /**
    * Private method to add a channel to Firestore
@@ -112,4 +101,8 @@ export class ChannelService {
       console.error(`Error adding channel to ${collectionPath}:`, error);
     }
   }
+
+
+
+
 }

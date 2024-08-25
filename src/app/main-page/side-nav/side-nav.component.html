@@ -3,6 +3,7 @@
   <img (click)="newMessage()" class="edit" src="./assets/img/icons/edit.svg" alt="" />
 </div>
 <div class="sidenav-content">
+  <!---------------channels----------------->
   <div class="menuChannelDropdown">
     <div (click)="openMenuChannelDropdown()" class="opend dropdown" *ngIf="menuChannelIsDropedDown"></div>
     <div (click)="openMenuChannelDropdown()" class="closed dropdown" *ngIf="!menuChannelIsDropedDown"></div>
@@ -10,7 +11,7 @@
     <table>
       <div class="channels ml40" [hidden]="!menuChannelIsDropedDown">
         <tr class="channel-tr" *ngFor="let channel of publicChannels"
-          (click)="showChannel(channel); setSelectedMessage()">
+          (click)="showChannel(channel, false); setSelectedMessage()">
           <span class="channelName"></span>
           {{ channel.name }}
         </tr>
@@ -19,6 +20,7 @@
     </table>
   </div>
 
+  <!--------------direct messages--------------->
   <div class="directMessages">
     <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown"></div>
     <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown" *ngIf="!directMessagesIsDropedDown"></div>

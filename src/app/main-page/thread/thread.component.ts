@@ -63,7 +63,7 @@ export class ThreadComponent implements OnInit {
     });
 
     this.chatService.currentChat$.subscribe(chat => {
-      this.currentChat = chat as User;
+      this.currentChat = chat as unknown as User;
     });
 
     this.threadService.currentThread$.subscribe(currentThread => {
@@ -195,7 +195,7 @@ export class ThreadComponent implements OnInit {
       console.error("You cannot delete another user's message.");
     }
   }
-  
+
   startEditing(message: Message) {
     if (message.senderId === this.currentUserId) {
       this.editingMessageId = message.id;
