@@ -30,7 +30,7 @@ import { EditProfilComponent } from './edit-profil/edit-profil.component';
 })
 export class ProfilComponent {
   @Output() closeProfileCard = new EventEmitter();
-  @Input() ownUser: Partial<User> = {};
+  @Input() onclickUser: Partial<User> = {};
 
   isEditing = false;
   profiltext: string = 'Profil';
@@ -43,6 +43,7 @@ export class ProfilComponent {
 
   editProfil() {
     this.isEditing = true;
+    console.log(this.onclickUser);
     this.profiltext = 'Dein Profil bearbeiten';
   }
 

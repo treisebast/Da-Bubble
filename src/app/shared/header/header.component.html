@@ -23,4 +23,4 @@
 <app-menu (closeMenu)="closeMenu()" (openProfile)="openProfil(currentUser)" *ngIf="isMenuOpen"></app-menu>
 
 <!-- Profilcard -->
-<app-profil [ownUser]="currentUser" (closeProfileCard)="closeProfil()" *ngIf="isProfilOpen"></app-profil>
+<app-profil [onclickUser]="currentUser" (closeProfileCard)="closeProfil()" *ngIf="isProfilOpen"></app-profil>
