@@ -42,7 +42,7 @@
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info">
       </div>
 
-      <div class="header-channel-info">
+      <div  *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div>
           <img src="../assets/img/chatChannel/add_members_button.svg" alt="add user">
         </div>
