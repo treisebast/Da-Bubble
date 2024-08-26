@@ -1,5 +1,5 @@
 import {
-  AfterViewChecked,
+  AfterViewInit,
   Component,
   ElementRef,
   OnInit,
@@ -13,11 +13,7 @@ import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { AuthService } from '../../shared/services/auth.service';
-import {
-  Timestamp,
-  FieldValue,
-  serverTimestamp,
-} from '@angular/fire/firestore';
+import { Timestamp, FieldValue, serverTimestamp} from '@angular/fire/firestore';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
@@ -27,6 +23,7 @@ import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-po
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore'; // Korrekte Importe
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-chat-main',
@@ -42,30 +39,37 @@ import { SharedChannelService } from '../../shared/services/shared-channel.servi
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })
-export class ChatMainComponent implements OnInit, AfterViewChecked {
-  currentChat: any = null;
-  isCurrentChatPrivate: boolean = false;
-  messages: Message[] = [];
-  currentThreadData: any;
-  selectedChat: boolean = false;
-  hoverStates: { [key: string]: boolean } = {};
-  newMessageText = '';
-  currentUserId = '';
-  currentUserName = '';
-  clickedUserName: string = '';
-  userProfiles: { [key: string]: any } = {};
+export class ChatMainComponent implements OnInit, AfterViewInit {
   isLoading: boolean = false;
+  hoverStates: { [key: string]: boolean } = {};
+
+  currentChat: any = null;
+  selectedChat: boolean = false;
+  isCurrentChatPrivate: boolean = false;
+
   selectedChannel: Channel | null = null;
-  previewUrl: string | null = null;
-  attachmentUrl: string | null = null;
-  selectedFile: File | null = null;
   publicChannels: Channel[] = [];
   privateChannels: Channel[] = [];
   puplicChannels: Channel[] = [];
   filteredChannels: Channel[] = [];
   filteredPuplicChannels: Channel[] = [];
 
-  @ViewChild('chatContainer') private chatContainer!: ElementRef;
+  currentThreadData: any;
+
+  userProfiles: { [key: string]: any } = {};
+  currentUserId = '';
+  currentUserName = '';
+  clickedUserName: string = '';
+
+  messages: Message[] = [];
+  newMessageText = '';
+
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  attachmentUrl: string | null = null;
+
+  @ViewChild('chatContainer', { static: false })
+  private chatContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
@@ -80,12 +84,31 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     registerLocaleData(localeDe);
   }
 
+
+  ngOnInit() {
+    this.setLoadingState(true);
+    this.initializeUser();
+    this.subscribeToCurrentChat();
+    this.subscribeToSelectedChat();
+    this.subscribeToLoadingState();
+
+    this.setLoadingState(false);
+    this.loadChannelsForSearch();
+  }
+
+
+  ngAfterViewInit() {
+    this.scrollToBottom();
+  }
+
+
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
     const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
     const currentDate = this.convertToDate(timestamp);
     return prevDate.toDateString() !== currentDate.toDateString();
   }
+
 
   convertToDate(timestamp: Timestamp | FieldValue): Date {
     if (timestamp instanceof Timestamp) {
@@ -94,38 +117,6 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     return new Date();
   }
 
-  ngOnInit() {
-    this.isLoading = true;
-    this.authService.getUser().subscribe((user) => {
-      if (user) {
-        this.currentUserId = user.uid;
-        this.currentUserName = user.displayName || '';
-      }
-    });
-
-    this.chatService.currentChat$.subscribe((chat) => {
-      this.currentChat = chat;
-      console.log('currentChat:', this.currentChat);
-      if (this.currentChat) {
-        const isPrivateOrNot = this.currentChat.isPrivate;
-        this.getUserNameById(this.currentChat);
-        this.loadMessages(isPrivateOrNot);
-      } else {
-        console.error('no chat selected');
-      }
-    });
-
-    this.chatService.selectedChat$.subscribe((chat) => {
-      this.selectedChat = chat;
-    });
-
-    this.chatService.loadingState$.subscribe((isLoading) => {
-      this.isLoading = isLoading;
-    });
-
-    this.isLoading = false;
-    this.loadChannelsForSearch();
-  }
 
   loadChannelsForSearch() {
     this.sharedChannelService.privateChannels$.subscribe((channels) => {
@@ -137,60 +128,40 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
 
   scrollToBottom(): void {
-    try {
-      if (this.chatContainer) {
-        this.chatContainer.nativeElement.scrollTop =
-          this.chatContainer.nativeElement.scrollHeight;
+    setTimeout(() => {
+      try {
+        if (this.chatContainer) {
+          this.chatContainer.nativeElement.scrollTop =
+            this.chatContainer.nativeElement.scrollHeight;
+        }
+      } catch (err) {
+        console.error('Scroll to bottom failed:', err);
       }
-    } catch (err) {
-      console.error('Scroll to bottom failed:', err);
-    }
+    }, 300);
   }
 
+
   async loadMessages(isPrivateOrNot: boolean) {
-    console.log(
-      'loadMessages starts...is Private: ',
-      isPrivateOrNot,
-      ' ...currentChat= ',
-      this.currentChat
-    );
     this.setLoadingState(true);
     this.isCurrentChatPrivate = isPrivateOrNot;
-    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+
+    if (this.currentChat?.id) {
       this.chatService
         .getMessages(this.currentChat.id, isPrivateOrNot)
-        .subscribe(
-          (messages: Message[]) => {
-            this.messages = messages.sort(
-              (a, b) =>
-                this.convertToDate(a.timestamp).getTime() -
-                this.convertToDate(b.timestamp).getTime()
-            );
-            this.loadUserProfiles();
-            this.setLoadingState(false);
-            if (this.messages && this.userProfiles) {
-              setTimeout(() => this.scrollToBottom(), 100);
-            }
-          },
-          (error) => {
-            console.error('Error loading messages:', error);
-            this.setLoadingState(false);
-          }
-        );
+        .subscribe({
+          next: this.handleMessagesResponse.bind(this),
+          error: this.handleMessagesError.bind(this),
+        });
     } else {
       this.setLoadingState(false);
     }
   }
 
+
   loadUserProfiles() {
-    const userIds = [
-      ...new Set(this.messages.map((message) => message.senderId)),
-    ];
+    const userIds = [...new Set(this.messages.map((message) => message.senderId))];
     userIds.forEach((userId) => {
       this.userService.getUser(userId).subscribe((user: User) => {
         this.userProfiles[userId] = {
@@ -202,87 +173,23 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     });
   }
 
+
   sendMessage(event?: Event) {
-    if (event) {
-      event.preventDefault();
-    }
-
-    if (!this.currentChat || !this.currentChat.id) {
-      console.error('Cannot send message. No valid chat selected.');
-      return;
-    }
-
-    if (this.newMessageText.trim() === '' && !this.selectedFile) {
+    event?.preventDefault();
+    if (!this.isChatSelected() || this.isMessageEmpty()) {
+      console.error('No chat selected or message is empty');
       return;
     }
 
     this.setLoadingState(true);
-
-    if (this.selectedFile) {
-      const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile.name}`;
-
-      this.firebaseStorageService
-        .uploadFile(this.selectedFile, filePath)
-        .subscribe(
-          (downloadUrl) => {
-            this.attachmentUrl = downloadUrl;
-            this.createAndSendMessage();
-            this.setLoadingState(false);
-          },
-          (error) => {
-            console.error('Error uploading file:', error);
-            this.setLoadingState(false);
-          }
-        );
-    } else {
-      this.createAndSendMessage();
-    }
+    this.selectedFile ? this.uploadAttachmentAndSendMessage() : this.createAndSendMessage();
   }
 
-  private setLoadingState(isLoading: boolean) {
-    this.isLoading = isLoading;
-    this.chatService.setLoadingState(isLoading); // Informiere auch den ChatService über den Ladezustand
-  }
-
-  createAndSendMessage() {
-    const newMessage: Message = {
-      content: this.newMessageText,
-      senderId: this.currentUserId,
-      timestamp: serverTimestamp(),
-      chatId: this.currentChat.id,
-      attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
-    };
-
-    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
-      this.chatService
-        .addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
-        .then(() => {
-          this.messages.push(newMessage);
-          this.messages.sort(
-            (a, b) =>
-              this.convertToDate(a.timestamp).getTime() -
-              this.convertToDate(b.timestamp).getTime()
-          );
-          this.scrollToBottom();
-          this.setLoadingState(false);
-        })
-        .catch((error) => {
-          console.error('Error sending message:', error);
-          this.setLoadingState(false);
-        });
-    }
-
-    // Textfeld und Anhang zurücksetzen
-    this.newMessageText = '';
-    this.attachmentUrl = null;
-    this.selectedFile = null;
-    this.previewUrl = null;
-  }
 
   isChatUserProfile(chat: User | Channel): chat is User {
     return (chat as User).avatar !== undefined;
   }
+
 
   async openThread(message: Message) {
     this.chatService.setChannelTrue();
@@ -302,29 +209,36 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       });
   }
 
+
   onMouseEnter(propertyName: string) {
     this.hoverStates[propertyName] = true;
   }
+
 
   onMouseLeave(propertyName: string) {
     this.hoverStates[propertyName] = false;
   }
 
+
   getUserName(senderId: string): string {
     return this.userProfiles[senderId]?.name || 'Unknown User';
   }
+
 
   openChannelInfoPopup() {
     this.selectedChannel = this.currentChat as Channel;
   }
 
+
   closeChannelInfoPopup() {
     this.selectedChannel = null;
   }
 
+
   openFileDialog() {
     this.fileInput.nativeElement.click();
   }
+
 
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -347,14 +261,13 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
       const reader = new FileReader();
       reader.onload = () => {
         this.previewUrl = reader.result as string;
-
-        // Setze die Datei, aber lade sie noch nicht hoch
-        this.attachmentUrl = null; // Wir setzen die URL zurück, falls vorher eine Datei hochgeladen wurde
-        this.selectedFile = file; // Hier speichern wir die Datei für später
+        this.attachmentUrl = null;
+        this.selectedFile = file;
       };
       reader.readAsDataURL(file);
     }
   }
+
 
   async getUserNameById(currentChat: any) {
     if (currentChat && currentChat.members && currentChat.members.length > 1) {
@@ -366,6 +279,7 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     }
   }
 
+
   getOtherUserOfMembers(currentChatMembers: string[]): string {
     for (const member of currentChatMembers) {
       if (member !== this.currentUserId) {
@@ -375,17 +289,16 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     return '';
   }
 
+
   addAttachmentToMessage(downloadUrl: string) {
-    // Speichere die URL in der neuen Nachricht
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
       chatId: this.currentChat.id,
-      attachments: [downloadUrl], // Anhänge hinzufügen
+      attachments: [downloadUrl],
     };
 
-    // Nachricht senden
     this.chatService.addMessage(
       this.currentChat.id,
       newMessage,
@@ -394,43 +307,193 @@ export class ChatMainComponent implements OnInit, AfterViewChecked {
     this.newMessageText = '';
   }
 
+
   removePreview() {
     this.previewUrl = null;
-    this.attachmentUrl = null; // Entferne den einzigen Anhang
-    this.fileInput.nativeElement.value = ''; // Resettet den Datei-Input
+    this.attachmentUrl = null;
+    this.fileInput.nativeElement.value = '';
   }
 
-  /**
-   * Handles the keyup event and filters the channels.
-   * @param event - Keyboard event from the input field
-   */
-  onKeyUp(event: KeyboardEvent): void {
-    const input = (event.target as HTMLInputElement).value;
 
-    // Check if input contains an '@' followed by any letter
-    const matchPrivat = input.match(/@([a-zA-Z0-9]+)/);
-    const matchPuplic = input.match(/#([a-zA-Z0-9]+)/);
+  onKeyUp(event: KeyboardEvent) {
+    const input = (event.target as HTMLInputElement).value.trim();
+    this.filterChannels(input);
+  }
 
-    if (matchPrivat) {
-      const letter = matchPrivat[1].toLowerCase();
 
-      // Filter channels by checking if 'name' is defined and includes the letter
-      this.filteredChannels = this.privateChannels.filter(
-        (channel) => channel.name && channel.name.toLowerCase().includes(letter)
-      );
-    } else {
-      this.filteredChannels = [];
+  // ------------------------------------------------------------------------------------------------
+  // ------------------------------------- Private methods ------------------------------------------
+  // ------------------------------------------------------------------------------------------------
+
+  private filterChannels(input: string) {
+    const privateChannels = this.filterChannelList(input, '@', this.privateChannels);
+    const publicChannels = this.filterChannelList(input,'#', this.puplicChannels);
+
+    this.filteredChannels = privateChannels;
+    this.filteredPuplicChannels = publicChannels;
+  }
+
+
+  private filterChannelList(input: string, symbol: string, channels: Channel[]): Channel[] {
+    const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
+    return match ? channels.filter((ch) =>
+          ch.name?.toLowerCase().includes(match[1].toLowerCase())
+        ) : [];
+  }
+
+
+  private handleMessagesResponse(messages: Message[]): void {
+    this.messages = this.sortMessagesByTimestamp(messages);
+    this.loadUserProfiles();
+    this.setLoadingState(false);
+
+    if (this.messages && this.userProfiles) {
+      this.scrollToBottom();
     }
+  }
 
-    if (matchPuplic) {
-      const letter = matchPuplic[1].toLowerCase();
 
-      // Filter channels by checking if 'name' is defined and includes the letter
-      this.filteredPuplicChannels = this.puplicChannels.filter(
-        (channel) => channel.name && channel.name.toLowerCase().includes(letter)
+  private handleMessagesError(error: any): void {
+    console.error('Error loading messages:', error);
+    this.setLoadingState(false);
+  }
+
+
+  private handleMessageSentError(error: any): void {
+    console.error('Error sending message:', error);
+    this.setLoadingState(false);
+  }
+
+
+  private handleMessageSentSuccess(newMessage: Message): void {
+    this.messages.push(newMessage);
+    this.messages = this.sortMessagesByTimestamp(this.messages);
+    this.scrollToBottom();
+    this.clearMessageInput();
+    this.setLoadingState(false);
+  }
+
+
+  private handleCurrentChat(chat: any): void {
+    const isPrivateOrNot = chat.isPrivate;
+    this.getUserNameById(chat);
+    this.loadMessages(isPrivateOrNot);
+  }
+
+
+  private setLoadingState(isLoading: boolean) {
+    this.isLoading = isLoading;
+    this.chatService.setLoadingState(isLoading);
+  }
+
+
+  private setUserDetails(user: any): void {
+    this.currentUserId = user.uid;
+    this.currentUserName = user.displayName || '';
+  }
+
+
+  private initializeUser(): void {
+    this.authService.getUser().subscribe((user) => {
+      if (user) {
+        this.setUserDetails(user);
+      }
+    });
+  }
+
+
+  private subscribeToCurrentChat(): void {
+    this.chatService.currentChat$.subscribe((chat) => {
+      this.currentChat = chat;
+      console.log('currentChat:', this.currentChat);
+
+      if (this.currentChat) {
+        this.handleCurrentChat(this.currentChat);
+      } else {
+        console.error('no chat selected');
+      }
+    });
+  }
+
+
+  private subscribeToSelectedChat(): void {
+    this.chatService.selectedChat$.subscribe((chat) => {
+      this.selectedChat = chat;
+    });
+  }
+
+
+  private subscribeToLoadingState(): void {
+    this.chatService.loadingState$.subscribe((isLoading) => {
+      this.isLoading = isLoading;
+    });
+  }
+
+
+  private isChatSelected(): boolean {
+    return this.currentChat && this.currentChat.id;
+  }
+
+
+  private isMessageEmpty(): boolean {
+    return this.newMessageText.trim() === '' && !this.selectedFile;
+  }
+
+
+  private async uploadAttachmentAndSendMessage(): Promise<void> {
+    try {
+      const autoId = doc(collection(this.firestore, 'dummy')).id;
+      const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile?.name}`;
+      const downloadUrl = await firstValueFrom(
+        this.firebaseStorageService.uploadFile(this.selectedFile!, filePath)
       );
-    } else {
-      this.filteredPuplicChannels = [];
+      this.attachmentUrl = downloadUrl;
+      this.createAndSendMessage();
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      this.setLoadingState(false);
     }
+  }
+
+
+  private createAndSendMessage(): void {
+    const newMessage: Message = this.buildNewMessage();
+
+    this.chatService
+      .addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
+      .then(() => {
+        this.handleMessageSentSuccess(newMessage);
+      })
+      .catch((error) => {
+        this.handleMessageSentError(error);
+      });
+  }
+
+
+  private buildNewMessage(): Message {
+    return {
+      content: this.newMessageText,
+      senderId: this.currentUserId,
+      timestamp: serverTimestamp(),
+      chatId: this.currentChat.id,
+      attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
+    };
+  }
+
+  private sortMessagesByTimestamp(messages: Message[]): Message[] {
+    return messages.sort(
+      (a, b) =>
+        this.convertToDate(a.timestamp).getTime() -
+        this.convertToDate(b.timestamp).getTime()
+    );
+  }
+  
+
+  private clearMessageInput(): void {
+    this.newMessageText = '';
+    this.attachmentUrl = null;
+    this.selectedFile = null;
+    this.previewUrl = null;
   }
 }
