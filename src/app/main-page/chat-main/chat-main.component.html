@@ -25,16 +25,6 @@
 </div>
 <div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
-    <div class="profileImg">
-      <img *ngIf="isChatUserProfile(currentChat)" src="{{ currentChat.avatar }}" alt="" />
-      <img *ngIf="
-          isChatUserProfile(currentChat) && currentChat.status === 'online'
-        " src="./assets/img/online.png" alt="" class="online" />
-      <img *ngIf="
-          isChatUserProfile(currentChat) && currentChat.status === 'offline'
-        " src="./assets/img/offline.png" alt="" class="online" />
-    </div>
-
     <div class="header-title">
       <div class="header-channel-name" (click)="openChannelInfoPopup()">
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
@@ -44,17 +34,13 @@
           <img *ngIf="clickedUser && clickedUser.status === 'offline'" src="./assets/img/offline.png" alt=""
             class="online" />
         </div>
-
         <img *ngIf="!isCurrentChatPrivate" src="../../../assets/img/chatChannel/tag.svg" alt="">
-
-        <img src="../../../assets/img/chatChannel/tag.svg" />
         <h2 *ngIf="!isCurrentChatPrivate">{{ currentChat.name }}</h2>
         <h2 *ngIf="isCurrentChatPrivate">
           {{ clickedUserName || "Lade Benutzer..." }}
         </h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
-
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div>
           <img src="../assets/img/chatChannel/add_members_button.svg" alt="add user" />
@@ -67,7 +53,19 @@
       <mat-spinner></mat-spinner>
     </div>
     <ng-container *ngIf="selectedChat && !this.isLoading">
-      <div class="message-info">
+
+      <div *ngFor="let message of messages; let i = index">
+        <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+          <h2>{{ clickedUser?.name }} (Du)</h2>
+        </div>
+
+        <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
+          [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
+          (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate"
+          (senderId)="openProfilePopup($event)">
+        </app-message>
+      </div>
+      <div *ngIf="isCurrentChatPrivate" class="message-info">
         <div>
           <img [src]="clickedUser?.avatar" alt="" />
           <h2>{{ clickedUser?.name }} (Du)</h2>
@@ -84,68 +82,45 @@
           und dir statt.
         </span>
       </div>
+    </ng-container>
+  </div>
 
-      <div *ngFor="let message of messages; let i = index">
-        <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
-          <span class="date">{{
-            convertToDate(message.timestamp) | date : "fullDate" : "" : "de"
-            }}</span>
-        </div>
-
-        <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
-          [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate"
-          (senderId)="openProfilePopup($event)">
-        </app-message>
-      </div>
-      <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"><strong>Dieser Raum ist nur für dich
-          da.</strong> Mache dir Notizen,
-        liste deine To-dos auf oder bewahre Links und Dateien griffbereit auf.
-        Du kannst hier auch gerne Dinge mit dir selbst besprechen.</span>
-
-      <span *ngIf="currentUserId !== clickedUser?.userId">Diese Unterhaltung findet nur zwischen
-        <span class="message-info-user" *ngIf="clickedUser" (click)="openProfilePopup(clickedUser.userId)">&#64;{{
-          clickedUser.name }}
-        </span>
-        und dir statt.
+  <!-- Vorschau des Anhangs -->
+  <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
+    <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
+      <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
+      <span *ngIf="attachmentUrl.endsWith('.pdf')">
+        <a [href]="attachmentUrl" target="_blank">PDF Vorschau ansehen</a>
       </span>
-
-      <!-- Vorschau des Anhangs -->
-      <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
-        <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
-          <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
-          <span *ngIf="attachmentUrl.endsWith('.pdf')">
-            <a [href]="attachmentUrl" target="_blank">PDF Vorschau ansehen</a>
-          </span>
-          <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
-        </div>
-        <ng-template #localPreview>
-          <div class="preview-image-wrapper" *ngIf="previewUrl">
-            <img [src]="previewUrl" alt="Anhang Vorschau" class="attachment-preview" />
-            <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
-          </div>
-        </ng-template>
+      <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
+    </div>
+    <ng-template #localPreview>
+      <div class="preview-image-wrapper" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Anhang Vorschau" class="attachment-preview" />
+        <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
       </div>
-
-      <div class="messageBox">
-        <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
-          (keydown.enter)="sendMessage($event)"></textarea>
-
-        <div class="messageBoxBottom">
-          <div class="iconsLeft">
-            <div class="addIcon" (click)="openFileDialog()"></div>
-            <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
-            <div class="border"></div>
-            <div class="emoji"></div>
-            <div class="iconMarkUser"></div>
-          </div>
-          <div (click)="sendMessage()" class="sendMessage"></div>
-        </div>
+    </ng-template>
+  </div>
+  <div class="messageBox">
+    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
+      (keydown.enter)="sendMessage($event)"></textarea>
+    <div class="messageBoxBottom">
+      <div class="iconsLeft">
+        <div class="addIcon" (click)="openFileDialog()"></div>
+        <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
+        <div class="border"></div>
+        <div class="emoji"></div>
+        <div class="iconMarkUser"></div>
       </div>
+      <div (click)="sendMessage()" class="sendMessage"></div>
+    </div>
+  </div>
+</div>
 
-      <app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
-        (click)="closeChannelInfoPopup()"></app-channel-info-popup>
 
-      <!-- Profilcard -->
-      <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
-        *ngIf="isProfileOpen"></app-profil>
+<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
+  (click)="closeChannelInfoPopup()"></app-channel-info-popup>
+
+<!-- Profilcard -->
+<app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
+  *ngIf="isProfileOpen"></app-profil>
