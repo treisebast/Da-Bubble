@@ -35,16 +35,16 @@
     <div class="header-title">
 
       <div class="header-channel-name" (click)="openChannelInfoPopup()">
-        <div class="profileImg">
-          <img *ngIf="clickedUser && isCurrentChatPrivate" src="{{ clickedUser.avatar }}" alt="" />
+        <div class="profileImg" *ngIf="isCurrentChatPrivate">
+          <img *ngIf="clickedUser" src="{{ clickedUser.avatar }}" alt="" />
           <img
-            *ngIf="clickedUser && clickedUser.status === 'online' && isCurrentChatPrivate"
+            *ngIf="clickedUser && clickedUser.status === 'online'"
             src="./assets/img/online.png"
             alt=""
             class="online"
           />
           <img
-            *ngIf="clickedUser && clickedUser.status === 'offline' && isCurrentChatPrivate"
+            *ngIf="clickedUser && clickedUser.status === 'offline'"
             src="./assets/img/offline.png"
             alt=""
             class="online"
