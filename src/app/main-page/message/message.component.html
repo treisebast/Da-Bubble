@@ -4,7 +4,7 @@
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
     <div class="message-header">
       <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'HH:mm' }} Uhr</span>
-      <span class="name">{{ userProfile.name }}</span>
+      <span class="name" (click)="openProfilePopup(message.senderId)">{{ userProfile.name }}</span>
     </div>
 
     <div class="reactionBar" [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
@@ -10,6 +10,9 @@ import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { User } from '../../shared/models/user.model';
 import { EditProfilComponent } from './edit-profil/edit-profil.component';
+import { UserService } from '../../shared/services/user.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profil',
@@ -28,14 +31,43 @@ import { EditProfilComponent } from './edit-profil/edit-profil.component';
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
 })
-export class ProfilComponent {
+export class ProfilComponent implements OnInit {
   @Output() closeProfileCard = new EventEmitter();
   @Input() onclickUser: Partial<User> = {};
+  onclickUserID: string = '';
 
   isEditing = false;
   profiltext: string = 'Profil';
+  ownUser: Partial<User> = {};
+  ownUserID: string = '';
 
-  constructor() {}
+  subs = new Subscription();
+
+  constructor(private userService: UserService, private auth: AuthService) {}
+
+  ngOnInit() {
+    const authSub = this.auth.getUser().subscribe((firebaseUser) => {
+      if (firebaseUser?.uid) {
+        const userSub = this.userService
+          .getUser(firebaseUser.uid)
+          .subscribe((user) => {
+            if (user) {
+              this.ownUser = user;
+              this.ownUserID = user.userId;
+              console.log(this.ownUserID);
+              console.log(this.onclickUserID);
+            }
+          });
+        this.subs.add(userSub);
+      }
+    });
+    this.subs.add(authSub);
+    this.onclickUserID = this.onclickUser.userId!;
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
+  }
 
   closeProfil() {
     this.closeProfileCard.emit();

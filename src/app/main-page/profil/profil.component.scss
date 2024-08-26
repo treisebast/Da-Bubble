@@ -54,6 +54,13 @@
   }
 }
 
+.profil-foreign-user {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 30px;
+}
+
 .profil-header {
   display: flex;
   justify-content: space-between;

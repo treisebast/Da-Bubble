@@ -13,7 +13,11 @@ import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { AuthService } from '../../shared/services/auth.service';
-import { Timestamp, FieldValue, serverTimestamp} from '@angular/fire/firestore';
+import {
+  Timestamp,
+  FieldValue,
+  serverTimestamp,
+} from '@angular/fire/firestore';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
@@ -24,6 +28,7 @@ import { FirebaseStorageService } from '../../shared/services/firebase-storage.s
 import { Firestore, collection, doc } from '@angular/fire/firestore'; // Korrekte Importe
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
 import { firstValueFrom } from 'rxjs';
+import { ProfilComponent } from '../profil/profil.component';
 
 @Component({
   selector: 'app-chat-main',
@@ -35,6 +40,7 @@ import { firstValueFrom } from 'rxjs';
     MessageComponent,
     MatProgressSpinnerModule,
     ChannelInfoPopupComponent,
+    ProfilComponent,
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
@@ -69,6 +75,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
 
+  isProfileOpen: boolean = false;
 
   @ViewChild('chatContainer', { static: false })
   private chatContainer!: ElementRef;
@@ -86,7 +93,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     registerLocaleData(localeDe);
   }
 
-
   ngOnInit() {
     this.setLoadingState(true);
     this.initializeUser();
@@ -98,11 +104,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.loadChannelsForSearch();
   }
 
-
   ngAfterViewInit() {
     this.scrollToBottom();
   }
-
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -111,14 +115,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
-
   convertToDate(timestamp: Timestamp | FieldValue): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
     }
     return new Date();
   }
-
 
   loadChannelsForSearch() {
     this.sharedChannelService.privateChannels$.subscribe((channels) => {
@@ -129,7 +131,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       this.puplicChannels = channels;
     });
   }
-
 
   scrollToBottom(): void {
     setTimeout(() => {
@@ -143,7 +144,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       }
     }, 300);
   }
-
 
   async loadMessages(isPrivateOrNot: boolean) {
     this.setLoadingState(true);
@@ -161,9 +161,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   loadUserProfiles() {
-    const userIds = [...new Set(this.messages.map((message) => message.senderId))];
+    const userIds = [
+      ...new Set(this.messages.map((message) => message.senderId)),
+    ];
     userIds.forEach((userId) => {
       this.userService.getUser(userId).subscribe((user: User) => {
         this.userProfiles[userId] = {
@@ -175,7 +176,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   sendMessage(event?: Event) {
     event?.preventDefault();
     if (!this.isChatSelected() || this.isMessageEmpty()) {
@@ -184,14 +184,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
 
     this.setLoadingState(true);
-    this.selectedFile ? this.uploadAttachmentAndSendMessage() : this.createAndSendMessage();
+    this.selectedFile
+      ? this.uploadAttachmentAndSendMessage()
+      : this.createAndSendMessage();
   }
-
 
   isChatUserProfile(chat: User | Channel): chat is User {
     return (chat as User).avatar !== undefined;
   }
-
 
   async openThread(message: Message) {
     this.chatService.setChannelTrue();
@@ -211,44 +211,42 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       });
   }
 
-
   onMouseEnter(propertyName: string) {
     this.hoverStates[propertyName] = true;
   }
-
 
   onMouseLeave(propertyName: string) {
     this.hoverStates[propertyName] = false;
   }
 
-
   getUserName(senderId: string): string {
     return this.userProfiles[senderId]?.name || 'Unknown User';
   }
 
-
+  // ProfileCard
   openProfilePopup(userId: string) {
     this.userService.getUser(userId).subscribe((user: User) => {
       this.clickedUser = user;
+      this.isProfileOpen = true;
       console.log('open Profile for:', user);
     });
   }
 
+  closeProfil() {
+    this.isProfileOpen = false;
+  }
 
   openChannelInfoPopup() {
     this.selectedChannel = this.currentChat as Channel;
   }
 
-
   closeChannelInfoPopup() {
     this.selectedChannel = null;
   }
 
-
   openFileDialog() {
     this.fileInput.nativeElement.click();
   }
-
 
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -278,7 +276,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   async getUserNameById(currentChat: any) {
     if (currentChat && currentChat.members && currentChat.members.length > 1) {
       const otherUserId = this.getOtherUserOfMembers(currentChat.members);
@@ -295,7 +292,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   getOtherUserOfMembers(currentChatMembers: string[]): string {
     for (const member of currentChatMembers) {
       if (member !== this.currentUserId) {
@@ -304,7 +300,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
     return '';
   }
-
 
   addAttachmentToMessage(downloadUrl: string) {
     const newMessage: Message = {
@@ -323,40 +318,49 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.newMessageText = '';
   }
 
-
   removePreview() {
     this.previewUrl = null;
     this.attachmentUrl = null;
     this.fileInput.nativeElement.value = '';
   }
 
-
   onKeyUp(event: KeyboardEvent) {
     const input = (event.target as HTMLInputElement).value.trim();
     this.filterChannels(input);
   }
-
 
   // ------------------------------------------------------------------------------------------------
   // ------------------------------------- Private methods ------------------------------------------
   // ------------------------------------------------------------------------------------------------
 
   private filterChannels(input: string) {
-    const privateChannels = this.filterChannelList(input, '@', this.privateChannels);
-    const publicChannels = this.filterChannelList(input,'#', this.puplicChannels);
+    const privateChannels = this.filterChannelList(
+      input,
+      '@',
+      this.privateChannels
+    );
+    const publicChannels = this.filterChannelList(
+      input,
+      '#',
+      this.puplicChannels
+    );
 
     this.filteredChannels = privateChannels;
     this.filteredPuplicChannels = publicChannels;
   }
 
-
-  private filterChannelList(input: string, symbol: string, channels: Channel[]): Channel[] {
+  private filterChannelList(
+    input: string,
+    symbol: string,
+    channels: Channel[]
+  ): Channel[] {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
-    return match ? channels.filter((ch) =>
+    return match
+      ? channels.filter((ch) =>
           ch.name?.toLowerCase().includes(match[1].toLowerCase())
-        ) : [];
+        )
+      : [];
   }
-
 
   private handleMessagesResponse(messages: Message[]): void {
     this.messages = this.sortMessagesByTimestamp(messages);
@@ -368,18 +372,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   private handleMessagesError(error: any): void {
     console.error('Error loading messages:', error);
     this.setLoadingState(false);
   }
 
-
   private handleMessageSentError(error: any): void {
     console.error('Error sending message:', error);
     this.setLoadingState(false);
   }
-
 
   private handleMessageSentSuccess(newMessage: Message): void {
     this.messages.push(newMessage);
@@ -389,25 +390,21 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.setLoadingState(false);
   }
 
-
   private handleCurrentChat(chat: any): void {
     const isPrivateOrNot = chat.isPrivate;
     this.getUserNameById(chat);
     this.loadMessages(isPrivateOrNot);
   }
 
-
   private setLoadingState(isLoading: boolean) {
     this.isLoading = isLoading;
     this.chatService.setLoadingState(isLoading);
   }
 
-
   private setUserDetails(user: any): void {
     this.currentUserId = user.uid;
     this.currentUserName = user.displayName || '';
   }
-
 
   private initializeUser(): void {
     this.authService.getUser().subscribe((user) => {
@@ -416,7 +413,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
 
   private subscribeToCurrentChat(): void {
     this.chatService.currentChat$.subscribe((chat) => {
@@ -432,13 +428,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   private subscribeToSelectedChat(): void {
     this.chatService.selectedChat$.subscribe((chat) => {
       this.selectedChat = chat;
     });
   }
-
 
   private subscribeToLoadingState(): void {
     this.chatService.loadingState$.subscribe((isLoading) => {
@@ -446,16 +440,13 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   private isChatSelected(): boolean {
     return this.currentChat && this.currentChat.id;
   }
 
-
   private isMessageEmpty(): boolean {
     return this.newMessageText.trim() === '' && !this.selectedFile;
   }
-
 
   private async uploadAttachmentAndSendMessage(): Promise<void> {
     try {
@@ -473,7 +464,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   private createAndSendMessage(): void {
     const newMessage: Message = this.buildNewMessage();
 
@@ -486,7 +476,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
         this.handleMessageSentError(error);
       });
   }
-
 
   private buildNewMessage(): Message {
     return {
@@ -505,7 +494,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
         this.convertToDate(b.timestamp).getTime()
     );
   }
-
 
   private clearMessageInput(): void {
     this.newMessageText = '';

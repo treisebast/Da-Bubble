@@ -29,11 +29,11 @@ export class MessageComponent implements OnInit {
   @Input() isCurrentUser!: boolean;
   @Input() isCurrentChatPrivate!: boolean;
   @Output() messageClicked = new EventEmitter<Message>();
+  @Output() senderId = new EventEmitter<string>();
 
   screenSmall: boolean = false;
   isEditing: boolean = false;
   editContent: string = '';
-
 
   constructor(private chatService: ChatService, private dialog: MatDialog) {}
 
@@ -114,7 +114,11 @@ export class MessageComponent implements OnInit {
 
   deleteMessage() {
     if (this.isCurrentUser) {
-      this.chatService.deleteMessage(this.message.chatId!, this.message.id!, this.isCurrentChatPrivate);
+      this.chatService.deleteMessage(
+        this.message.chatId!,
+        this.message.id!,
+        this.isCurrentChatPrivate
+      );
     } else {
       console.error(
         'Du kannst die Nachricht eines anderen Benutzers nicht löschen.'
@@ -125,5 +129,10 @@ export class MessageComponent implements OnInit {
   isImage(url: string): boolean {
     const imageTypes = ['.png', '.jpg', '.jpeg'];
     return imageTypes.some((type) => url.split('?')[0].endsWith(type));
+  }
+
+  openProfilePopup(Id: string | undefined) {
+    console.log(Id);
+    this.senderId.emit(Id);
   }
 }
