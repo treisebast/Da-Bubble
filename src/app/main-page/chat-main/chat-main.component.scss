@@ -1,4 +1,4 @@
-.header {
+.header-title {
   height: 80px;
   display: flex;
   align-items: center;
@@ -12,7 +12,7 @@
 
   h2 {
     margin: 0;
-    padding-left: 8px;
+    padding-left: 15px;
   }
 }
 
@@ -67,7 +67,6 @@
   display: flex;
   align-items: center;
   flex-direction: row;
-  gap: 8px;
   width: 100%;
   justify-content: space-between;
 
@@ -87,11 +86,6 @@
       background-color: var(--main-background);
       color: var(--purple-one);
       cursor: pointer;
-
-      img {
-        filter: brightness(0) saturate(100%) invert(32%) sepia(75%) saturate(6900%) hue-rotate(237deg) brightness(102%)
-          contrast(90%);
-      }
     }
   }
 
@@ -141,8 +135,9 @@
 }
 
 .profileImg {
-  height: 48px;
-  margin-right: 16px;
+  height: 50px;
+  aspect-ratio: 1/1;
+  position: relative;
 
   > img:nth-child(1) {
     object-fit: cover;
@@ -159,8 +154,8 @@
   .online {
     height: 14px;
     position: absolute;
-    top: 52px;
-    left: 52px;
+    bottom: 0px;
+    right: 0px;
   }
 }
 

@@ -32,33 +32,27 @@
 </div>
 <div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
-    <div class="profileImg">
-      <img
-        *ngIf="isChatUserProfile(currentChat)"
-        src="{{ currentChat.avatar }}"
-        alt=""
-      />
-      <img
-        *ngIf="
-          isChatUserProfile(currentChat) && currentChat.status === 'online'
-        "
-        src="./assets/img/online.png"
-        alt=""
-        class="online"
-      />
-      <img
-        *ngIf="
-          isChatUserProfile(currentChat) && currentChat.status === 'offline'
-        "
-        src="./assets/img/offline.png"
-        alt=""
-        class="online"
-      />
-    </div>
-
     <div class="header-title">
+
       <div class="header-channel-name" (click)="openChannelInfoPopup()">
-        <img src="../../../assets/img/chatChannel/tag.svg" />
+        <div class="profileImg">
+          <img *ngIf="clickedUser && isCurrentChatPrivate" src="{{ clickedUser.avatar }}" alt="" />
+          <img
+            *ngIf="clickedUser && clickedUser.status === 'online' && isCurrentChatPrivate"
+            src="./assets/img/online.png"
+            alt=""
+            class="online"
+          />
+          <img
+            *ngIf="clickedUser && clickedUser.status === 'offline' && isCurrentChatPrivate"
+            src="./assets/img/offline.png"
+            alt=""
+            class="online"
+          />
+        </div>
+
+        <img *ngIf="!isCurrentChatPrivate" src="../../../assets/img/chatChannel/tag.svg" alt="">
+
         <h2 *ngIf="!isCurrentChatPrivate">{{ currentChat.name }}</h2>
         <h2 *ngIf="isCurrentChatPrivate">
           {{ clickedUserName || "Lade Benutzer..." }}
