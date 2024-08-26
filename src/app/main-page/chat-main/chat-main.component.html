@@ -78,28 +78,6 @@
       <mat-spinner></mat-spinner>
     </div>
     <ng-container *ngIf="selectedChat && !this.isLoading">
-      <div class="message-info">
-        <div>
-          <img [src]="clickedUser?.avatar" alt="" />
-          <h2>{{ clickedUser?.name }} (Du)</h2>
-        </div>
-        <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"
-          ><strong>Dieser Raum ist nur für dich da.</strong> Mache dir Notizen,
-          liste deine To-dos auf oder bewahre Links und Dateien griffbereit auf.
-          Du kannst hier auch gerne Dinge mit dir selbst besprechen.</span
-        >
-
-        <span *ngIf="currentUserId !== clickedUser?.userId"
-          >Diese Unterhaltung findet nur zwischen
-          <span
-            class="message-info-user"
-            *ngIf="clickedUser"
-            (click)="openProfilePopup(clickedUser.userId)"
-            >&#64;{{ clickedUser.name }}
-          </span>
-          und dir statt.
-        </span>
-      </div>
 
       <div *ngFor="let message of messages; let i = index">
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
@@ -109,17 +87,39 @@
         </div>
 
         <app-message
-          *ngIf="userProfiles[message.senderId]"
-          [message]="message"
-          [userProfile]="userProfiles[message.senderId]"
-          [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)"
-          [isCurrentChatPrivate]="isCurrentChatPrivate"
+        *ngIf="userProfiles[message.senderId]"
+        [message]="message"
+        [userProfile]="userProfiles[message.senderId]"
+        [isCurrentUser]="message.senderId === currentUserId"
+        (messageClicked)="openThread($event)"
+        [isCurrentChatPrivate]="isCurrentChatPrivate"
         >
-        </app-message>
+      </app-message>
+    </div>
+    <div *ngIf="isCurrentChatPrivate" class="message-info">
+      <div>
+        <img [src]="clickedUser?.avatar" alt="" />
+        <h2>{{ clickedUser?.name }} (Du)</h2>
       </div>
-    </ng-container>
-  </div>
+      <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"
+        ><strong>Dieser Raum ist nur für dich da.</strong> Mache dir Notizen,
+        liste deine To-dos auf oder bewahre Links und Dateien griffbereit auf.
+        Du kannst hier auch gerne Dinge mit dir selbst besprechen.</span
+      >
+
+      <span *ngIf="currentUserId !== clickedUser?.userId"
+        >Diese Unterhaltung findet nur zwischen
+        <span
+          class="message-info-user"
+          *ngIf="clickedUser"
+          (click)="openProfilePopup(clickedUser.userId)"
+          >&#64;{{ clickedUser.name }}
+        </span>
+        und dir statt.
+      </span>
+    </div>
+  </ng-container>
+</div>
 
   <!-- Vorschau des Anhangs -->
   <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
