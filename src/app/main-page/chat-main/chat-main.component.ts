@@ -59,6 +59,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   userProfiles: { [key: string]: any } = {};
   currentUserId = '';
   currentUserName = '';
+  clickedUser: User | null = null;
   clickedUserName: string = '';
 
   messages: Message[] = [];
@@ -67,6 +68,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
+
 
   @ViewChild('chatContainer', { static: false })
   private chatContainer!: ElementRef;
@@ -225,6 +227,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   }
 
 
+  openProfilePopup(userId: string) {
+    this.userService.getUser(userId).subscribe((user: User) => {
+      this.clickedUser = user;
+      console.log('open Profile for:', user);
+    });
+  }
+
+
   openChannelInfoPopup() {
     this.selectedChannel = this.currentChat as Channel;
   }
@@ -274,8 +284,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       const otherUserId = this.getOtherUserOfMembers(currentChat.members);
       const userName = await this.userService.getUserNameById(otherUserId);
       this.clickedUserName = userName || 'Unbekannter Benutzer'; // Fallback-Wert
+      this.userService.getUser(otherUserId).subscribe((user: User) => {
+        this.clickedUser = user;
+      });
     } else {
       this.clickedUserName = `${this.currentUserName} (Du)`;
+      this.userService.getUser(this.currentUserId).subscribe((user: User) => {
+        this.clickedUser = user;
+      });
     }
   }
 
@@ -409,6 +425,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
       if (this.currentChat) {
         this.handleCurrentChat(this.currentChat);
+        console.log('currentChat:', this.currentChat);
       } else {
         console.error('no chat selected');
       }
@@ -488,7 +505,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
         this.convertToDate(b.timestamp).getTime()
     );
   }
-  
+
 
   private clearMessageInput(): void {
     this.newMessageText = '';
