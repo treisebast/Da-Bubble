@@ -1,8 +1,10 @@
 <div class="header">
   <div class="headline">
     <h2>Thread</h2>
-    <img class="profileImg" src="" alt="">
-    <p>{{ currentChat?.name }}</p>
+    <div class="channel-name">
+      <img src="../../../assets/img/chatChannel/tag.svg" alt="">
+      <p>{{ currentChat?.name }}</p>
+    </div>
   </div>
   <div (click)="onCloseThread()" class="close"></div>
 </div>
@@ -10,7 +12,7 @@
 <div class="chat-container" #chatContainer>
 
   <!-- Original message, to which the thread belongs -->
-  <div *ngIf="currentMessageToOpen" class="singelMessageContainer"
+  <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
     [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
     <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
       [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
@@ -33,14 +35,9 @@
       </div>
 
       <!-- Reaction Bar for the thread message -->
-      <div
-        class="reactionBar"
+      <div class="reactionBar rb-icon"
         [ngClass]="{ 'reactionBar-left': currentMessageToOpen.senderId === currentUserId, 'reactionBar-right': currentMessageToOpen.senderId !== currentUserId }">
-        <div class="check"></div>
-        <div class="handsUp"></div>
         <div class="reaction"></div>
-        <div *ngIf="currentMessageToOpen.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menu0">
-        </div>
       </div>
 
       <mat-menu #menu0="matMenu">
@@ -58,79 +55,76 @@
     <span class="replies-count">{{ totalReplies }} Antworten</span>
   </div>
 
-<!-- Thread replies -->
-<div *ngFor="let message of messages; let i = index">
-  <!-- Date divider -->
-  <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
-    <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
-  </div>
+  <!-- Thread replies -->
+  <div *ngFor="let message of messages; let i = index">
+    <!-- Date divider -->
+    <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+      <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
+    </div>
 
-  <div class="singelMessageContainer"
-    [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
+    <div class="singelMessageContainer"
+      [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
 
-    <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
-      alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
+      <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
+        alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
 
-    <div class="message-wrapper"
-      [ngClass]="{'align-end': message.senderId === currentUserId, 'align-start': message.senderId !== currentUserId}">
+      <div class="message-wrapper"
+        [ngClass]="{'align-end': message.senderId === currentUserId, 'align-start': message.senderId !== currentUserId}">
 
-      <div class="message-header">
-        <ng-container *ngIf="message.senderId === currentUserId; else otherUserHeader">
-          <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
-          <span class="name">{{ getUserName(message.senderId) }}</span>
-        </ng-container>
-        <ng-template #otherUserHeader>
-          <span class="name">{{ getUserName(message.senderId) }}</span>
-          <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
-        </ng-template>
-      </div>
+        <div class="message-header">
+          <ng-container *ngIf="message.senderId === currentUserId; else otherUserHeader">
+            <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
+            <span class="name">{{ getUserName(message.senderId) }}</span>
+          </ng-container>
+          <ng-template #otherUserHeader>
+            <span class="name">{{ getUserName(message.senderId) }}</span>
+            <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
+          </ng-template>
+        </div>
 
-      <div class="message-content" [ngClass]="{ 'editing': editingMessageId === message.id }">
-        <p *ngIf="editingMessageId !== message.id">{{ message.content }}</p>
-        <div *ngIf="editingMessageId === message.id" class="editing-container">
-          <input [(ngModel)]="editContent" />
-          <div class="message-controls">
-            <button class="cancel-button" (click)="cancelEdit()">Zurück</button>
-            <button class="save-button" (click)="saveEdit(message)">Speichern</button>
+        <div class="message-content" [ngClass]="{ 'editing': editingMessageId === message.id }">
+          <p *ngIf="editingMessageId !== message.id">{{ message.content }}</p>
+          <div *ngIf="editingMessageId === message.id" class="editing-container">
+            <input [(ngModel)]="editContent" />
+            <div class="message-controls">
+              <button class="cancel-button" (click)="cancelEdit()">Zurück</button>
+              <button class="save-button" (click)="saveEdit(message)">Speichern</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Reaction Bar for each thread reply -->
-      <div
-        class="reactionBar"
-        [ngClass]="{ 'reactionBar-left': message.senderId === currentUserId, 'reactionBar-right': message.senderId !== currentUserId }">
-        <div class="check"></div>
-        <div class="handsUp"></div>
-        <div class="reaction"></div>
-        <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
+        <!-- Reaction Bar for each thread reply -->
+        <div class="reactionBar"
+          [ngClass]="{ 'reactionBar-left': message.senderId === currentUserId, 'reactionBar-right': message.senderId !== currentUserId }">
+          <div class="check"></div>
+          <div class="handsUp"></div>
+          <div class="reaction"></div>
+          <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
+          </div>
         </div>
+
+        <mat-menu #menuTrigger="matMenu">
+          <ng-container *ngIf="message.senderId === currentUserId">
+            <button mat-menu-item (click)="editMessage(message)">Nachricht bearbeiten</button>
+            <button mat-menu-item (click)="deleteMessage(message)">Nachricht löschen</button>
+          </ng-container>
+        </mat-menu>
+
       </div>
-
-      <mat-menu #menuTrigger="matMenu">
-        <ng-container *ngIf="message.senderId === currentUserId">
-          <button mat-menu-item (click)="editMessage(message)">Nachricht bearbeiten</button>
-          <button mat-menu-item (click)="deleteMessage(message)">Nachricht löschen</button>
-        </ng-container>
-      </mat-menu>
-
     </div>
-  </div>
 
-</div>
-<div class="messageBox">
-  <textarea [(ngModel)]="newMessageText"
-            placeholder="Nachricht an {{ currentChat?.name }}"
-            (keydown.enter)="sendMessage($event)"
-            name="" id="">
+  </div>
+  <div class="messageBox">
+    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"
+      (keydown.enter)="sendMessage($event)" name="" id="">
   </textarea>
-  <div class="messageBoxBottom">
-    <div class="iconsLeft">
-      <div class="addIcon"></div>
-      <div class="border"></div>
-      <div class="emoji"></div>
-      <div class="iconMarkUser"></div>
+    <div class="messageBoxBottom">
+      <div class="iconsLeft">
+        <div class="addIcon"></div>
+        <div class="border"></div>
+        <div class="emoji"></div>
+        <div class="iconMarkUser"></div>
+      </div>
+      <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
-    <div (click)="sendMessage()" class="sendMessage"></div>
   </div>
-</div>
