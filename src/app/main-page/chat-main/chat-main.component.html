@@ -56,7 +56,9 @@
 
       <div *ngFor="let message of messages; let i = index">
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
-          <h2>{{ clickedUser?.name }} (Du)</h2>
+          <span class="date">{{
+            convertToDate(message.timestamp) | date : "fullDate" : "" : "de"
+            }}</span>
         </div>
 
         <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
