@@ -1,3 +1,8 @@
+.header {
+  position: relative;
+  z-index: 1000;
+}
+
 .header-title {
   height: 80px;
   display: flex;
@@ -20,17 +25,20 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  > div {
+
+  >div {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
     justify-content: flex-start;
-    > img {
+
+    >img {
       width: 100px;
       aspect-ratio: 1/1;
       border-radius: 50%;
     }
-    > h2 {
+
+    >h2 {
       margin: 0;
       padding-left: 24px;
       color: var(--Black, #000);
@@ -40,7 +48,7 @@
     }
   }
 
-  > span {
+  >span {
     color: var(--Text-gray, #686868);
     font-family: Nunito;
     font-size: 20px;
@@ -48,7 +56,7 @@
     font-weight: 400;
     line-height: normal;
 
-    > span {
+    >span {
       cursor: pointer;
       color: var(--Purple-3, #535af1);
       font-family: Nunito;
@@ -56,6 +64,7 @@
       font-style: normal;
       font-weight: 400;
       line-height: normal;
+
       &:hover {
         font-weight: 700;
       }
@@ -107,8 +116,7 @@
       img {
         &:hover {
           cursor: pointer;
-          filter: brightness(0) saturate(100%) invert(32%) sepia(75%) saturate(6900%) hue-rotate(237deg)
-            brightness(102%) contrast(90%);
+          filter: brightness(0) saturate(100%) invert(32%) sepia(75%) saturate(6900%) hue-rotate(237deg) brightness(102%) contrast(90%);
         }
       }
     }
@@ -139,14 +147,14 @@
   aspect-ratio: 1/1;
   position: relative;
 
-  > img:nth-child(1) {
+  >img:nth-child(1) {
     object-fit: cover;
     height: 50px;
     width: 50px;
     border-radius: 100%;
   }
 
-  > img:nth-child(2) {
+  >img:nth-child(2) {
     object-fit: cover;
     width: auto;
   }
@@ -418,8 +426,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  filter: brightness(0) saturate(100%) invert(14%) sepia(71%) saturate(5342%) hue-rotate(356deg) brightness(95%)
-    contrast(118%);
+  filter: brightness(0) saturate(100%) invert(14%) sepia(71%) saturate(5342%) hue-rotate(356deg) brightness(95%) contrast(118%);
   transition: 125ms ease-in-out;
 
   &:hover {
