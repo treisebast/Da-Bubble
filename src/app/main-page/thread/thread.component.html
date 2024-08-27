@@ -58,13 +58,22 @@
     <span class="replies-count">{{ totalReplies }} Antworten</span>
   </div>
 
-  <!-- Thread replies -->
-  <div *ngFor="let message of messages; let i = index" class="singelMessageContainer"
+<!-- Thread replies -->
+<div *ngFor="let message of messages; let i = index">
+  <!-- Date divider -->
+  <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
+    <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
+  </div>
+
+  <div class="singelMessageContainer"
     [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
+    
     <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
       alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
+    
     <div class="message-wrapper"
       [ngClass]="{'align-end': message.senderId === currentUserId, 'align-start': message.senderId !== currentUserId}">
+      
       <div class="message-header">
         <ng-container *ngIf="message.senderId === currentUserId; else otherUserHeader">
           <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
@@ -75,15 +84,9 @@
           <span class="timestamp">{{ convertToDate(message.timestamp) | date : 'HH:mm' }} Uhr</span>
         </ng-template>
       </div>
-      <div class="message-content" [ngClass]="{ 'editing': editingMessageId === message.id }">
-        <p *ngIf="editingMessageId !== message.id">{{ message.content }}</p>
-        <div *ngIf="editingMessageId === message.id" class="editing-container">
-          <input [(ngModel)]="editContent" />
-          <div class="message-controls">
-            <button class="cancel-button" (click)="cancelEdit()">Zurück</button>
-            <button class="save-button" (click)="saveEdit(message)">Speichern</button>
-          </div>
-        </div>
+      
+      <div class="message-content">
+        <p>{{ message.content }}</p>
       </div>
       
       <!-- Reaction Bar for each thread reply -->

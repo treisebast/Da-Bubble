@@ -277,7 +277,7 @@
 
 .chat-container {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 35px;
   padding: 16px 32px;
   max-height: calc(100% - 265px);
@@ -313,31 +313,28 @@
   align-items: center;
   margin: 32px 0;
   position: relative;
-}
-
-.date-divider::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  border-top: 1px solid var(--divider-purple);
-  z-index: 1;
-}
-
-.date-divider {
   background: white;
   padding: 0 8px;
   z-index: 2;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--divider-purple);
+    z-index: 1;
+  }
 }
 
 .date {
-  z-index: 2;
   background: white;
   border-radius: 30px;
   border: 1px solid var(--divider-purple);
   padding: 5px 15px;
   font-size: 16px;
+  z-index: 2;
 }
 
 .message-actions {
