@@ -32,6 +32,17 @@
       </div>
       <div class="message-content">
         <p>{{ currentMessageToOpen.content }}</p>
+
+        <div *ngIf="currentMessageToOpen.attachments && currentMessageToOpen.attachments.length > 0" class="attachments">
+          <div *ngFor="let attachment of currentMessageToOpen.attachments">
+            <ng-container *ngIf="isImage(attachment); else pdfTemplate">
+              <img [src]="attachment" alt="Anhang" class="attachment-img" />
+            </ng-container>
+            <ng-template #pdfTemplate>
+              <a [href]="attachment" target="_blank">Anhänge ansehen</a>
+            </ng-template>
+          </div>
+        </div>
       </div>
 
       <!-- Reaction Bar for the thread message -->

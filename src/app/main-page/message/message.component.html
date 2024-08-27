@@ -25,7 +25,21 @@
           <button class="save-button" (click)="saveEdit()">Speichern</button>
         </div>
       </div>
+      <div *ngIf="message.attachments && message.attachments.length > 0" class="attachments">
+        <div *ngFor="let attachment of message.attachments">
+          <ng-container *ngIf="isImage(attachment); else pdfTemplate">
+            <!-- PDF als Preview anzeigen -->
+            <img [src]="attachment" alt="Anhang" class="attachment-img" />
+          </ng-container>
+          <ng-template #pdfTemplate>
+            <!-- PDF als Link anzeigen -->
+            <a [href]="attachment" target="_blank">Anhänge ansehen</a>
+          </ng-template>
+        </div>
+      </div>
     </div>
+
+
 
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count" [ngClass]="{
         'thread-count-end': isCurrentUser && screenSmall,
@@ -37,19 +51,6 @@
       <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">
         Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date: 'HH:mm' }}
       </span>
-    </div>
-
-    <div *ngIf="message.attachments && message.attachments.length > 0" class="attachments">
-      <div *ngFor="let attachment of message.attachments">
-        <ng-container *ngIf="isImage(attachment); else pdfTemplate">
-          <!-- PDF als Preview anzeigen -->
-          <img [src]="attachment" alt="Anhang" class="attachment-img" />
-        </ng-container>
-        <ng-template #pdfTemplate>
-          <!-- PDF als Link anzeigen -->
-          <a [href]="attachment" target="_blank">Anhänge ansehen</a>
-        </ng-template>
-      </div>
     </div>
 
 

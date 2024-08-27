@@ -200,7 +200,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 16px 0;
+  margin: 16px;
   position: relative;
 
   &::before {
@@ -209,7 +209,7 @@
     top: 50%;
     left: 0;
     right: 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--divider-purple);
     z-index: 1;
   }
 
@@ -232,7 +232,6 @@
 .message-right {
   display: flex;
   align-items: flex-start;
-  margin: 8px 0;
 }
 
 .message-left {
@@ -299,6 +298,11 @@
   color: white !important;
   border-top-right-radius: 0 !important;
   border-top-left-radius: 30px;
+  align-items: end;
+}
+
+.message-right .message-content {
+  align-items: start;
 }
 
 .message-content {
@@ -310,7 +314,7 @@
   margin: 8px 0;
   font-size: 16px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   z-index: 2;
 
   &.editing {
@@ -399,6 +403,8 @@
 
 .message-right {
   padding-left: 88px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   align-items: flex-start;
 
   .profile-img {
@@ -408,6 +414,8 @@
 
 .message-left {
   padding-right: 88px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   align-items: flex-end;
 
   .profile-img {
@@ -440,7 +448,9 @@
 
 .reply-divider .replies-count {
   background: white;
-  padding: 0 8px;
+  padding-top: 0;
+  padding-right: 8px;
+  padding-bottom: 0;
   z-index: 2;
   color: var(--divider-purple);
   font-size: 14px;
@@ -545,6 +555,21 @@
 .rb-icon {
   padding: 4px;
   border-radius: 30px;
+}
+
+
+.attachments {
+  margin-top: 10px;
+  color: black;
+  display: flex;
+  z-index: 10;
+
+  .attachment-img {
+    max-width: 250px;
+    border-radius: 30px;
+    height: auto;
+    display: block;
+  }
 }
 
 // @media (max-width: 700px) {

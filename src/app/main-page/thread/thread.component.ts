@@ -21,22 +21,25 @@ import { MatMenuModule } from '@angular/material/menu';
 })
 export class ThreadComponent implements OnInit {
   currentChat: User | Channel | null = null;
+
+  currentMessageToOpen: any;
+  currentUserId = '';
+  currentUserName = '';
+  newMessageText = '';
+  
+  messages: Message[] = [];
+  totalReplies: number = 0;
+  editingMessageId: string | null | undefined = null;
+  editContent: string = '';
+  
+  userNames: { [key: string]: string } = {};
+  userProfiles: { [key: string]: User } = {};
+  
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private dialog = inject(MatDialog);
-
-  messages: Message[] = [];
-  newMessageText = '';
-  currentMessageToOpen: any;
-  currentUserId = '';
-  currentUserName = '';
-  userNames: { [key: string]: string } = {};
-  userProfiles: { [key: string]: User } = {};
-  totalReplies: number = 0;
-  editingMessageId: string | null | undefined = null;
-  editContent: string = '';
 
 
   ngOnInit() {
@@ -221,5 +224,10 @@ export class ThreadComponent implements OnInit {
 
   cancelEdit() {
     this.editingMessageId = null;
+  }
+  
+  isImage(url: string): boolean {
+    const imageTypes = ['.png', '.jpg', '.jpeg'];
+    return imageTypes.some((type) => url.split('?')[0].endsWith(type));
   }
 }
