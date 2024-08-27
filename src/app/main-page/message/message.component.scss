@@ -17,11 +17,8 @@
   }
 
   &:hover {
-
-
     &::before {
-      background-color: var(--main-background,
-          rgb(235, 239, 254));
+      background-color: var(--main-background, rgb(235, 239, 254));
     }
 
     .reactionBar {
@@ -30,16 +27,16 @@
   }
 
   .message-content {
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
   &.message-left:hover .message-content {
     background: var(--white);
     color: var(--black);
   }
-
 }
-
 
 .message-wrapper {
   z-index: 2;
@@ -54,7 +51,6 @@
   display: flex;
   justify-content: flex-end;
 }
-
 
 .timestamp {
   font-size: 14px;
@@ -97,7 +93,6 @@
   width: max-content;
 }
 
-
 .message-content {
   position: relative;
   padding: 16px;
@@ -126,7 +121,7 @@
     flex-direction: column;
     justify-content: center;
     background-color: white;
-    border: 1px solid var(--purple-two, rgb(94, 53, 177));
+    border: 1px solid var(--purple-two, rgb(121, 126, 243));
     border-radius: 16px;
     padding: 16px;
   }
@@ -163,19 +158,19 @@
     transition: background-color 0.2s ease-in-out;
 
     &.save-button {
-      background-color: var(--purple-one);
+      background-color: var(--purple-two, rgb(121, 126, 243));
       color: white;
 
       &:hover {
-        background-color: var(--purple-two);
+        background-color: var(--purple-two, rgb(121, 126, 243));
         color: white;
       }
     }
 
     &.cancel-button {
       background-color: transparent;
-      border: 1px solid var(--purple-two, rgb(94, 53, 177));
-      color: var(--purple-two, rgb(94, 53, 177));
+      border: 1px solid var(--purple-two, rgb(121, 126, 243));
+      color: var(--purple-two, rgb(121, 126, 243));
 
       &:hover {
         background-color: var(--purple-one);
@@ -204,14 +199,14 @@
 }
 
 .message-right .message-content {
-  background: var(--purple-two, rgb(94, 53, 177));
+  background: var(--purple-two, rgb(121, 126, 243));
   color: var(--white, rgb(255, 255, 255));
   border-top-right-radius: 0 !important;
   border-top-left-radius: 30px;
   align-items: end;
 
   &:hover {
-    background: var(--purple-two, rgb(94, 53, 177));
+    background: var(--purple-two, rgb(121, 126, 243));
   }
 
   &.editing {
@@ -219,7 +214,6 @@
     padding: 0;
   }
 }
-
 
 .message-content input {
   width: 100%;
@@ -244,17 +238,16 @@
   flex-direction: row-reverse;
 }
 
-
 .message-right {
   display: flex;
   flex-direction: row-reverse;
   align-items: flex-start;
 
-  >.profile-img {
+  > .profile-img {
     left: 16px;
   }
 
-  >.reactionBar {
+  > .reactionBar {
     left: 16px;
   }
 }
@@ -264,11 +257,11 @@
   flex-direction: row;
   align-items: flex-start;
 
-  >.profile-img {
+  > .profile-img {
     right: 16px;
   }
 
-  >.reactionBar {
+  > .reactionBar {
     right: 16px;
   }
 }
@@ -276,6 +269,11 @@
 .name {
   font-weight: bold;
   font-size: 16px;
+
+  &:hover {
+    cursor: pointer;
+    color: var(--purple-one, rgb(68, 77, 242));
+  }
 }
 
 .reactionBar {
@@ -344,9 +342,7 @@
   .vertPoints {
     background-image: url(../../../assets/img/chatChannel/more_vert.svg);
   }
-
 }
-
 
 @keyframes slideInFromLeft {
   0% {
@@ -383,7 +379,6 @@
   }
 
   .reactionBar {
-
     &.reactionBar-left {
       left: 70px;
     }

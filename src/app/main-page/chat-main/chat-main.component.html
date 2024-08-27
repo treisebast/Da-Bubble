@@ -23,10 +23,12 @@
     </div>
   </div>
 </div>
+
 <div class="wrapper" *ngIf="currentChat && selectedChat">
   <div class="header">
     <div class="header-title">
-      <div class="header-channel-name" (click)="openChannelInfoPopup()">
+      <div class="header-channel-name"
+        (click)="isCurrentChatPrivate ? openProfilePopup(clickedUser?.userId!) : openChannelInfoPopup()">
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
           <img *ngIf="clickedUser" src="{{ clickedUser.avatar }}" alt="" />
           <img *ngIf="clickedUser && clickedUser.status === 'online'" src="./assets/img/online.png" alt=""

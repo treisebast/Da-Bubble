@@ -19,7 +19,7 @@
               <div class="edit-icon-container">
                 <div class="edit-icon" (click)="editProfil()"></div>
               </div>
-              <span class="edit" (click)="editProfil()">Bearbeiten</span>
+              <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil()">Bearbeiten</span>
             </div>
             <div class="profil-status">
               <img
@@ -40,11 +40,11 @@
           </div>
         </ng-template>
 
-        <ng-template [ngIf]="isEditing && onclickUser">
+        <ng-template [ngIf]="isEditing && (onclickUserID === ownUserID)">
           <app-edit-profil [ownUser]="onclickUser" (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
         </ng-template>
 
-        <ng-template [ngIf]="!onclickUser">
+        <ng-template [ngIf]="onclickUserID !== ownUserID">
           <div class="message-btn-container">
             <div class="message-btn" mat-button mat-dialog-close cdkFocusInitial>
               <img src="./../../../assets/img/profilecard/message.svg" alt="Buttonimage" />
