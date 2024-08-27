@@ -45,7 +45,7 @@
         'thread-count-end': isCurrentUser && screenSmall,
         'thread-count-start': !isCurrentUser && screenSmall
       }">
-      <span (click)="onMessageClick()">
+      <span (click)="onMessageClick()" class="answer-count">
         {{ message.threadCount }} Antwort{{ message.threadCount > 1 ? 'en' : '' }}
       </span>
       <span *ngIf="message.lastReplyTimestamp" class="last-reply-time">

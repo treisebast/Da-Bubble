@@ -67,7 +67,14 @@
   gap: 8px;
 
   :nth-child(1) {
-    cursor: pointer;
+    padding-right: 3px;
+
+    &:hover {
+      cursor: pointer;
+      color: var(--purple-one, rgb(68, 77, 242));
+      font-weight: 700;
+      padding-right: 0px;
+    }
   }
 }
 
