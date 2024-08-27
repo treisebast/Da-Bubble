@@ -103,7 +103,7 @@ export class SignInComponent {
     }
     this.cdr.detectChanges();
   }
-  
+
 
 
   /**
@@ -187,20 +187,47 @@ export class SignInComponent {
 
 
   /**
- * Signs in the user with Google authentication.
- * @param {Event} event - The event object.
- */
-  signInWithGoogle(event: Event) {
+   * Signs in the user using Google authentication.
+   * @param {Event} event - The event object.
+   */
+  async signInWithGoogle(event: Event) {
     event.preventDefault();
-    this.authService.signInWithGoogle().subscribe({
-      next: (res: any) => {
-        console.log('Google Sign-In Successful', res);
-        this.router.navigate(['/main']);
-      },
-      error: (err: any) => {
-        console.error('Google Sign-In Error', err);
-      }
-    });
+    const res = await firstValueFrom(this.authService.signInWithGoogle());
+    const user = res.user;
+    await this.handleGoogleUser(user);
+    this.router.navigate(['/main']);
+  }
+
+  /**
+   * Handles the user object after Google sign-in.
+   * Checks if the user exists in Firestore, and if not, adds them.
+   * @param {any} user - The Google authenticated user.
+   * @private
+   */
+  private async handleGoogleUser(user: any) {
+    const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
+  
+    if (!userDoc) {
+      await this.addNewGoogleUser(user);
+    }
+  }
+
+  /**
+   * Adds a new Google authenticated user to Firestore.
+   * @param {any} user - The Google authenticated user.
+   * @private
+   */
+  private async addNewGoogleUser(user: any) {
+    const newUser = {
+      userId: user.uid,
+      name: user.displayName || '',
+      email: user.email || '',
+      avatar: user.photoURL || '',
+      status: 'online',
+      lastSeen: new Date(),
+    };
+
+    await this.userService.addUser(newUser);
   }
 
 
