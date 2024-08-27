@@ -67,7 +67,7 @@
           (senderId)="openProfilePopup($event)">
         </app-message>
       </div>
-      <div *ngIf="isCurrentChatPrivate" class="message-info">
+      <div [ngClass]="{'hidden': !isCurrentChatPrivate || messages.length > 0}" class="message-info">
         <div>
           <img [src]="clickedUser?.avatar" alt="" />
           <h2>{{ clickedUser?.name }} (Du)</h2>

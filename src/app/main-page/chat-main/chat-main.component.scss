@@ -296,10 +296,10 @@
   p {
     margin-bottom: 0;
   }
+}
 
-  // > :first-child {
-  //   margin-top: auto !important;
-  // }
+.hidden {
+  display: none;
 }
 
 .chat-container::-webkit-scrollbar {
