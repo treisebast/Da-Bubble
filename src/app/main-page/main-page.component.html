@@ -2,7 +2,7 @@
 
 <div class="full-page">
   <div class="max-width">
-    <app-side-nav *ngIf="showChannels && (!isMobileView || currentView === 'channels')"></app-side-nav>
+    <app-side-nav [@slideInOut]="showChannels ? 'in' : 'out'" *ngIf="!isMobileView || currentView === 'channels'"></app-side-nav>
     <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}"
       *ngIf="!isMobileView || currentView === 'main'"></app-chat-main>
     <app-thread *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')"
