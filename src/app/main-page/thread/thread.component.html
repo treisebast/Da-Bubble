@@ -33,13 +33,21 @@
       <div class="message-content">
         <p>{{ currentMessageToOpen.content }}</p>
 
-        <div *ngIf="currentMessageToOpen.attachments && currentMessageToOpen.attachments.length > 0" class="attachments">
+        <div *ngIf="currentMessageToOpen.attachments && currentMessageToOpen.attachments.length > 0"
+          class="attachments">
           <div *ngFor="let attachment of currentMessageToOpen.attachments">
             <ng-container *ngIf="isImage(attachment); else pdfTemplate">
               <img [src]="attachment" alt="Anhang" class="attachment-img" />
             </ng-container>
             <ng-template #pdfTemplate>
-              <a [href]="attachment" target="_blank">Anhänge ansehen</a>
+              <a [href]="attachment" target="_blank" class="pdf-preview-link">
+                <div class="pdf-preview">
+                  <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
+                  <div class="pdf-details">
+                    <span>PDF öffnen</span>
+                  </div>
+                </div>
+              </a>
             </ng-template>
           </div>
         </div>
@@ -102,6 +110,26 @@
               <button class="save-button" (click)="saveEdit(message)">Speichern</button>
             </div>
           </div>
+
+          <div *ngIf="message.attachments && message.attachments.length > 0" class="attachments">
+            <div *ngFor="let attachment of message.attachments">
+              <ng-container *ngIf="isImage(attachment); else pdfTemplate">
+                <!-- PDF als Preview anzeigen -->
+                <img [src]="attachment" alt="Anhang" class="attachment-img" />
+              </ng-container>
+              <ng-template #pdfTemplate>
+                <!-- PDF als Link anzeigen -->
+                <a [href]="attachment" target="_blank" class="pdf-preview-link">
+                  <div class="pdf-preview">
+                    <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
+                    <div class="pdf-details">
+                      <span>PDF öffnen</span>
+                    </div>
+                  </div>
+                </a>
+              </ng-template>
+            </div>
+          </div>
         </div>
 
         <!-- Reaction Bar for each thread reply -->
@@ -125,17 +153,42 @@
     </div>
 
   </div>
+
+  <!-- Vorschau des Anhangs -->
+  <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
+    <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
+      <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
+      <span *ngIf="attachmentUrl.endsWith('.pdf')">
+        <a [href]="attachmentUrl" target="_blank">PDF Vorschau ansehen</a>
+      </span>
+      <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
+    </div>
+    <ng-template #localPreview>
+      <div class="preview-image-wrapper" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Anhang Vorschau" class="attachment-preview" />
+        <img src="../../assets/img/icons/trash.svg" alt="Löschen" class="delete-icon" (click)="removePreview()" />
+      </div>
+    </ng-template>
+  </div>
+
+
+  <!-- Message Box mit Datei-Upload Funktion -->
   <div class="messageBox">
     <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"
-      (keydown.enter)="sendMessage($event)" name="" id="">
-  </textarea>
+      (keydown.enter)="sendMessage($event)"></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
-        <div class="addIcon"></div>
+        <div class="addIcon" (click)="openFileDialog()"></div>
+        <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
         <div class="border"></div>
         <div class="emoji"></div>
         <div class="iconMarkUser"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
+    </div>
+
+    <!-- Error Message Display -->
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
     </div>
   </div>

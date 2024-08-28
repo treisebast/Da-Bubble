@@ -118,6 +118,10 @@
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
+    <!-- Error Message Display -->
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
   </div>
 </div>
 

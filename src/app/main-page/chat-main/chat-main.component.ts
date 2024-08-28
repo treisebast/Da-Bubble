@@ -70,6 +70,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   messages: Message[] = [];
   newMessageText = '';
+  errorMessage: string | null = null;
+  errorTimeout: any;
 
   selectedFile: File | null = null;
   previewUrl: string | null = null;
@@ -250,29 +252,69 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
+    this.clearErrorMessage();
+
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
 
-      // Überprüfe die Dateigröße und den Typ
-      if (file.size > 500 * 1024) {
-        alert('Die Datei überschreitet die maximal erlaubte Größe von 500KB.');
+      if (!this.isValidFile(file)) {
         return;
       }
 
-      const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
-        return;
-      }
+      this.createFilePreview(file);
+    }
+  }
 
-      // Vorschau erstellen
+  private isValidFile(file: File): boolean {
+    const maxSizeInKB = 500;
+    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+
+    if (file.size > maxSizeInKB * 1024) {
+      this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+      return false;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private createFilePreview(file: File): void {
+    if (file.type === 'application/pdf') {
+      this.previewUrl = '../../assets/img/chatChannel/pdf.png';
+    } else {
       const reader = new FileReader();
       reader.onload = () => {
         this.previewUrl = reader.result as string;
         this.attachmentUrl = null;
         this.selectedFile = file;
+        this.clearErrorMessage();
       };
       reader.readAsDataURL(file);
+    }
+    this.attachmentUrl = null;
+    this.selectedFile = file;
+    this.clearErrorMessage();
+  }
+
+  private setErrorMessage(message: string): void {
+    this.errorMessage = message;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    this.errorTimeout = setTimeout(() => {
+      this.errorMessage = null;
+    }, 4000);
+  }
+
+  private clearErrorMessage(): void {
+    this.errorMessage = null;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
     }
   }
 
@@ -357,8 +399,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
     return match
       ? channels.filter((ch) =>
-          ch.name?.toLowerCase().includes(match[1].toLowerCase())
-        )
+        ch.name?.toLowerCase().includes(match[1].toLowerCase())
+      )
       : [];
   }
 

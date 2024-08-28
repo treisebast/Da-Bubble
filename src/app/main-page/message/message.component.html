@@ -32,8 +32,15 @@
             <img [src]="attachment" alt="Anhang" class="attachment-img" />
           </ng-container>
           <ng-template #pdfTemplate>
-            <!-- PDF als Link anzeigen -->
-            <a [href]="attachment" target="_blank">Anhänge ansehen</a>
+            <!-- PDF Vorschau anzeigen -->
+            <a [href]="attachment" target="_blank" class="pdf-preview-link">
+              <div class="pdf-preview">
+                <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
+                <div class="pdf-details">
+                  <span>PDF öffnen</span>
+                </div>
+              </div>
+            </a>
           </ng-template>
         </div>
       </div>

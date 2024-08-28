@@ -1,8 +1,8 @@
-import { Component, EventEmitter, inject, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
-import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, doc, FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Message } from '../../shared/models/message.model';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,9 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { firstValueFrom } from 'rxjs';
+import { Firestore } from '@angular/fire/firestore';
+import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 
 @Component({
   selector: 'app-thread',
@@ -20,27 +23,39 @@ import { MatMenuModule } from '@angular/material/menu';
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent implements OnInit {
+
+  
+
   currentChat: User | Channel | null = null;
 
   currentMessageToOpen: any;
   currentUserId = '';
   currentUserName = '';
   newMessageText = '';
-  
+
   messages: Message[] = [];
   totalReplies: number = 0;
   editingMessageId: string | null | undefined = null;
   editContent: string = '';
-  
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  attachmentUrl: string | null = null;
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
-  
+  errorMessage: string | null = null;
+  errorTimeout: any;
+
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private dialog = inject(MatDialog);
 
+  constructor(
+    private firestore: Firestore,
+    private firebaseStorageService: FirebaseStorageService,
+  ) {}
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -91,30 +106,54 @@ export class ThreadComponent implements OnInit {
     if (event) {
       event.preventDefault();
     }
-
-    if (this.newMessageText.trim() === '') {
+  
+    if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return;
     }
-
-    const userName = await this.userService.getUserNameById(this.currentUserId) || '';
-
-    let chatId: string = '';
-    if (this.currentChat && 'id' in this.currentChat && (this.currentChat as Channel).id) {
-      chatId = (this.currentChat as Channel).id || '';
+  
+    let chatId: string;
+  
+    // Überprüfen, ob currentChat existiert und eine ID hat
+    if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
+      chatId = this.currentChat.id;
+    } else {
+      console.error('Chat ID not found');
+      return; // Beende die Funktion, wenn keine gültige Chat-ID gefunden wurde
     }
-
+  
+    if (this.selectedFile) {
+      try {
+        const autoId = doc(collection(this.firestore, 'dummy')).id;
+        const filePath = `thread-files/${chatId}/${autoId}_${this.selectedFile?.name}`;
+        const downloadUrl = await firstValueFrom(
+          this.firebaseStorageService.uploadFile(this.selectedFile!, filePath)
+        );
+        this.attachmentUrl = downloadUrl as string;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    }
+  
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
-      senderName: userName,
       timestamp: serverTimestamp(),
-      chatId: chatId
+      chatId: chatId,
+      attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };
-
-    if (chatId) {
-      this.threadService.addThread(chatId, this.threadService.currentMessageId, newMessage);
-    }
+  
+    // Füge die Nachricht dem Thread hinzu
+    this.threadService.addThread(
+      chatId,
+      this.threadService.currentMessageId,
+      newMessage
+    );
+  
+    // Zurücksetzen der Eingabefelder nach dem Senden
     this.newMessageText = '';
+    this.attachmentUrl = null;
+    this.selectedFile = null;
+    this.previewUrl = null;
   }
 
   sortMessagesByTimestamp(messages: Message[]): Message[] {
@@ -225,9 +264,88 @@ export class ThreadComponent implements OnInit {
   cancelEdit() {
     this.editingMessageId = null;
   }
-  
+
   isImage(url: string): boolean {
-    const imageTypes = ['.png', '.jpg', '.jpeg'];
-    return imageTypes.some((type) => url.split('?')[0].endsWith(type));
+    const imageTypes = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
+    const isImage = imageTypes.some((type) => url.split('?')[0].toLowerCase().endsWith(type));
+    return isImage;
+  }
+
+  openFileDialog() {
+    this.fileInput.nativeElement.click();
+  }
+
+handleFileInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  this.clearErrorMessage();
+
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
+
+    if (!this.isValidFile(file)) {
+      return;
+    }
+
+    this.createFilePreview(file);
+  }
+}
+
+private isValidFile(file: File): boolean {
+  const maxSizeInKB = 500;
+  const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+
+  if (file.size > maxSizeInKB * 1024) {
+    this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+    return false;
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
+    return false;
+  }
+
+  return true;
+}
+
+private createFilePreview(file: File): void {
+  if (file.type === 'application/pdf') {
+    this.previewUrl = '../../assets/img/chatChannel/pdf.png';
+  } else {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+      this.attachmentUrl = null;
+      this.selectedFile = file;
+      this.clearErrorMessage();
+    };
+    reader.readAsDataURL(file);
+  }
+  this.attachmentUrl = null;
+  this.selectedFile = file;
+  this.clearErrorMessage();
+}
+
+private setErrorMessage(message: string): void {
+  this.errorMessage = message;
+  if (this.errorTimeout) {
+    clearTimeout(this.errorTimeout);
+  }
+  this.errorTimeout = setTimeout(() => {
+    this.errorMessage = null;
+  }, 4000);
+}
+
+private clearErrorMessage(): void {
+  this.errorMessage = null;
+  if (this.errorTimeout) {
+    clearTimeout(this.errorTimeout);
+    this.errorTimeout = null;
+  }
+}
+
+  removePreview() {
+    this.previewUrl = null;
+    this.attachmentUrl = null;
+    this.fileInput.nativeElement.value = '';
   }
 }
