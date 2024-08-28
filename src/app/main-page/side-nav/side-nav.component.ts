@@ -10,6 +10,13 @@ import { UserService } from '../../shared/services/user.service';
 import { Channel } from '../../shared/models/channel.model';
 import { User, UserWithImageStatus } from '../../shared/models/user.model';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-side-nav',
@@ -17,6 +24,38 @@ import { SharedChannelService } from '../../shared/services/shared-channel.servi
   imports: [CommonModule, MatProgressSpinnerModule],
   templateUrl: './side-nav.component.html',
   styleUrls: ['./side-nav.component.scss'],
+  animations: [
+    trigger('dropDown', [
+      state(
+        'collapsed',
+        style({
+          height: '0',
+          opacity: 0,
+          'padding-top': '0px',
+          'padding-right': '0px',
+          'padding-bottom': '0px',
+          'margin-top': '0px',
+          'margin-right': '0px',
+          'margin-bottom': '0px',
+        })
+      ),
+      state(
+        'expanded',
+        style({
+          height: '*',
+          opacity: 1,
+          'padding-top': '*',
+          'padding-right': '*',
+          'padding-bottom': '*',
+          'margin-top': '*',
+          'margin-right': '*',
+          'margin-bottom': '*',
+        })
+      ),
+      transition('collapsed => expanded', animate('150ms ease-in')),
+      transition('expanded => collapsed', animate('150ms ease-out')),
+    ]),
+  ],
 })
 export class SideNavComponent implements OnInit {
   menuChannelIsDropedDown: boolean = false;
@@ -187,7 +226,6 @@ export class SideNavComponent implements OnInit {
     this.directMessagesIsDropedDown = !this.directMessagesIsDropedDown;
   }
 
-
   /**
    * Finds or creates a private channel with the specified user.
    *
@@ -206,7 +244,6 @@ export class SideNavComponent implements OnInit {
     }
   }
 
-
   /**
    * Finds an existing private channel based on the provided user and chat type.
    *
@@ -214,14 +251,18 @@ export class SideNavComponent implements OnInit {
    * @param isSelfChat - A boolean indicating whether it is a self chat.
    * @returns The found private channel, or undefined if not found.
    */
-  findExistingPrivateChannel(user: UserWithImageStatus, isSelfChat: boolean): Channel | undefined {
-    return this.privateChannels.find(channel =>
+  findExistingPrivateChannel(
+    user: UserWithImageStatus,
+    isSelfChat: boolean
+  ): Channel | undefined {
+    return this.privateChannels.find((channel) =>
       isSelfChat
-        ? channel.members.length === 1 && channel.members.includes(this.currentUser.userId)
-        : channel.members.includes(this.currentUser.userId) && channel.members.includes(user.userId)
+        ? channel.members.length === 1 &&
+          channel.members.includes(this.currentUser.userId)
+        : channel.members.includes(this.currentUser.userId) &&
+          channel.members.includes(user.userId)
     );
   }
-
 
   /**
    * Creates a new channel.
@@ -237,11 +278,12 @@ export class SideNavComponent implements OnInit {
       createdBy: this.currentUser.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
-      members: isSelfChat ? [this.currentUser.userId] : [this.currentUser.userId, user.userId],
+      members: isSelfChat
+        ? [this.currentUser.userId]
+        : [this.currentUser.userId, user.userId],
       isPrivate: true,
     };
   }
-
 
   /**
    * Adds a new channel and sets it as the current chat.

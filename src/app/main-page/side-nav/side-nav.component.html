@@ -9,7 +9,9 @@
     <div (click)="openMenuChannelDropdown()" class="closed dropdown" *ngIf="!menuChannelIsDropedDown"></div>
 
     <table>
-      <div class="channels ml40" [hidden]="!menuChannelIsDropedDown">
+      <div class="channels ml40" [@dropDown]="menuChannelIsDropedDown ? 'expanded' : 'collapsed'"
+      [ngStyle]="{'overflow-y': menuChannelIsDropedDown ? 'visible' : 'hidden'}"
+      >
         <tr class="channel-tr" *ngFor="let channel of publicChannels"
           (click)="showChannel(channel, false); setSelectedMessage()">
           <span class="channelName"></span>
@@ -22,23 +24,24 @@
 
   <!--------------direct messages--------------->
   <div class="directMessages">
-    <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown"></div>
-    <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown" *ngIf="!directMessagesIsDropedDown"></div>
+    <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown">
+    </div>
+    <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown"
+      *ngIf="!directMessagesIsDropedDown"></div>
 
     <table>
-      <div class="channels" [hidden]="!directMessagesIsDropedDown">
+      <div [@dropDown]="directMessagesIsDropedDown ? 'expanded' : 'collapsed'" class="channels"
+      [ngStyle]="{'overflow-y': directMessagesIsDropedDown ? 'visible' : 'hidden'}">
         <tr class="message-tr" *ngFor="let user of workspaceUsers"
-            (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
+          (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
 
           <!-- Placeholder spinner while image is loading -->
           <mat-spinner *ngIf="!user.isImageLoaded" diameter="30"></mat-spinner>
 
           <!-- Profile Image with load event -->
-          <img *ngIf="user.avatar" class="table-profile-img"
-               [src]="user.avatar" alt="profile image"
-               (load)="onImageLoad(user.userId)"
-               (error)="onImageError(user.userId)"
-               [style.display]="user.isImageLoaded ? 'block' : 'none'" />
+          <img *ngIf="user.avatar" class="table-profile-img" [src]="user.avatar" alt="profile image"
+            (load)="onImageLoad(user.userId)" (error)="onImageError(user.userId)"
+            [style.display]="user.isImageLoaded ? 'block' : 'none'" />
 
           <!-- Status icons -->
           <img *ngIf="user.status === 'online'" src="./assets/img/online.png" alt="" class="online" />
