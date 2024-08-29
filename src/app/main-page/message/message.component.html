@@ -36,8 +36,8 @@
               <div class="pdf-preview">
                 <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
                 <div class="pdf-details">
-                  <span class="pdf-name">{{ fileName }}</span>
-                  <span class="pdf-size">{{ formatFileSize(fileSize) }}</span>
+                  <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'Datei' }}</span>
+                  <span class="pdf-size">{{ formatFileSize(message.metadata?.[attachment]?.size || 0) }}</span>
                 </div>
               </div>
             </a>

@@ -33,6 +33,8 @@ export class ThreadComponent implements OnInit {
   currentUserId = '';
   currentUserName = '';
   newMessageText = '';
+  fileName: string = '';
+fileSize: number = 0;
   overlayImageUrl: string | null = null;
   messages: Message[] = [];
   totalReplies: number = 0;
@@ -65,12 +67,12 @@ export class ThreadComponent implements OnInit {
         this.currentUserName = user.displayName || '';
       }
     });
-
+  
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
-
+  
         if (this.currentChat && 'id' in this.currentChat && chatMessage.id) {
           const chatId = this.currentChat.id ?? '';
           this.threadService.watchMessageChanges(chatId, chatMessage.id)
@@ -78,13 +80,22 @@ export class ThreadComponent implements OnInit {
               this.currentMessageToOpen = updatedMessage;
             });
         }
+  
+        // Metadaten für die original Nachricht laden
+        if (this.currentMessageToOpen.attachments) {
+          this.currentMessageToOpen.attachments.forEach((attachment: string) => {
+            if (!this.isImage(attachment)) {
+              this.loadFileMetadata(attachment, this.currentMessageToOpen);
+            }
+          });
+        }
       }
     });
-
+  
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat as unknown as User;
     });
-
+  
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
@@ -94,6 +105,15 @@ export class ThreadComponent implements OnInit {
       } else {
         this.messages = [];
       }
+    });
+  
+    // Metadaten für die Thread-Nachrichten laden
+    this.messages.forEach((message) => {
+      message.attachments?.forEach((attachment) => {
+        if (!this.isImage(attachment)) {
+          this.loadFileMetadata(attachment, message);
+        }
+      });
     });
   }
 
@@ -356,5 +376,28 @@ export class ThreadComponent implements OnInit {
 
   closeOverlay() {
     this.overlayImageUrl = null;
+  }
+
+  loadFileMetadata(attachmentUrl: string, message: Message) {
+    this.firebaseStorageService.getFileMetadata(attachmentUrl).subscribe(metadata => {
+      console.log('Lade Metadaten für:', attachmentUrl, 'Nachricht:', message);
+      if (!message.metadata) {
+        message.metadata = {};
+      }
+      message.metadata[attachmentUrl] = {
+        name: metadata.name,
+        size: metadata.size
+      };
+      console.log('Geladene Metadaten:', message.metadata[attachmentUrl]);
+    }, error => {
+      console.error('Fehler beim Abrufen der Metadaten:', error);
+    });
+  }
+
+  formatFileSize(size: number): string {
+    if (size < 1024) return size + ' B';
+    else if (size < 1048576) return (size / 1024).toFixed(2) + ' KB';
+    else if (size < 1073741824) return (size / 1048576).toFixed(2) + ' MB';
+    else return (size / 1073741824).toFixed(2) + ' GB';
   }
 }

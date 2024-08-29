@@ -44,15 +44,16 @@
               <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)" />
             </ng-container>
             <ng-template #pdfTemplate>
-              <a [href]="attachment" target="_blank" class="pdf-preview-link">
-                <div class="pdf-preview">
-                  <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
-                  <div class="pdf-details">
-                    <span>PDF öffnen</span>
+              <a [href]="attachment" target="_blank" class="pdf-link">
+                  <div class="pdf-preview">
+                      <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
+                      <div class="pdf-details">
+                          <span class="pdf-name">{{ currentMessageToOpen.metadata?.[attachment]?.name || 'Datei' }}</span>
+                          <span class="pdf-size">{{ formatFileSize(currentMessageToOpen.metadata?.[attachment]?.size || 0) }}</span>
+                      </div>
                   </div>
-                </div>
               </a>
-            </ng-template>
+          </ng-template>
           </div>
         </div>
       </div>
@@ -122,12 +123,12 @@
                 <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)"/>
               </ng-container>
               <ng-template #pdfTemplate>
-                <!-- PDF als Link anzeigen -->
-                <a [href]="attachment" target="_blank" class="pdf-preview-link">
+                <a [href]="attachment" target="_blank" class="pdf-link">
                   <div class="pdf-preview">
                     <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
                     <div class="pdf-details">
-                      <span>PDF öffnen</span>
+                      <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'Datei' }}</span>
+                      <span class="pdf-size">{{ formatFileSize(message.metadata?.[attachment]?.size || 0) }}</span>
                     </div>
                   </div>
                 </a>

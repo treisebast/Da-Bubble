@@ -47,7 +47,7 @@ export class MessageComponent implements OnInit {
 
     this.message.attachments?.forEach((attachment) => {
       if (!this.isImage(attachment)) {
-        this.loadFileMetadata(attachment);
+        this.loadFileMetadata(attachment, this.message);
       }
     });
   }
@@ -141,10 +141,17 @@ export class MessageComponent implements OnInit {
     this.imageClicked.emit(imageUrl);
   }
 
-  loadFileMetadata(url: string) {
+  loadFileMetadata(url: string, message: Message) {
     this.storageService.getFileMetadata(url).subscribe(metadata => {
-      this.fileName = metadata.name;
-      this.fileSize = metadata.size;
+      if (!message.metadata) {
+        message.metadata = {};
+      }
+      message.metadata[url] = {
+        name: metadata.name,
+        size: metadata.size
+      };
+    }, error => {
+      console.error('Fehler beim Abrufen der Metadaten:', error);
     });
   }
 
