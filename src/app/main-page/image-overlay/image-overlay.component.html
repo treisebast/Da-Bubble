@@ -1,0 +1,6 @@
+<div class="overlay" *ngIf="imageUrl" (click)="onClose()">
+    <div class="overlay-content" (click)="$event.stopPropagation()">
+      <img [src]="imageUrl" alt="Full size image" />
+    </div>
+  </div>
+  

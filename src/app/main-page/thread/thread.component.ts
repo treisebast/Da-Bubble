@@ -14,17 +14,18 @@ import { MatMenuModule } from '@angular/material/menu';
 import { firstValueFrom } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
+import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatMenuModule],
+  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent implements OnInit {
 
-  
+
 
   currentChat: User | Channel | null = null;
 
@@ -32,7 +33,9 @@ export class ThreadComponent implements OnInit {
   currentUserId = '';
   currentUserName = '';
   newMessageText = '';
-
+  fileName: string = '';
+fileSize: number = 0;
+  overlayImageUrl: string | null = null;
   messages: Message[] = [];
   totalReplies: number = 0;
   editingMessageId: string | null | undefined = null;
@@ -54,7 +57,7 @@ export class ThreadComponent implements OnInit {
   constructor(
     private firestore: Firestore,
     private firebaseStorageService: FirebaseStorageService,
-  ) {}
+  ) { }
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   ngOnInit() {
@@ -64,12 +67,12 @@ export class ThreadComponent implements OnInit {
         this.currentUserName = user.displayName || '';
       }
     });
-
+  
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
-
+  
         if (this.currentChat && 'id' in this.currentChat && chatMessage.id) {
           const chatId = this.currentChat.id ?? '';
           this.threadService.watchMessageChanges(chatId, chatMessage.id)
@@ -77,13 +80,22 @@ export class ThreadComponent implements OnInit {
               this.currentMessageToOpen = updatedMessage;
             });
         }
+  
+        // Metadaten für die original Nachricht laden
+        if (this.currentMessageToOpen.attachments) {
+          this.currentMessageToOpen.attachments.forEach((attachment: string) => {
+            if (!this.isImage(attachment)) {
+              this.loadFileMetadata(attachment, this.currentMessageToOpen);
+            }
+          });
+        }
       }
     });
-
+  
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat as unknown as User;
     });
-
+  
     this.threadService.currentThread$.subscribe(currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
@@ -93,6 +105,15 @@ export class ThreadComponent implements OnInit {
       } else {
         this.messages = [];
       }
+    });
+  
+    // Metadaten für die Thread-Nachrichten laden
+    this.messages.forEach((message) => {
+      message.attachments?.forEach((attachment) => {
+        if (!this.isImage(attachment)) {
+          this.loadFileMetadata(attachment, message);
+        }
+      });
     });
   }
 
@@ -106,13 +127,13 @@ export class ThreadComponent implements OnInit {
     if (event) {
       event.preventDefault();
     }
-  
+
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return;
     }
-  
+
     let chatId: string;
-  
+
     // Überprüfen, ob currentChat existiert und eine ID hat
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       chatId = this.currentChat.id;
@@ -120,7 +141,7 @@ export class ThreadComponent implements OnInit {
       console.error('Chat ID not found');
       return; // Beende die Funktion, wenn keine gültige Chat-ID gefunden wurde
     }
-  
+
     if (this.selectedFile) {
       try {
         const autoId = doc(collection(this.firestore, 'dummy')).id;
@@ -133,7 +154,7 @@ export class ThreadComponent implements OnInit {
         console.error('Error uploading file:', error);
       }
     }
-  
+
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
@@ -141,14 +162,14 @@ export class ThreadComponent implements OnInit {
       chatId: chatId,
       attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };
-  
+
     // Füge die Nachricht dem Thread hinzu
     this.threadService.addThread(
       chatId,
       this.threadService.currentMessageId,
       newMessage
     );
-  
+
     // Zurücksetzen der Eingabefelder nach dem Senden
     this.newMessageText = '';
     this.attachmentUrl = null;
@@ -275,77 +296,108 @@ export class ThreadComponent implements OnInit {
     this.fileInput.nativeElement.click();
   }
 
-handleFileInput(event: Event) {
-  const input = event.target as HTMLInputElement;
-  this.clearErrorMessage();
+  handleFileInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.clearErrorMessage();
 
-  if (input.files && input.files.length > 0) {
-    const file = input.files[0];
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
 
-    if (!this.isValidFile(file)) {
-      return;
+      if (!this.isValidFile(file)) {
+        return;
+      }
+
+      this.createFilePreview(file);
+    }
+  }
+
+  private isValidFile(file: File): boolean {
+    const maxSizeInKB = 500;
+    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+
+    if (file.size > maxSizeInKB * 1024) {
+      this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+      return false;
     }
 
-    this.createFilePreview(file);
-  }
-}
+    if (!allowedTypes.includes(file.type)) {
+      this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
+      return false;
+    }
 
-private isValidFile(file: File): boolean {
-  const maxSizeInKB = 500;
-  const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-
-  if (file.size > maxSizeInKB * 1024) {
-    this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
-    return false;
+    return true;
   }
 
-  if (!allowedTypes.includes(file.type)) {
-    this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
-    return false;
+  private createFilePreview(file: File): void {
+    if (file.type === 'application/pdf') {
+      this.previewUrl = '../../assets/img/chatChannel/pdf.png';
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl = reader.result as string;
+        this.attachmentUrl = null;
+        this.selectedFile = file;
+        this.clearErrorMessage();
+      };
+      reader.readAsDataURL(file);
+    }
+    this.attachmentUrl = null;
+    this.selectedFile = file;
+    this.clearErrorMessage();
   }
 
-  return true;
-}
-
-private createFilePreview(file: File): void {
-  if (file.type === 'application/pdf') {
-    this.previewUrl = '../../assets/img/chatChannel/pdf.png';
-  } else {
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.previewUrl = reader.result as string;
-      this.attachmentUrl = null;
-      this.selectedFile = file;
-      this.clearErrorMessage();
-    };
-    reader.readAsDataURL(file);
+  private setErrorMessage(message: string): void {
+    this.errorMessage = message;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    this.errorTimeout = setTimeout(() => {
+      this.errorMessage = null;
+    }, 4000);
   }
-  this.attachmentUrl = null;
-  this.selectedFile = file;
-  this.clearErrorMessage();
-}
 
-private setErrorMessage(message: string): void {
-  this.errorMessage = message;
-  if (this.errorTimeout) {
-    clearTimeout(this.errorTimeout);
-  }
-  this.errorTimeout = setTimeout(() => {
+  private clearErrorMessage(): void {
     this.errorMessage = null;
-  }, 4000);
-}
-
-private clearErrorMessage(): void {
-  this.errorMessage = null;
-  if (this.errorTimeout) {
-    clearTimeout(this.errorTimeout);
-    this.errorTimeout = null;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
+    }
   }
-}
 
   removePreview() {
     this.previewUrl = null;
     this.attachmentUrl = null;
     this.fileInput.nativeElement.value = '';
+  }
+
+  openOverlay(imageUrl: string) {
+    this.overlayImageUrl = imageUrl;
+  }
+
+  closeOverlay() {
+    this.overlayImageUrl = null;
+  }
+
+  loadFileMetadata(attachmentUrl: string, message: Message) {
+    this.firebaseStorageService.getFileMetadata(attachmentUrl).subscribe(metadata => {
+      console.log('Lade Metadaten für:', attachmentUrl, 'Nachricht:', message);
+      if (!message.metadata) {
+        message.metadata = {};
+      }
+      message.metadata[attachmentUrl] = {
+        name: metadata.name,
+        size: metadata.size
+      };
+      console.log('Geladene Metadaten:', message.metadata[attachmentUrl]);
+    }, error => {
+      console.error('Fehler beim Abrufen der Metadaten:', error);
+    });
+  }
+
+  formatFileSize(size: number): string {
+    if (size < 1024) return size + ' B';
+    else if (size < 1048576) return (size / 1024).toFixed(2) + ' KB';
+    else if (size < 1073741824) return (size / 1048576).toFixed(2) + ' MB';
+    else return (size / 1073741824).toFixed(2) + ' GB';
   }
 }

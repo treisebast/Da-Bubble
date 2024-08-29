@@ -15,6 +15,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogOptionsComponent } from '../dialog-options/dialog-options.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
+import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 
 @Component({
   selector: 'app-message',
@@ -30,24 +31,24 @@ export class MessageComponent implements OnInit {
   @Input() isCurrentChatPrivate!: boolean;
   @Output() messageClicked = new EventEmitter<Message>();
   @Output() senderId = new EventEmitter<string>();
+  @Output() imageClicked = new EventEmitter<string>();
 
   screenSmall: boolean = false;
   isEditing: boolean = false;
   editContent: string = '';
+  fileName: string = '';
+  fileSize: number = 0;
 
-  constructor(private chatService: ChatService, private dialog: MatDialog) {}
+  constructor(private chatService: ChatService, private dialog: MatDialog, private storageService: FirebaseStorageService) { }
 
   ngOnInit(): void {
     console.log('Message Attachments:', this.message.attachments);
     console.log('this Chat is Private:', this.isCurrentChatPrivate);
+
     this.message.attachments?.forEach((attachment) => {
-      console.log('Attachment:', attachment);
-      console.log(
-        'Is Image:',
-        attachment.endsWith('.png') ||
-          attachment.endsWith('.jpg') ||
-          attachment.endsWith('.jpeg')
-      );
+      if (!this.isImage(attachment)) {
+        this.loadFileMetadata(attachment, this.message);
+      }
     });
   }
 
@@ -134,5 +135,30 @@ export class MessageComponent implements OnInit {
   openProfilePopup(Id: string | undefined) {
     console.log(Id);
     this.senderId.emit(Id);
+  }
+
+  onImageClick(imageUrl: string) {
+    this.imageClicked.emit(imageUrl);
+  }
+
+  loadFileMetadata(url: string, message: Message) {
+    this.storageService.getFileMetadata(url).subscribe(metadata => {
+      if (!message.metadata) {
+        message.metadata = {};
+      }
+      message.metadata[url] = {
+        name: metadata.name,
+        size: metadata.size
+      };
+    }, error => {
+      console.error('Fehler beim Abrufen der Metadaten:', error);
+    });
+  }
+
+  formatFileSize(size: number): string {
+    if (size < 1024) return size + ' B';
+    else if (size < 1048576) return (size / 1024).toFixed(2) + ' KB';
+    else if (size < 1073741824) return (size / 1048576).toFixed(2) + ' MB';
+    else return (size / 1073741824).toFixed(2) + ' GB';
   }
 }

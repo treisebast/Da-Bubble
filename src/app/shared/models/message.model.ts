@@ -11,4 +11,10 @@ export interface Message {
   lastReplyTimestamp?: Timestamp | FieldValue;
   edited?: boolean;
   chatId: string;
+  metadata?: {
+    [key: string]: {
+      name: string;
+      size: number;
+    }
+  }
 }
