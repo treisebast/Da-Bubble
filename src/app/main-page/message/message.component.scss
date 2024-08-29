@@ -33,8 +33,8 @@
   }
 
   &.message-left:hover .message-content {
-    background: var(--white);
-    color: var(--black);
+    background: var(--white, rgb(255, 255, 255));
+    color: var(--black, rgb(0, 0, 0));
   }
 }
 
@@ -62,7 +62,7 @@
   margin-top: 5px;
   font-size: 16px;
   font-weight: 500;
-  color: var(--purple-one);
+  color: var(--purple-one, rgb(68, 77, 242));
   display: flex;
   gap: 8px;
 
@@ -505,7 +505,6 @@
     display: block;
   }
 }
-
 
 .pdf-preview-link {
   text-decoration: none;
