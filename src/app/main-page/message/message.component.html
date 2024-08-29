@@ -29,15 +29,15 @@
         <div *ngFor="let attachment of message.attachments">
           <ng-container *ngIf="isImage(attachment); else pdfTemplate">
             <!-- PDF als Preview anzeigen -->
-            <img [src]="attachment" alt="Anhang" class="attachment-img" />
+            <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="onImageClick(attachment)" />
           </ng-container>
           <ng-template #pdfTemplate>
-            <!-- PDF Vorschau anzeigen -->
-            <a [href]="attachment" target="_blank" class="pdf-preview-link">
+            <a [href]="attachment" target="_blank" class="pdf-link">
               <div class="pdf-preview">
                 <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
                 <div class="pdf-details">
-                  <span>PDF öffnen</span>
+                  <span class="pdf-name">{{ fileName }}</span>
+                  <span class="pdf-size">{{ formatFileSize(fileSize) }}</span>
                 </div>
               </div>
             </a>

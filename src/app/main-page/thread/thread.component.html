@@ -1,3 +1,7 @@
+<!-- Image Overlay Component -->
+<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl" (closeOverlay)="closeOverlay()"></app-image-overlay>
+
+
 <div class="header">
   <div class="headline">
     <h2>Thread</h2>
@@ -37,7 +41,7 @@
           class="attachments">
           <div *ngFor="let attachment of currentMessageToOpen.attachments">
             <ng-container *ngIf="isImage(attachment); else pdfTemplate">
-              <img [src]="attachment" alt="Anhang" class="attachment-img" />
+              <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)" />
             </ng-container>
             <ng-template #pdfTemplate>
               <a [href]="attachment" target="_blank" class="pdf-preview-link">
@@ -115,7 +119,7 @@
             <div *ngFor="let attachment of message.attachments">
               <ng-container *ngIf="isImage(attachment); else pdfTemplate">
                 <!-- PDF als Preview anzeigen -->
-                <img [src]="attachment" alt="Anhang" class="attachment-img" />
+                <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)"/>
               </ng-container>
               <ng-template #pdfTemplate>
                 <!-- PDF als Link anzeigen -->

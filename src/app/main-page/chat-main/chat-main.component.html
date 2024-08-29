@@ -66,7 +66,7 @@
         <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
           [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
           (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate"
-          (senderId)="openProfilePopup($event)">
+          (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)">
         </app-message>
       </div>
       <div [ngClass]="{'hidden': !isCurrentChatPrivate || messages.length > 0}" class="message-info">
@@ -132,3 +132,7 @@
 <!-- Profilcard -->
 <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
   *ngIf="isProfileOpen"></app-profil>
+
+
+
+  <app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl" (closeOverlay)="closeOverlay()"></app-image-overlay>
