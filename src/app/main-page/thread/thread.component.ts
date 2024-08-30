@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
@@ -11,10 +11,11 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { firstValueFrom } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
+import { getMetadata, getStorage, ref } from 'firebase/storage';
 
 @Component({
   selector: 'app-thread',
@@ -34,7 +35,7 @@ export class ThreadComponent implements OnInit {
   currentUserName = '';
   newMessageText = '';
   fileName: string = '';
-fileSize: number = 0;
+  fileSize: number = 0;
   overlayImageUrl: string | null = null;
   messages: Message[] = [];
   totalReplies: number = 0;
@@ -47,7 +48,7 @@ fileSize: number = 0;
   userProfiles: { [key: string]: User } = {};
   errorMessage: string | null = null;
   errorTimeout: any;
-
+  metadataMap: { [url: string]: { name: string, size: number } } = {};
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
@@ -57,6 +58,7 @@ fileSize: number = 0;
   constructor(
     private firestore: Firestore,
     private firebaseStorageService: FirebaseStorageService,
+    private cdr: ChangeDetectorRef
   ) { }
   @ViewChild('fileInput') fileInput!: ElementRef;
 
@@ -67,12 +69,12 @@ fileSize: number = 0;
         this.currentUserName = user.displayName || '';
       }
     });
-  
+
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
       if (chatMessage) {
         this.resolveUserName(chatMessage.senderId);
-  
+
         if (this.currentChat && 'id' in this.currentChat && chatMessage.id) {
           const chatId = this.currentChat.id ?? '';
           this.threadService.watchMessageChanges(chatId, chatMessage.id)
@@ -80,38 +82,44 @@ fileSize: number = 0;
               this.currentMessageToOpen = updatedMessage;
             });
         }
-  
+
         // Metadaten für die original Nachricht laden
-        if (this.currentMessageToOpen.attachments) {
+        if (this.currentMessageToOpen?.attachments) {
           this.currentMessageToOpen.attachments.forEach((attachment: string) => {
             if (!this.isImage(attachment)) {
-              this.loadFileMetadata(attachment, this.currentMessageToOpen);
+              this.loadFileMetadata(attachment);
             }
           });
         }
       }
     });
-  
+
     this.chatService.currentChat$.subscribe(chat => {
       this.currentChat = chat as unknown as User;
     });
-  
-    this.threadService.currentThread$.subscribe(currentThread => {
+
+    this.threadService.currentThread$.subscribe(async currentThread => {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
-        this.resolveUserNames(this.messages);
-        this.loadUserProfiles(this.messages);
+        await this.resolveUserNames(this.messages);
+        await this.loadUserProfiles(this.messages);
         this.totalReplies = this.messages.length;
+  
+        for (const message of this.messages) {
+          for (const attachment of message.attachments || []) {
+            await this.logAttachmentMetadata(attachment);
+          }
+        }
       } else {
         this.messages = [];
       }
     });
-  
+
     // Metadaten für die Thread-Nachrichten laden
     this.messages.forEach((message) => {
       message.attachments?.forEach((attachment) => {
         if (!this.isImage(attachment)) {
-          this.loadFileMetadata(attachment, message);
+          this.loadFileMetadata(attachment);
         }
       });
     });
@@ -378,26 +386,59 @@ fileSize: number = 0;
     this.overlayImageUrl = null;
   }
 
-  loadFileMetadata(attachmentUrl: string, message: Message) {
-    this.firebaseStorageService.getFileMetadata(attachmentUrl).subscribe(metadata => {
-      console.log('Lade Metadaten für:', attachmentUrl, 'Nachricht:', message);
-      if (!message.metadata) {
-        message.metadata = {};
-      }
-      message.metadata[attachmentUrl] = {
+  loadFileMetadata(attachmentUrl: string): void {
+    console.log(`Lade Metadaten für: ${attachmentUrl}`);
+    this.firebaseStorageService.getFileMetadata(attachmentUrl)
+      .pipe(
+        finalize(() => this.cdr.detectChanges())
+      )
+      .subscribe(
+        metadata => {
+          this.metadataMap[attachmentUrl] = {
+            name: metadata.name,
+            size: metadata.size
+          };
+          console.log(`Metadaten geladen für: ${attachmentUrl}`, metadata);
+        },
+        error => {
+          console.error('Fehler beim Abrufen der Metadaten für:', attachmentUrl, error);
+        }
+      );
+  }
+
+  async logAttachmentMetadata(attachmentUrl: string) {
+    try {
+      const storage = getStorage();
+      const decodedUrl = decodeURIComponent(attachmentUrl);
+      const filePath = decodedUrl.split('/o/')[1].split('?alt=media')[0];
+  
+      const storageRef = ref(storage, filePath);
+      const metadata = await getMetadata(storageRef);
+  
+      this.metadataMap[attachmentUrl] = {
         name: metadata.name,
-        size: metadata.size
+        size: metadata.size,
       };
-      console.log('Geladene Metadaten:', message.metadata[attachmentUrl]);
-    }, error => {
+  
+      console.log('Metadaten geladen:', this.metadataMap[attachmentUrl]);
+    } catch (error) {
       console.error('Fehler beim Abrufen der Metadaten:', error);
-    });
+    }
+  }
+
+  isMetadataLoaded(attachment: string): boolean {
+    return !!this.metadataMap[attachment];
+  }
+
+  logAttachment(attachment: string) {
+    console.log('Attachment:', attachment);
   }
 
   formatFileSize(size: number): string {
-    if (size < 1024) return size + ' B';
-    else if (size < 1048576) return (size / 1024).toFixed(2) + ' KB';
-    else if (size < 1073741824) return (size / 1048576).toFixed(2) + ' MB';
-    else return (size / 1073741824).toFixed(2) + ' GB';
+    if (size < 1024) {
+      return size + ' B';
+    } else {
+      return (size / 1024).toFixed(2) + ' KB';
+    }
   }
 }

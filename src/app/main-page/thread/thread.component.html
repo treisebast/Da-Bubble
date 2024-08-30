@@ -1,5 +1,6 @@
 <!-- Image Overlay Component -->
-<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl" (closeOverlay)="closeOverlay()"></app-image-overlay>
+<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
+  (closeOverlay)="closeOverlay()"></app-image-overlay>
 
 
 <div class="header">
@@ -45,15 +46,21 @@
             </ng-container>
             <ng-template #pdfTemplate>
               <a [href]="attachment" target="_blank" class="pdf-link">
-                  <div class="pdf-preview">
-                      <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
-                      <div class="pdf-details">
-                          <span class="pdf-name">{{ currentMessageToOpen.metadata?.[attachment]?.name || 'Datei' }}</span>
-                          <span class="pdf-size">{{ formatFileSize(currentMessageToOpen.metadata?.[attachment]?.size || 0) }}</span>
-                      </div>
+                <div class="pdf-preview">
+                  <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
+                  <div class="pdf-details">
+                    <!-- Überprüfen, ob metadataMap[attachment] definiert ist -->
+                    <span class="pdf-name" *ngIf="metadataMap[attachment] !== undefined; else loading">
+                      {{ metadataMap[attachment].name }}
+                    </span>
+                    <span class="pdf-size" *ngIf="metadataMap[attachment] !== undefined; else loading">
+                      {{ formatFileSize(metadataMap[attachment].size) }}
+                    </span>
+                    <ng-template #loading>Lädt...</ng-template>
                   </div>
+                </div>
               </a>
-          </ng-template>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -77,6 +84,7 @@
   <!-- Divider for replies count -->
   <div *ngIf="totalReplies > 0" class="reply-divider">
     <span class="replies-count">{{ totalReplies }} Antworten</span>
+
   </div>
 
   <!-- Thread replies -->
@@ -120,15 +128,19 @@
             <div *ngFor="let attachment of message.attachments">
               <ng-container *ngIf="isImage(attachment); else pdfTemplate">
                 <!-- PDF als Preview anzeigen -->
-                <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)"/>
+                <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="openOverlay(attachment)" />
               </ng-container>
               <ng-template #pdfTemplate>
                 <a [href]="attachment" target="_blank" class="pdf-link">
                   <div class="pdf-preview">
                     <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
                     <div class="pdf-details">
-                      <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'Datei' }}</span>
-                      <span class="pdf-size">{{ formatFileSize(message.metadata?.[attachment]?.size || 0) }}</span>
+                      <!-- Zeige die Daten nur, wenn sie geladen sind -->
+                      <span class="pdf-name" *ngIf="isMetadataLoaded(attachment); else loading">{{
+                        metadataMap[attachment].name }}</span>
+                      <span class="pdf-size" *ngIf="isMetadataLoaded(attachment); else loading">{{
+                        formatFileSize(metadataMap[attachment].size) }}</span>
+                      <ng-template #loading>Lädt...</ng-template>
                     </div>
                   </div>
                 </a>

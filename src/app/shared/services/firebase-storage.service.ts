@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Storage, ref, uploadBytes, getDownloadURL, getMetadata } from '@angular/fire/storage';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, catchError, from, switchMap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +47,11 @@ export class FirebaseStorageService {
  */
   getFileMetadata(filePath: string): Observable<any> {
     const storageRef = ref(this.storage, filePath);
-    return from(getMetadata(storageRef));
+    return from(getMetadata(storageRef)).pipe(
+      catchError(error => {
+        console.error('Fehler beim Abrufen der Metadaten:', error);
+        return throwError(error);
+      })
+    );
   }
 }
