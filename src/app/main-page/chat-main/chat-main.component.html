@@ -72,7 +72,7 @@
       <div [ngClass]="{'hidden': !isCurrentChatPrivate || messages.length > 0}" class="message-info">
         <div>
           <img [src]="clickedUser?.avatar" alt="" />
-          <h2>{{ clickedUser?.name }} (Du)</h2>
+            <h2>{{ clickedUser?.name }}<span *ngIf="currentUserId == clickedUser?.userId">(Du)</span></h2>
         </div>
         <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"><strong>Dieser Raum ist nur für dich
             da.</strong> Mache dir Notizen,
