@@ -114,7 +114,7 @@
         <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
         <div class="border"></div>
         <div class="emoji"></div>
-        <div class="iconMarkUser"></div>
+        <div *ngIf="!isCurrentChatPrivate" class="iconMarkUser"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>

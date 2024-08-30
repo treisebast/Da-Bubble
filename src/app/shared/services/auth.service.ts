@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider, sendPasswordResetEmail, confirmPasswordReset } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
 import { updateProfile } from '@angular/fire/auth';
+import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  constructor(private auth: Auth) { }
+  constructor(private auth: Auth, private firestore: Firestore) {
+    this.checkAndSetUserOnlineStatus();
+  }
 
   /**
    * Signs up a new user with email and password.
@@ -29,7 +32,14 @@ export class AuthService {
    * @returns {Observable<any>} - An observable of the authentication result.
    */
   signIn(email: string, password: string): Observable<any> {
-    return from(signInWithEmailAndPassword(this.auth, email, password));
+    return from(signInWithEmailAndPassword(this.auth, email, password).then(result => {
+      if (result.user) {
+        this.setUserOnlineStatus(result.user.uid, 'online');
+        this.monitorVisibility(result.user.uid);
+        this.addUnloadEvent(result.user.uid);
+      }
+      return result;
+    }));
   }
 
 
@@ -45,7 +55,7 @@ export class AuthService {
    * @returns {Observable<any>} - An observable that completes when the user is signed out.
    */
   signOut(): Observable<any> {
-    return from(signOut(this.auth));
+    return from(this.auth.currentUser ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(() => signOut(this.auth)) : signOut(this.auth));
   }
 
 
@@ -95,5 +105,41 @@ export class AuthService {
     */
   confirmPasswordReset(code: string, newPassword: string): Observable<void> {
     return from(confirmPasswordReset(this.auth, code, newPassword));
+  }
+
+
+  private setUserOnlineStatus(userId: string, status: 'online' | 'offline'): Promise<void> {
+    const userDocRef = doc(this.firestore, `users/${userId}`);
+    return updateDoc(userDocRef, {
+      status: status,
+      lastSeen: new Date().toISOString()
+    });
+  }
+
+
+  private addUnloadEvent(userId: string): void {
+    window.addEventListener('beforeunload', () => {
+      this.setUserOnlineStatus(userId, 'offline');
+    });
+  }
+
+
+  private monitorVisibility(userId: string): void {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.setUserOnlineStatus(userId, 'online');
+      }
+    });
+  }
+
+
+  private checkAndSetUserOnlineStatus(): void {
+    this.getUser().subscribe(user => {
+      if (user) {
+        this.setUserOnlineStatus(user.uid, 'online');
+        this.monitorVisibility(user.uid);
+        this.addUnloadEvent(user.uid);
+      }
+    });
   }
 }

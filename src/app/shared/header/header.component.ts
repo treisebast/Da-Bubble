@@ -60,6 +60,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
+  logout() {
+    this.auth.signOut();
+  }
+
   openMenu() {
     this.isMenuOpen = true;
   }
