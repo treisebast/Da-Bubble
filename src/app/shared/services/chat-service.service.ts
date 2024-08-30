@@ -61,18 +61,18 @@ export class ChatService {
     if (channelId) {
       this.channelMessageService
         .getChannelMessages(channelId, isPrivateOrNot)
-        .subscribe(
-          (messages) => {
+        .subscribe({
+          next: (messages) => {
             this.messagesSource.next(messages);
             // Notify that loading is complete
             this.setLoadingState(false);
           },
-          (error) => {
+          error: (error) => {
             console.error('Error loading messages:', error);
             // Notify that loading is complete even if there's an error
             this.setLoadingState(false);
-          }
-        );
+          },
+        });
     } else {
       // No channel ID, so no messages to load
       this.setLoadingState(false);
