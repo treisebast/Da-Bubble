@@ -26,29 +26,30 @@ import { getMetadata, getStorage, ref } from 'firebase/storage';
 })
 export class ThreadComponent implements OnInit {
 
-
-
-  currentChat: User | Channel | null = null;
-
-  currentMessageToOpen: any;
   currentUserId = '';
   currentUserName = '';
   newMessageText = '';
   fileName: string = '';
   fileSize: number = 0;
-  overlayImageUrl: string | null = null;
-  messages: Message[] = [];
   totalReplies: number = 0;
-  editingMessageId: string | null | undefined = null;
   editContent: string = '';
+
+  currentChat: User | Channel | null = null;
+  currentMessageToOpen: Message | null = null;
+  overlayImageUrl: string | null = null;
+  editingMessageId: string | null | undefined = null;
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
+  errorMessage: string | null = null;
+
+  messages: Message[] = [];
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
-  errorMessage: string | null = null;
-  errorTimeout: any;
   metadataMap: { [url: string]: { name: string, size: number } } = {};
+
+  errorTimeout: ReturnType<typeof setTimeout> | null = null;
+
   private chatService = inject(ChatService);
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
@@ -60,7 +61,9 @@ export class ThreadComponent implements OnInit {
     private firebaseStorageService: FirebaseStorageService,
     private cdr: ChangeDetectorRef
   ) { }
+
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @Output() closeThread = new EventEmitter<void>();
 
   ngOnInit() {
     this.authService.getUser().subscribe(user => {
@@ -104,7 +107,7 @@ export class ThreadComponent implements OnInit {
         await this.resolveUserNames(this.messages);
         await this.loadUserProfiles(this.messages);
         this.totalReplies = this.messages.length;
-  
+
         for (const message of this.messages) {
           for (const attachment of message.attachments || []) {
             await this.logAttachmentMetadata(attachment);
@@ -124,8 +127,6 @@ export class ThreadComponent implements OnInit {
       });
     });
   }
-
-  @Output() closeThread = new EventEmitter<void>();
 
   onCloseThread() {
     this.closeThread.emit();
@@ -306,7 +307,7 @@ export class ThreadComponent implements OnInit {
 
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.clearErrorMessage();
+    this.manageErrorMessage(null);  // Clear any existing error message
 
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
@@ -324,12 +325,12 @@ export class ThreadComponent implements OnInit {
     const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
 
     if (file.size > maxSizeInKB * 1024) {
-      this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+      this.manageErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
       return false;
     }
 
     if (!allowedTypes.includes(file.type)) {
-      this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
+      this.manageErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
       return false;
     }
 
@@ -345,30 +346,26 @@ export class ThreadComponent implements OnInit {
         this.previewUrl = reader.result as string;
         this.attachmentUrl = null;
         this.selectedFile = file;
-        this.clearErrorMessage();
+        this.manageErrorMessage(null);
       };
       reader.readAsDataURL(file);
     }
     this.attachmentUrl = null;
     this.selectedFile = file;
-    this.clearErrorMessage();
+    this.manageErrorMessage(null);
   }
 
-  private setErrorMessage(message: string): void {
-    this.errorMessage = message;
-    if (this.errorTimeout) {
-      clearTimeout(this.errorTimeout);
-    }
-    this.errorTimeout = setTimeout(() => {
-      this.errorMessage = null;
-    }, 4000);
-  }
-
-  private clearErrorMessage(): void {
-    this.errorMessage = null;
+  private manageErrorMessage(message: string | null, timeout: number = 4000): void {
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
       this.errorTimeout = null;
+    }
+    this.errorMessage = message;
+    if (message) {
+      this.errorTimeout = setTimeout(() => {
+        this.errorMessage = null;
+        this.cdr.detectChanges();
+      }, timeout);
     }
   }
 
@@ -409,17 +406,15 @@ export class ThreadComponent implements OnInit {
   async logAttachmentMetadata(attachmentUrl: string) {
     try {
       const storage = getStorage();
-      const decodedUrl = decodeURIComponent(attachmentUrl);
-      const filePath = decodedUrl.split('/o/')[1].split('?alt=media')[0];
-  
+      const filePath = decodeURIComponent(attachmentUrl).split('/o/')[1].split('?alt=media')[0];
       const storageRef = ref(storage, filePath);
       const metadata = await getMetadata(storageRef);
-  
+
       this.metadataMap[attachmentUrl] = {
         name: metadata.name,
         size: metadata.size,
       };
-  
+
       console.log('Metadaten geladen:', this.metadataMap[attachmentUrl]);
     } catch (error) {
       console.error('Fehler beim Abrufen der Metadaten:', error);
