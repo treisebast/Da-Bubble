@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Storage, ref, uploadBytes, getDownloadURL, getMetadata } from '@angular/fire/storage';
+import { Storage, ref, uploadBytes, getDownloadURL, getMetadata, deleteObject } from '@angular/fire/storage';
 import { Observable, catchError, from, switchMap, throwError } from 'rxjs';
 
 @Injectable({
@@ -25,6 +25,16 @@ export class FirebaseStorageService {
     );
   }
 
+  /**
+   * Deletes a file stored at the specified path in Firebase Storage.
+   *
+   * @param {string} filePath - The path in Firebase Storage of the file to be deleted.
+   * @returns {Observable<void>} An observable that completes when the file has been deleted.
+   */
+  deleteFile(filePath: string): Observable<void> {
+    const fileRef = ref(this.storage, filePath);
+    return from(deleteObject(fileRef));
+  }
 
   /**
    * Retrieves the download URL of a file stored at the specified path in Firebase Storage.

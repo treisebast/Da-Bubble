@@ -11,7 +11,7 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { finalize, firstValueFrom } from 'rxjs';
+import { finalize, firstValueFrom, from, switchMap } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -253,19 +253,48 @@ export class ThreadComponent implements OnInit {
    * @param {Message} message - The message to delete.
    */
   deleteMessage(message: Message) {
-    if (message.senderId === this.currentUserId) {
-      this.threadService.deleteThread(
-        message.chatId!,
-        this.threadService.currentMessageId,
-        message.id!
-      ).then(() => {
-        console.log('Message deleted successfully');
-      }).catch(error => {
-        console.error('Error deleting message:', error);
-      });
+    if (this.canDeleteMessage(message)) {
+      this.deleteMessageAttachments(message)
+        .pipe(
+          switchMap(() => this.deleteMessageFromThread(message))
+        )
+        .subscribe({
+          next: () => {
+            console.log('Message and attachments deleted successfully');
+          },
+          error: (error) => {
+            console.log('Error deleting message.')
+          },
+        });
     } else {
       console.error("You cannot delete another user's message.");
     }
+  }
+  
+  private canDeleteMessage(message: Message): boolean {
+    return message.senderId === this.currentUserId;
+  }
+  
+  private deleteMessageAttachments(message: Message) {
+    const deleteTasks = (message.attachments || []).map((attachmentUrl) => {
+      const filePath = this.getFilePathFromUrl(attachmentUrl);
+      return this.firebaseStorageService.deleteFile(filePath);
+    });
+  
+    return from(Promise.all(deleteTasks));
+  }
+  
+  private deleteMessageFromThread(message: Message) {
+    return this.threadService.deleteThread(
+      message.chatId!,
+      this.threadService.currentMessageId,
+      message.id!
+    );
+  }
+
+  private getFilePathFromUrl(fileUrl: string): string {
+    const pathParts = decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
+    return pathParts;
   }
 
   startEditing(message: Message) {

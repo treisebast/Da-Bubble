@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, Observable, switchMap } from 'rxjs';
 import { Channel } from '../models/channel.model';
 import { ChannelMessageService } from './channel-message.service';
 import { Message } from '../models/message.model';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
 import { User } from '../models/user.model';
+import { FirebaseStorageService } from './firebase-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +26,7 @@ export class ChatService {
   private loadingStateSubject = new BehaviorSubject<boolean>(false);
   loadingState$ = this.loadingStateSubject.asObservable();
 
-  constructor(private channelMessageService: ChannelMessageService) {}
+  constructor(private channelMessageService: ChannelMessageService, private storageService: FirebaseStorageService) { }
 
   /**
    * Sets the current chat and loads its messages.
@@ -193,15 +194,85 @@ export class ChatService {
    * @param {string} channelId - The ID of the channel.
    * @param {string} messageId - The ID of the message.
    */
+  /**
+     * Deletes a message in the given channel.
+     * @param {string} channelId - The ID of the channel.
+     * @param {string} messageId - The ID of the message.
+     */
   deleteMessage(channelId: string, messageId: string, isPrivateOrNot: boolean) {
-    this.channelMessageService
-      .deleteChannelMessage(channelId, messageId, isPrivateOrNot)
-      .then(() => {
-        const currentMessages = this.messagesSource.getValue();
-        const updatedMessages = currentMessages.filter(
-          (msg) => msg.id !== messageId
-        );
-        this.messagesSource.next(updatedMessages);
+    const messageToDelete = this.findMessageById(messageId);
+
+    if (!messageToDelete) {
+      console.error('Message not found');
+      return;
+    }
+
+    this.handleMessageDeletion(channelId, messageId, messageToDelete.attachments, isPrivateOrNot);
+  }
+
+  /**
+   * Finds a message by its ID.
+   * @param {string} messageId - The ID of the message.
+   * @returns {Message | undefined} - The found message or undefined.
+   */
+  private findMessageById(messageId: string): Message | undefined {
+    return this.messagesSource.getValue().find((msg) => msg.id === messageId);
+  }
+
+  /**
+   * Handles the deletion of a message and its attachments.
+   * @param {string} channelId - The ID of the channel.
+   * @param {string} messageId - The ID of the message.
+   * @param {string[]} attachments - The list of attachment URLs.
+   * @param {boolean} isPrivateOrNot - The chat type.
+   */
+  private handleMessageDeletion(
+    channelId: string,
+    messageId: string,
+    attachments: string[] = [],
+    isPrivateOrNot: boolean
+  ) {
+    this.deleteAttachments(attachments)
+      .pipe(switchMap(() => this.deleteMessageFromChannel(channelId, messageId, isPrivateOrNot)))
+      .subscribe({
+        next: () => this.updateMessagesAfterDeletion(messageId),
+        error: (error) => console.error('Error deleting message:', error),
       });
+  }
+
+  /**
+   * Deletes the attachments of a message.
+   * @param {string[]} attachments - The list of attachment URLs.
+   * @returns {Observable<void[]>} - An observable that completes when all attachments are deleted.
+   */
+  private deleteAttachments(attachments: string[]): Observable<void[]> {
+    const deleteTasks = attachments.map((url) =>
+      this.storageService.deleteFile(this.getFilePathFromUrl(url))
+    );
+    return forkJoin(deleteTasks);
+  }
+  /**
+   * Deletes a message from the channel.
+   * @param {string} channelId - The ID of the channel.
+   * @param {string} messageId - The ID of the message.
+   * @param {boolean} isPrivateOrNot - The chat type.
+   * @returns {Observable<void>} - An observable that completes when the message is deleted.
+   */
+  private deleteMessageFromChannel(channelId: string, messageId: string, isPrivateOrNot: boolean): Observable<void> {
+    return from(this.channelMessageService.deleteChannelMessage(channelId, messageId, isPrivateOrNot));
+  }
+
+  /**
+   * Updates the messages list after a message is deleted.
+   * @param {string} messageId - The ID of the deleted message.
+   */
+  private updateMessagesAfterDeletion(messageId: string): void {
+    const updatedMessages = this.messagesSource.getValue().filter((msg) => msg.id !== messageId);
+    this.messagesSource.next(updatedMessages);
+    console.log('Message and attachments deleted successfully');
+  }
+
+  private getFilePathFromUrl(fileUrl: string): string {
+    return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
   }
 }
