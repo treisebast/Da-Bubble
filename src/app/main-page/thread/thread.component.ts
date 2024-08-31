@@ -83,6 +83,7 @@ export class ThreadComponent implements OnInit {
           this.threadService.watchMessageChanges(chatId, chatMessage.id)
             .subscribe(updatedMessage => {
               this.currentMessageToOpen = updatedMessage;
+              this.loadUserProfiles([updatedMessage]);
             });
         }
 
@@ -105,7 +106,7 @@ export class ThreadComponent implements OnInit {
       if (Array.isArray(currentThread)) {
         this.messages = this.sortMessagesByTimestamp(currentThread);
         await this.resolveUserNames(this.messages);
-        await this.loadUserProfiles(this.messages);
+        this.loadUserProfiles(this.messages);
         this.totalReplies = this.messages.length;
 
         for (const message of this.messages) {
@@ -418,18 +419,18 @@ export class ThreadComponent implements OnInit {
       .pipe(
         finalize(() => this.cdr.detectChanges())
       )
-      .subscribe(
-        metadata => {
+      .subscribe({
+        next: (metadata) => {
           this.metadataMap[attachmentUrl] = {
             name: metadata.name,
             size: metadata.size
           };
           console.log(`Metadaten geladen für: ${attachmentUrl}`, metadata);
         },
-        error => {
+        error: (error) => {
           console.error('Fehler beim Abrufen der Metadaten für:', attachmentUrl, error);
         }
-      );
+      });
   }
 
   async logAttachmentMetadata(attachmentUrl: string) {
