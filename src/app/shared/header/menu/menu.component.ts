@@ -7,6 +7,8 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-menu',
@@ -18,6 +20,7 @@ import { CommonModule } from '@angular/common';
     MatDialogContent,
     MatDialogTitle,
     MatButtonModule,
+    RouterModule,
   ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
@@ -27,7 +30,7 @@ export class MenuComponent {
   @Output() openProfile = new EventEmitter<void>();
   isMenuOpen: boolean = true;
 
-  constructor() {}
+  constructor(private auth: AuthService) {}
 
   close() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -38,7 +41,8 @@ export class MenuComponent {
     this.openProfile.emit();
   }
 
-  openLogoutDialog() {
-    console.log('Logout');
+  logout() {
+    this.close();
+    this.auth.signOut();
   }
 }

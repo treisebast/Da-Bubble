@@ -5,7 +5,7 @@
       <div class="profil-btn" mat-button cdkFocusInitial (click)="openProfilContent()">
         <span>Profil</span>
       </div>
-      <div class="logout-btn" mat-button cdkFocusInitial (click)="openLogoutDialog()">
+      <div class="logout-btn" mat-button cdkFocusInitial (click)="logout()" [routerLink]="['start']">
         <span>Log out</span>
       </div>
     </div>
@@ -20,7 +20,7 @@
         <div class="mobile-profil-icon"></div>
         <span>Profil</span>
       </div>
-      <div class="mobile-logout-btn" mat-button cdkFocusInitial (click)="openLogoutDialog()">
+      <div class="mobile-logout-btn" mat-button cdkFocusInitial (click)="logout()" [routerLink]="['start']">
         <div class="mobile-logout-icon"></div>
         <span>Log out</span>
       </div>
