@@ -45,8 +45,8 @@
         </ng-template>
 
         <ng-template [ngIf]="onclickUserID !== ownUserID">
-          <div class="message-btn-container">
-            <div class="message-btn" mat-button mat-dialog-close cdkFocusInitial>
+          <div class="message-btn-container" (click)="sendMessage(onclickUserID)">
+            <div class="message-btn" mat-button cdkFocusInitial>
               <img src="./../../../assets/img/profilecard/message.svg" alt="Buttonimage" />
               <span>Nachricht</span>
             </div>

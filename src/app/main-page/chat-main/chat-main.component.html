@@ -70,9 +70,10 @@
         </app-message>
       </div>
       <div [ngClass]="{'hidden': !isCurrentChatPrivate || messages.length > 0}" class="message-info">
+        <!-- TODO: design and connect to profile-app -->
         <div>
           <img [src]="clickedUser?.avatar" alt="" />
-            <h2>{{ clickedUser?.name }}<span *ngIf="currentUserId == clickedUser?.userId">(Du)</span></h2>
+          <h2>{{ clickedUser?.name }}<span *ngIf="currentUserId == clickedUser?.userId">(Du)</span></h2>
         </div>
         <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"><strong>Dieser Raum ist nur für dich
             da.</strong> Mache dir Notizen,
@@ -133,6 +134,5 @@
 <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
   *ngIf="isProfileOpen"></app-profil>
 
-
-
-  <app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl" (closeOverlay)="closeOverlay()"></app-image-overlay>
+<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
+  (closeOverlay)="closeOverlay()"></app-image-overlay>

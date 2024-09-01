@@ -10,7 +10,6 @@ import { FirebaseStorageService } from './firebase-storage.service';
 @Injectable({
   providedIn: 'root',
 })
-
 export class ChatService {
   private currentChatSubject = new BehaviorSubject<Channel | null>(null);
   currentChat$ = this.currentChatSubject.asObservable();
@@ -27,7 +26,13 @@ export class ChatService {
   private loadingStateSubject = new BehaviorSubject<boolean>(false);
   loadingState$ = this.loadingStateSubject.asObservable();
 
-  constructor(private channelMessageService: ChannelMessageService, private storageService: FirebaseStorageService) { }
+  private createPrivateChatSubject = new BehaviorSubject<User | null>(null);
+  createPrivateChat$ = this.createPrivateChatSubject.asObservable();
+
+  constructor(
+    private channelMessageService: ChannelMessageService,
+    private storageService: FirebaseStorageService
+  ) {}
 
   /**
    * Sets the current chat and loads its messages.
@@ -51,6 +56,14 @@ export class ChatService {
    */
   setSelectedChat(selected: boolean) {
     this.selectedChatSubject.next(selected);
+  }
+
+  /**
+   * Starts a private chat with the given user.
+   * @param {User} user - The user to start a private chat with.
+   */
+  startPrivateChat(user: User) {
+    this.createPrivateChatSubject.next(user);
   }
 
   /**
@@ -81,27 +94,24 @@ export class ChatService {
     }
   }
 
-
   /**
- * Sets the current loading state.
- * This state can be used to show or hide loading indicators in the UI.
- * @param {boolean} isLoading - A boolean indicating whether loading is in progress (true) or not (false).
- */
+   * Sets the current loading state.
+   * This state can be used to show or hide loading indicators in the UI.
+   * @param {boolean} isLoading - A boolean indicating whether loading is in progress (true) or not (false).
+   */
   setLoadingState(isLoading: boolean) {
     this.loadingStateSubject.next(isLoading);
   }
 
-
   /**
- * Retrieves the type of the specified channel.
- * Returns whether the channel is private or not.
- * @param {Channel} channel - The channel object whose type needs to be determined.
- * @returns {boolean} - Returns true if the channel is private, otherwise false.
- */
+   * Retrieves the type of the specified channel.
+   * Returns whether the channel is private or not.
+   * @param {Channel} channel - The channel object whose type needs to be determined.
+   * @returns {boolean} - Returns true if the channel is private, otherwise false.
+   */
   getChannelType(channel: Channel): boolean {
     return channel.isPrivate;
   }
-
 
   /**
    * Gets messages for the given channel ID.
@@ -118,7 +128,6 @@ export class ChatService {
       isPrivateOrNot
     );
   }
-
 
   /**
    * Adds a message to the given channel.
@@ -144,7 +153,6 @@ export class ChatService {
       });
   }
 
-
   /**
    * Converts a Firestore timestamp to a JavaScript Date object.
    * @param {Timestamp | FieldValue} timestamp - The Firestore timestamp.
@@ -157,14 +165,12 @@ export class ChatService {
     return new Date();
   }
 
-
   /**
    * Sets the channel status to false.
    */
   setChannelFalse() {
     this.isChannelSource.next(false);
   }
-
 
   /**
    * Sets the channel status to true.
@@ -173,7 +179,6 @@ export class ChatService {
     this.isChannelSource.next(true);
   }
 
-
   /**
    * Gets the current channel status.
    * @returns {Observable<boolean>} An observable of the channel status.
@@ -181,7 +186,6 @@ export class ChatService {
   getChannelStatus(): Observable<boolean> {
     return this.isChannel$;
   }
-
 
   /**
    * Edits a message in the given channel.
@@ -210,12 +214,11 @@ export class ChatService {
       });
   }
 
-
   /**
-     * Deletes a message in the given channel.
-     * @param {string} channelId - The ID of the channel.
-     * @param {string} messageId - The ID of the message.
-     */
+   * Deletes a message in the given channel.
+   * @param {string} channelId - The ID of the channel.
+   * @param {string} messageId - The ID of the message.
+   */
   deleteMessage(channelId: string, messageId: string, isPrivateOrNot: boolean) {
     const messageToDelete = this.findMessageById(messageId);
 
@@ -224,15 +227,26 @@ export class ChatService {
       return;
     }
 
-    if (!messageToDelete.attachments || messageToDelete.attachments.length === 0) {
+    if (
+      !messageToDelete.attachments ||
+      messageToDelete.attachments.length === 0
+    ) {
       // Falls keine Anhänge vorhanden sind, verwende die neue Funktion
-      this.deleteMessageWithoutAttachments(channelId, messageId, isPrivateOrNot);
+      this.deleteMessageWithoutAttachments(
+        channelId,
+        messageId,
+        isPrivateOrNot
+      );
     } else {
       // Wenn Anhänge vorhanden sind, lösche zuerst die Anhänge und danach die Nachricht.
-      this.handleMessageDeletion(channelId, messageId, messageToDelete.attachments, isPrivateOrNot);
+      this.handleMessageDeletion(
+        channelId,
+        messageId,
+        messageToDelete.attachments,
+        isPrivateOrNot
+      );
     }
   }
-
 
   /**
    * Finds a message by its ID.
@@ -242,7 +256,6 @@ export class ChatService {
   private findMessageById(messageId: string): Message | undefined {
     return this.messagesSource.getValue().find((msg) => msg.id === messageId);
   }
-
 
   /**
    * Handles the deletion of a message and its attachments.
@@ -258,29 +271,39 @@ export class ChatService {
     isPrivateOrNot: boolean
   ) {
     this.deleteAttachments(attachments)
-      .pipe(switchMap(() => this.deleteMessageFromChannel(channelId, messageId, isPrivateOrNot)))
+      .pipe(
+        switchMap(() =>
+          this.deleteMessageFromChannel(channelId, messageId, isPrivateOrNot)
+        )
+      )
       .subscribe({
         next: () => this.updateMessagesAfterDeletion(messageId),
         error: (error) => console.error('Error deleting message:', error),
       });
   }
 
-
   /**
- * Deletes a message from a channel that has no attachments.
- * After the message is successfully deleted, the message list is updated.
- *
- * @param {string} channelId - The ID of the channel from which the message will be deleted.
- * @param {string} messageId - The ID of the message to be deleted.
- * @param {boolean} isPrivateOrNot - Indicates whether the chat is private or not.
- */
-  private deleteMessageWithoutAttachments(channelId: string, messageId: string, isPrivateOrNot: boolean): void {
-    this.deleteMessageFromChannel(channelId, messageId, isPrivateOrNot).subscribe({
+   * Deletes a message from a channel that has no attachments.
+   * After the message is successfully deleted, the message list is updated.
+   *
+   * @param {string} channelId - The ID of the channel from which the message will be deleted.
+   * @param {string} messageId - The ID of the message to be deleted.
+   * @param {boolean} isPrivateOrNot - Indicates whether the chat is private or not.
+   */
+  private deleteMessageWithoutAttachments(
+    channelId: string,
+    messageId: string,
+    isPrivateOrNot: boolean
+  ): void {
+    this.deleteMessageFromChannel(
+      channelId,
+      messageId,
+      isPrivateOrNot
+    ).subscribe({
       next: () => this.updateMessagesAfterDeletion(messageId),
       error: (error) => console.error('Error deleting message:', error),
     });
   }
-
 
   /**
    * Deletes the attachments of a message.
@@ -294,7 +317,6 @@ export class ChatService {
     return forkJoin(deleteTasks);
   }
 
-
   /**
    * Deletes a message from the channel.
    * @param {string} channelId - The ID of the channel.
@@ -302,28 +324,38 @@ export class ChatService {
    * @param {boolean} isPrivateOrNot - The chat type.
    * @returns {Observable<void>} - An observable that completes when the message is deleted.
    */
-  private deleteMessageFromChannel(channelId: string, messageId: string, isPrivateOrNot: boolean): Observable<void> {
-    return from(this.channelMessageService.deleteChannelMessage(channelId, messageId, isPrivateOrNot));
+  private deleteMessageFromChannel(
+    channelId: string,
+    messageId: string,
+    isPrivateOrNot: boolean
+  ): Observable<void> {
+    return from(
+      this.channelMessageService.deleteChannelMessage(
+        channelId,
+        messageId,
+        isPrivateOrNot
+      )
+    );
   }
-
 
   /**
    * Updates the messages list after a message is deleted.
    * @param {string} messageId - The ID of the deleted message.
    */
   private updateMessagesAfterDeletion(messageId: string): void {
-    const updatedMessages = this.messagesSource.getValue().filter((msg) => msg.id !== messageId);
+    const updatedMessages = this.messagesSource
+      .getValue()
+      .filter((msg) => msg.id !== messageId);
     this.messagesSource.next(updatedMessages);
     console.log('Message and attachments deleted successfully');
   }
 
-
   /**
- * Extracts the file path from a given file URL.
- * The URL is decoded and parsed to retrieve the file path within the storage system.
- * @param {string} fileUrl - The full URL of the file from which to extract the path.
- * @returns {string} - The extracted file path.
- */
+   * Extracts the file path from a given file URL.
+   * The URL is decoded and parsed to retrieve the file path within the storage system.
+   * @param {string} fileUrl - The full URL of the file from which to extract the path.
+   * @returns {string} - The extracted file path.
+   */
   private getFilePathFromUrl(fileUrl: string): string {
     return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
   }

@@ -245,6 +245,10 @@
       background: var(--purple-two, rgb(121, 126, 243));
     }
   }
+
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 mat-card-subtitle {

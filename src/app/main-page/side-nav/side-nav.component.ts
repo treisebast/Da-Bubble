@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
@@ -17,6 +17,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-side-nav',
@@ -57,7 +58,7 @@ import {
     ]),
   ],
 })
-export class SideNavComponent implements OnInit {
+export class SideNavComponent implements OnInit, OnDestroy {
   menuChannelIsDropedDown: boolean = false;
   directMessagesIsDropedDown: boolean = false;
 
@@ -66,6 +67,8 @@ export class SideNavComponent implements OnInit {
   workspaceUsers: UserWithImageStatus[] = [];
   currentUser!: UserWithImageStatus;
   privateChannelMembersMap: { [channelId: string]: UserWithImageStatus } = {};
+
+  subs = new Subscription();
 
   constructor(
     private channelService: ChannelService,
@@ -77,10 +80,22 @@ export class SideNavComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.subscribeToCurrentUser();
+    const channelSub = this.subscribeToCurrentUser();
     this.sharedChannelService.privateChannels$.subscribe((channels) => {
       this.privateChannels = channels;
     });
+    const chatSub = this.chatService.createPrivateChat$.subscribe((user) => {
+      if (user) {
+        this.findOrCreatePrivateChannelWithUser(user);
+        this.setSelectedMessage();
+      }
+    });
+    this.subs.add(channelSub);
+    this.subs.add(chatSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 
   /**
