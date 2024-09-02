@@ -1,25 +1,27 @@
 <div *ngIf="isDialogOpen" class="modal-background" (click)="closeDialog()"></div>
 <div class="popup-container">
-  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-  <h2 mat-dialog-title>Channel erstellen</h2>
+  <ng-container>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <h2 mat-dialog-title>Channel erstellen</h2>
 
-  <mat-dialog-content class="mat-typography">
-    <p>
-      Channels dienen deinem Team zur Kommunikation. Am besten sollten sie
-      themenbezogen sein #marketing zum Beispiel.
-    </p>
+    <mat-dialog-content class="mat-typography">
+      <p>
+        Channels dienen deinem Team zur Kommunikation. Am besten sollten sie
+        themenbezogen sein #marketing zum Beispiel.
+      </p>
 
-    <h4>Channel-Name</h4>
-    <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte" />
+      <h4>Channel-Name</h4>
+      <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte" />
 
-    <h4>Beschreibung <span class="optional">(optional)</span></h4>
-    <input [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
+      <h4>Beschreibung <span class="optional">(optional)</span></h4>
+      <input [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
 
-  </mat-dialog-content>
+    </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
-    <button class="saveChannelBtn" mat-dialog-close [disabled]="loading" (click)="saveChannel()" mat-flat-button>
-      Erstellen
-    </button>
-  </mat-dialog-actions>
+    <mat-dialog-actions align="end">
+      <button class="saveChannelBtn" mat-dialog-close [disabled]="loading" (click)="createChannelAndGoToAddUsers()" mat-flat-button>
+        Erstellen
+      </button>
+    </mat-dialog-actions>
+  </ng-container>
 </div>

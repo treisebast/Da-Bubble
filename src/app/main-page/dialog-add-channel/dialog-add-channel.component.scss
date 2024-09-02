@@ -12,7 +12,7 @@
   z-index: 10;
 }
 
-mat-label {
+mat-label, .label {
   display: flex;
   align-items: center;
   color: black;
@@ -31,10 +31,10 @@ input {
   border-radius: 30px;
   border: 1px solid rgba(173, 176, 217, 1);
   outline-color: var(--purple-one);
-  font-size: 16px;
-  padding-left: 16px;
+  font-size: 18px;
   color: var(--black);
   margin-bottom: 16px;
+  padding: 20px;
 
   &:hover {
     border-color: var(--purple-one);
