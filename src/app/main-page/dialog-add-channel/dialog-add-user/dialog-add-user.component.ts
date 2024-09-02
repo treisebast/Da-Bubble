@@ -15,12 +15,7 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Channel } from '../../../shared/models/channel.model';
-import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule } from '@angular/material/input';
@@ -124,7 +119,7 @@ export class DialogAddUserComponent {
    * @param user - The user object that was clicked
    */
   checkUsers(user: User): void {
-    const index = this.selectedUsers.findIndex((user) => user.userId === user.userId);
+    const index = this.selectedUsers.findIndex(u => u.userId === user.userId);
     if (index === -1) {
       this.selectedUsers.push(user);
     } else {
@@ -140,7 +135,7 @@ export class DialogAddUserComponent {
    * @returns boolean - Whether the user is selected or not
    */
   isSelected(user: User): boolean {
-    return this.selectedUsers.some((user) => user.userId === user.userId);
+    return this.selectedUsers.some(u => u.userId === user.userId);
   }
 
   // -----------------------------------------------------
