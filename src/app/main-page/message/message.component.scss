@@ -119,8 +119,8 @@
     margin-block-start: 0;
     margin-block-end: 0;
     font-size: 16px;
-    word-break: break-word; 
-    overflow-wrap: break-word; 
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .editing-container {
@@ -350,6 +350,26 @@
 
   .vertPoints {
     background-image: url(../../../assets/img/chatChannel/more_vert.svg);
+  }
+}
+
+.reaction-button-bar {
+  display: flex;
+  flex-direction: row;
+  border: 1px solid var(--purple-one);
+  gap: 8px;
+
+  .reaction-button {
+    display: flex;
+    width: 50px;
+    height: 30px;
+    background-color: white;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--divider-purple);
+    border-radius: 20px;
+    cursor: pointer;
   }
 }
 

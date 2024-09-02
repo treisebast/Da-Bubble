@@ -65,7 +65,7 @@
 
         <app-message *ngIf="userProfiles[message.senderId]" [message]="message"
           [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate"
+          (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate" [currentUserId]="currentUserId"
           (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)">
         </app-message>
       </div>

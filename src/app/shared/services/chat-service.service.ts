@@ -32,7 +32,7 @@ export class ChatService {
   constructor(
     private channelMessageService: ChannelMessageService,
     private storageService: FirebaseStorageService
-  ) {}
+  ) { }
 
   /**
    * Sets the current chat and loads its messages.
@@ -358,5 +358,28 @@ export class ChatService {
    */
   private getFilePathFromUrl(fileUrl: string): string {
     return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
+  }
+
+  updateMessageReactions(message: Message) {
+    const isPrivateOrNot = message.chatId.includes('dm');
+    const channelId = message.chatId;
+    const messageId = message.id!;
+
+    // Reaktionen sicherstellen, dass sie niemals undefined oder null sind
+    const reactions = message.reactions || {};
+
+    // Bereinigung der Reaktionen
+    const cleanedReactions: { [emoji: string]: string[] } = {};
+
+    for (const [emoji, users] of Object.entries(reactions)) {
+      if (users && Array.isArray(users)) {
+        const validUsers = users.filter(user => user !== undefined && user !== null);
+        if (validUsers.length > 0) {
+          cleanedReactions[emoji] = validUsers;
+        }
+      }
+    }
+
+    this.channelMessageService.updateChannelMessageReactions(channelId, messageId, cleanedReactions, isPrivateOrNot);
   }
 }

@@ -17,4 +17,5 @@ export interface Message {
       size: number;
     }
   }
+  reactions?: { [emoji: string]: string[] };
 }

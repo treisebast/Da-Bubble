@@ -8,17 +8,18 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
-
+import { PickerComponent, PickerModule } from '@ctrl/ngx-emoji-mart';
 @Component({
   selector: 'app-message',
   standalone: true,
-  imports: [CommonModule, MatMenuModule, FormsModule],
+  imports: [CommonModule, MatMenuModule, FormsModule, PickerModule],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
 export class MessageComponent implements OnInit {
   @Input() message!: Message;
   @Input() userProfile!: User;
+  @Input() currentUserId!: string;
   @Input() isCurrentUser!: boolean;
   @Input() isCurrentChatPrivate!: boolean;
   @Output() messageClicked = new EventEmitter<Message>();
@@ -30,6 +31,7 @@ export class MessageComponent implements OnInit {
   editContent: string = '';
   fileName: string = '';
   fileSize: number = 0;
+  showEmojiPicker = false;
 
   constructor(private chatService: ChatService, private dialog: MatDialog, private storageService: FirebaseStorageService) { }
 
@@ -139,5 +141,46 @@ export class MessageComponent implements OnInit {
     } else {
       return (size / 1024).toFixed(2) + ' KB';
     }
+  }
+
+  // Emoji reactions //
+
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker;
+  }
+
+  addEmoji(event: any) {
+    const emoji = event.emoji.native;
+    const userId = this.currentUserId; 
+
+    this.addReaction(this.message, emoji, userId);
+    this.showEmojiPicker = false;
+  }
+
+  addReaction(message: Message, emoji: string, userId: string) {
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+  
+    if (!message.reactions[emoji]) {
+      message.reactions[emoji] = [];
+    }
+
+    const userIndex = message.reactions[emoji].indexOf(userId);
+    if (userIndex === -1) {
+      message.reactions[emoji].push(userId);
+    } else {
+      message.reactions[emoji].splice(userIndex, 1); 
+    }
+  
+    if (message.reactions[emoji].length === 0) {
+      delete message.reactions[emoji];
+    }
+  
+    this.chatService.updateMessageReactions(message);
+  }
+
+  getReactionCount(emoji: string): number {
+    return this.message.reactions?.[emoji]?.length || 0;
   }
 }

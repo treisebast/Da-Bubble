@@ -43,4 +43,16 @@ export class ChannelMessageService{
     this.collectionPath = isChannelPrivate ? 'directMessages' : 'channels';
     return this.collectionPath;
   }
+
+  async updateChannelMessageReactions(channelId: string, messageId: string, reactions: { [emoji: string]: string[] }, isPrivate: boolean): Promise<void> {
+    this.getCollectionPath(isPrivate);
+    const messageDocRef = doc(this.firestore, `${this.collectionPath}/${channelId}/messages/${messageId}`);
+    
+    // Check if reactions object is valid before updating
+    if (reactions && Object.keys(reactions).length > 0) {
+      await updateDoc(messageDocRef, { reactions: reactions });
+    } else {
+      await updateDoc(messageDocRef, { reactions: {} }); // or delete the field
+    }
+  }
 }

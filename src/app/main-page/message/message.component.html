@@ -10,7 +10,7 @@
     <div class="reactionBar" [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">
       <div class="check"></div>
       <div class="handsUp"></div>
-      <div class="reaction"></div>
+      <div class="reaction" (click)="toggleEmojiPicker()"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
       <div *ngIf="isCurrentUser" class="vertPoints" [matMenuTriggerFor]="menu">
       </div>
@@ -46,7 +46,13 @@
       </div>
     </div>
 
+    <div class="reaction-button-bar">
+      <div class="reaction-button"*ngFor="let emoji of (message.reactions | keyvalue)">
+        {{ emoji.key }} {{ getReactionCount(emoji.key) }}
+      </div>
+    </div>
 
+    <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>
 
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count" [ngClass]="{
         'thread-count-end': isCurrentUser && screenSmall,
@@ -60,12 +66,10 @@
       </span>
     </div>
 
-
     <mat-menu #menu="matMenu">
       <ng-container *ngIf="isCurrentUser">
         <button mat-menu-item (click)="editMessage()">Nachricht bearbeiten</button>
         <button mat-menu-item (click)="deleteMessage()">Nachricht löschen</button>
       </ng-container>
     </mat-menu>
-
   </div>
