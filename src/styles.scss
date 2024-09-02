@@ -13,6 +13,7 @@ $app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @import "./fonts.scss";
 @import "./styles/mixins.scss";
 @import "./styles/colors.scss";
+@import '@ctrl/ngx-emoji-mart/picker';
 
 /* Global styles */
 * {
@@ -125,4 +126,55 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 9;
+}
+
+.emoji-mart {
+  position: absolute;
+  bottom: 80px;
+  left: 80px;
+  z-index: 1000;
+  background-color: var(--white) !important;
+  color: var(--black) !important;
+  border: 1px solid #ddd !important;
+
+  .emoji-mart-bar {
+    background-color: var(--white) !important;
+  }
+
+  .emoji-mart-preview,
+  .emoji-mart-anchors {
+    background-color: var(--white) !important;
+  }
+
+  .emoji-mart-anchor-selected {
+    color: var(--purple-two) !important;
+  }
+
+  .emoji-mart-anchor-bar {
+    background-color: var(--purple-two) !important;
+  }
+
+  .emoji-mart-category-label {
+    background-color: var(--white) !important;
+
+    span {
+      background-color: var(--white);
+      color: var(--black);
+    }
+  }
+
+  .emoji-mart-search input {
+    background-color: var(--white) !important;
+    color: var(--black) !important;
+    border: 1px solid #ccc !important;
+  }
+
+  .emoji-mart-emoji:hover,
+  .emoji-mart-emoji:focus {
+    background-color: transparent !important;
+  }
+
+  .emoji-mart-emoji:before {
+    background-color: var(--purple-two) !important;
+  }
 }

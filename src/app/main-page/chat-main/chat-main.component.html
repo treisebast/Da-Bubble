@@ -114,7 +114,7 @@
         <div class="addIcon" (click)="openFileDialog()"></div>
         <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
         <div class="border"></div>
-        <div class="emoji"></div>
+        <div class="emoji" (click)="toggleEmojiPicker()"></div>
         <div *ngIf="!isCurrentChatPrivate" class="iconMarkUser"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
@@ -124,6 +124,8 @@
       {{ errorMessage }}
     </div>
   </div>
+  <!-- Emoji-Mart -->
+  <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>
 </div>
 
 

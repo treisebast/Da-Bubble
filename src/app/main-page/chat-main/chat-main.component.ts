@@ -20,6 +20,7 @@ import { SharedChannelService } from '../../shared/services/shared-channel.servi
 import { firstValueFrom } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-chat-main',
@@ -31,8 +32,9 @@ import { ImageOverlayComponent } from '../image-overlay/image-overlay.component'
     MessageComponent,
     MatProgressSpinnerModule,
     ChannelInfoPopupComponent,
-    ProfilComponent, 
+    ProfilComponent,
     ImageOverlayComponent,
+    PickerComponent
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
@@ -40,10 +42,11 @@ import { ImageOverlayComponent } from '../image-overlay/image-overlay.component'
 export class ChatMainComponent implements OnInit, AfterViewInit {
   isLoading: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
-
+  showEmojiPicker = false;
   currentChat: any = null;
   selectedChat: boolean = false;
   isCurrentChatPrivate: boolean = false;
+  preventImmediateClose: boolean = true;
 
   selectedChannel: Channel | null = null;
   publicChannels: Channel[] = [];
@@ -98,9 +101,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.loadChannelsForSearch();
   }
 
-  ngAfterViewInit() {
-    this.scrollToBottom();
-  }
 
   isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
     if (index === 0) return true;
@@ -543,4 +543,46 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   closeOverlay() {
     this.overlayImageUrl = null;
   }
+
+
+
+  // Emoji Picker // 
+  ngAfterViewInit() {
+    this.scrollToBottom();
+    setTimeout(() => {
+      document.addEventListener('click', this.closeEmojiPickerOnOutsideClick.bind(this));
+    }, 0);
+  }
+
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker;
+    if (this.showEmojiPicker) {
+      setTimeout(() => {
+        this.preventImmediateClose = false;
+      }, 100);
+    }
+  }
+
+  closeEmojiPickerOnOutsideClick(event: MouseEvent) {
+    const pickerElement = document.querySelector('emoji-mart');
+    const targetElement = event.target as Node;
+    if (!this.preventImmediateClose && pickerElement && !pickerElement.contains(targetElement)) {
+      this.showEmojiPicker = false;
+    }
+    this.preventImmediateClose = true;
+  }
+
+  addEmoji(event: any) {
+    this.newMessageText += event.emoji.native;
+    this.showEmojiPicker = false;
+    this.focusTextarea();
+  }
+
+  focusTextarea() {
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.focus();
+    }
+  }
+
 }
