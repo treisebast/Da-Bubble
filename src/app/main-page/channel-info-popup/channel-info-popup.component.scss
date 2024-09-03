@@ -42,13 +42,13 @@
       height: 35px;
       border-radius: 35px;
       background-image: url('../../../assets/img/chatChannel/close.svg');
-      background-size: 24px 24px;
+      background-size: 38px;
       background-repeat: no-repeat;
       background-position: center;
 
       &:hover {
         background-color: var(--light-purple);
-        background-size: 24px 24px;
+        background-size: 38px;
         background-image: url('../../../assets/img/chatChannel/close_hover.svg');
         ;
       }
