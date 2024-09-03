@@ -36,7 +36,7 @@
               <div class="pdf-preview">
                 <img src="../../assets/img/chatChannel/pdf.png" alt="PDF-Icon" class="pdf-icon" />
                 <div class="pdf-details">
-                  <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'Datei' }}</span>
+                  <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'loading...' }}</span>
                   <span class="pdf-size">{{ formatFileSize(message.metadata?.[attachment]?.size || 0) }}</span>
                 </div>
               </div>
@@ -47,8 +47,9 @@
     </div>
 
     <div class="reaction-button-bar">
-      <div class="reaction-button"*ngFor="let emoji of (message.reactions | keyvalue)">
-        {{ emoji.key }} {{ getReactionCount(emoji.key) }}
+      <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+        (click)="addReaction(message, emoji.key, currentUserId)">
+        <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
       </div>
     </div>
 

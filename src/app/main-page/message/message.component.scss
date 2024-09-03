@@ -356,7 +356,6 @@
 .reaction-button-bar {
   display: flex;
   flex-direction: row;
-  border: 1px solid var(--purple-one);
   gap: 8px;
 
   .reaction-button {
@@ -370,6 +369,12 @@
     border: 1px solid var(--divider-purple);
     border-radius: 20px;
     cursor: pointer;
+    user-select: none;
+    font-size: 16px;
+
+    .emoji {
+      font-size: 19px;
+    }
   }
 }
 

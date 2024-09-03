@@ -157,28 +157,24 @@ export class MessageComponent implements OnInit {
     this.showEmojiPicker = false;
   }
 
-  addReaction(message: Message, emoji: string, userId: string) {
-    if (!message.reactions) {
-      message.reactions = {};
-    }
-  
-    if (!message.reactions[emoji]) {
-      message.reactions[emoji] = [];
-    }
-
-    const userIndex = message.reactions[emoji].indexOf(userId);
-    if (userIndex === -1) {
-      message.reactions[emoji].push(userId);
-    } else {
-      message.reactions[emoji].splice(userIndex, 1); 
-    }
-  
-    if (message.reactions[emoji].length === 0) {
-      delete message.reactions[emoji];
-    }
-  
-    this.chatService.updateMessageReactions(message);
+addReaction(message: Message, emoji: string, userId: string) {
+  if (!message.reactions) {
+    message.reactions = {};
   }
+  if (!message.reactions[emoji]) {
+    message.reactions[emoji] = [];
+  }
+  const userIndex = message.reactions[emoji].indexOf(userId);
+  if (userIndex === -1) {
+    message.reactions[emoji].push(userId);
+  } else {
+    message.reactions[emoji].splice(userIndex, 1);
+  }
+  if (message.reactions[emoji].length === 0) {
+    delete message.reactions[emoji];
+  }
+  this.chatService.updateMessageReactions(message);
+}
 
   getReactionCount(emoji: string): number {
     return this.message.reactions?.[emoji]?.length || 0;
