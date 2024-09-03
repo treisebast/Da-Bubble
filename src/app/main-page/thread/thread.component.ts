@@ -202,9 +202,12 @@ export class ThreadComponent implements OnInit {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
-  convertToDate(timestamp: Timestamp | FieldValue): Date {
+  convertToDate(timestamp: Timestamp | FieldValue | Date): Date {
     if (timestamp instanceof Timestamp) {
-      return timestamp.toDate();
+      const date = timestamp.toDate();
+      return date;
+    } else if (timestamp instanceof Date) {
+      return timestamp;
     }
     return new Date();
   }
@@ -271,20 +274,20 @@ export class ThreadComponent implements OnInit {
       console.error("You cannot delete another user's message.");
     }
   }
-  
+
   private canDeleteMessage(message: Message): boolean {
     return message.senderId === this.currentUserId;
   }
-  
+
   private deleteMessageAttachments(message: Message) {
     const deleteTasks = (message.attachments || []).map((attachmentUrl) => {
       const filePath = this.getFilePathFromUrl(attachmentUrl);
       return this.firebaseStorageService.deleteFile(filePath);
     });
-  
+
     return from(Promise.all(deleteTasks));
   }
-  
+
   private deleteMessageFromThread(message: Message) {
     return this.threadService.deleteThread(
       message.chatId!,
