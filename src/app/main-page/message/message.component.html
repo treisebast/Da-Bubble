@@ -8,8 +8,12 @@
     </div>
 
     <div class="reactionBar" [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">
-      <div class="check"></div>
-      <div class="handsUp"></div>
+      <div class="recent-emoji" *ngIf="lastTwoEmojis[0]" (click)="addOrRemoveReaction(lastTwoEmojis[0])">
+        {{ lastTwoEmojis[0] }}
+      </div>
+      <div class="recent-emoji" *ngIf="lastTwoEmojis[1]" (click)="addOrRemoveReaction(lastTwoEmojis[1])">
+        {{ lastTwoEmojis[1] }}
+      </div>
       <div class="reaction" (click)="toggleEmojiPicker()"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
       <div *ngIf="isCurrentUser" class="vertPoints" [matMenuTriggerFor]="menu">

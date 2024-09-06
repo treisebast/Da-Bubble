@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
 import { Message } from '../../shared/models/message.model';
 import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
@@ -8,7 +8,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
-import { PickerComponent, PickerModule } from '@ctrl/ngx-emoji-mart';
+import { PickerModule } from '@ctrl/ngx-emoji-mart';
+import { UserService } from '../../shared/services/user.service';
+
 @Component({
   selector: 'app-message',
   standalone: true,
@@ -16,6 +18,7 @@ import { PickerComponent, PickerModule } from '@ctrl/ngx-emoji-mart';
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
+
 export class MessageComponent implements OnInit {
   @Input() message!: Message;
   @Input() userProfile!: User;
@@ -32,13 +35,20 @@ export class MessageComponent implements OnInit {
   fileName: string = '';
   fileSize: number = 0;
   showEmojiPicker = false;
+  lastTwoEmojis: string[] = [];
+  private emojiCloseTimeout: any;
 
-  constructor(private chatService: ChatService, private dialog: MatDialog, private storageService: FirebaseStorageService) { }
+  constructor(
+    private chatService: ChatService,
+    private elementRef: ElementRef,
+    private userService: UserService,
+    private storageService: FirebaseStorageService
+  ) { }
 
   ngOnInit(): void {
     console.log('Message Attachments:', this.message.attachments);
     console.log('this Chat is Private:', this.isCurrentChatPrivate);
-
+    this.loadGlobalEmojis();
     this.message.attachments?.forEach((attachment) => {
       if (!this.isImage(attachment)) {
         this.loadFileMetadata(attachment, this.message);
@@ -49,6 +59,15 @@ export class MessageComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.checkScreenWidth();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+
+    if (!clickedInside && this.showEmojiPicker) {
+      this.showEmojiPicker = false;
+    }
   }
 
   checkScreenWidth() {
@@ -151,32 +170,57 @@ export class MessageComponent implements OnInit {
 
   addEmoji(event: any) {
     const emoji = event.emoji.native;
-    const userId = this.currentUserId; 
+    const userId = this.currentUserId;
 
     this.addReaction(this.message, emoji, userId);
     this.showEmojiPicker = false;
   }
 
-addReaction(message: Message, emoji: string, userId: string) {
-  if (!message.reactions) {
-    message.reactions = {};
+  addReaction(message: Message, emoji: string, userId: string) {
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+    if (!message.reactions[emoji]) {
+      message.reactions[emoji] = [];
+    }
+    const userIndex = message.reactions[emoji].indexOf(userId);
+    if (userIndex === -1) {
+      message.reactions[emoji].push(userId);
+    } else {
+      message.reactions[emoji].splice(userIndex, 1);
+    }
+    if (message.reactions[emoji].length === 0) {
+      delete message.reactions[emoji];
+    }
+    this.chatService.updateMessageReactions(message);
+    this.userService.addEmoji(emoji);
+    this.loadGlobalEmojis();
   }
-  if (!message.reactions[emoji]) {
-    message.reactions[emoji] = [];
+
+  addOrRemoveReaction(emoji: string) {
+    const userId = this.currentUserId;
+    if (!this.message.reactions) {
+      this.message.reactions = {};
+    }
+    if (this.message.reactions[emoji]?.includes(userId)) {
+      this.message.reactions[emoji] = this.message.reactions[emoji].filter(id => id !== userId);
+      if (this.message.reactions[emoji].length === 0) {
+        delete this.message.reactions[emoji];
+      }
+    } else {
+      if (!this.message.reactions[emoji]) {
+        this.message.reactions[emoji] = [];
+      }
+      this.message.reactions[emoji].push(userId);
+    }
+    this.chatService.updateMessageReactions(this.message);
   }
-  const userIndex = message.reactions[emoji].indexOf(userId);
-  if (userIndex === -1) {
-    message.reactions[emoji].push(userId);
-  } else {
-    message.reactions[emoji].splice(userIndex, 1);
-  }
-  if (message.reactions[emoji].length === 0) {
-    delete message.reactions[emoji];
-  }
-  this.chatService.updateMessageReactions(message);
-}
 
   getReactionCount(emoji: string): number {
     return this.message.reactions?.[emoji]?.length || 0;
+  }
+
+  loadGlobalEmojis() {
+    this.lastTwoEmojis = this.userService.getLastTwoEmojis();
   }
 }

@@ -301,6 +301,15 @@
   position: absolute;
   top: -32px;
 
+  .recent-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+
   &.reactionBar-left {
     left: 100px;
     animation: slideInFromRight 225ms ease-out;
@@ -322,14 +331,6 @@
       border-radius: 50%;
       cursor: pointer;
     }
-  }
-
-  .check {
-    background-image: url(../../../assets/img/chatChannel/check.svg);
-  }
-
-  .handsUp {
-    background-image: url(../../../assets/img/chatChannel/handsUp.svg);
   }
 
   .reaction {
@@ -489,16 +490,6 @@
 
     &.reactionBar-right {
       right: 50px;
-    }
-
-    .check {
-      background-image: url(../../../assets/img/chatChannel/check.svg);
-      background-size: 20px;
-    }
-
-    .handsUp {
-      background-image: url(../../../assets/img/chatChannel/handsUp.svg);
-      background-size: 20px;
     }
 
     .reaction {
