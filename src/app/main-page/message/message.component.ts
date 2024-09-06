@@ -36,7 +36,6 @@ export class MessageComponent implements OnInit {
   fileSize: number = 0;
   showEmojiPicker = false;
   lastTwoEmojis: string[] = [];
-  private emojiCloseTimeout: any;
 
   constructor(
     private chatService: ChatService,
@@ -48,7 +47,9 @@ export class MessageComponent implements OnInit {
   ngOnInit(): void {
     console.log('Message Attachments:', this.message.attachments);
     console.log('this Chat is Private:', this.isCurrentChatPrivate);
-    this.loadGlobalEmojis();
+    this.userService.lastTwoEmojis$.subscribe(emojis => {
+      this.lastTwoEmojis = emojis;
+    });
     this.message.attachments?.forEach((attachment) => {
       if (!this.isImage(attachment)) {
         this.loadFileMetadata(attachment, this.message);
@@ -194,7 +195,6 @@ export class MessageComponent implements OnInit {
     }
     this.chatService.updateMessageReactions(message);
     this.userService.addEmoji(emoji);
-    this.loadGlobalEmojis();
   }
 
   addOrRemoveReaction(emoji: string) {
@@ -218,9 +218,5 @@ export class MessageComponent implements OnInit {
 
   getReactionCount(emoji: string): number {
     return this.message.reactions?.[emoji]?.length || 0;
-  }
-
-  loadGlobalEmojis() {
-    this.lastTwoEmojis = this.userService.getLastTwoEmojis();
   }
 }

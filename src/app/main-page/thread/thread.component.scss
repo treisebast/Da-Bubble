@@ -476,6 +476,14 @@
   position: absolute;
   top: -20px;
 
+  .recent-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+  }
+
   &.reactionBar-left {
     left: 50px;
     animation: slideInFromRight 225ms ease-out;
@@ -681,32 +689,27 @@
   }
 }
 
-// @media (max-width: 700px) {
-//   .reactionBar {
-//     &.reactionBar-left {
-//       left: 70px;
-//     }
+.reaction-button-bar {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 
-//     &.reactionBar-right {
-//       right: 70px;
-//     }
-//   }
-// }
+  .reaction-button {
+    display: flex;
+    width: 50px;
+    height: 30px;
+    background-color: white;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--divider-purple);
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 16px;
 
-// @media (max-width: 500px) {
-//   .reactionBar {
-//     top: -40px;
-
-//     &.reactionBar-left {
-//       left: 50px;
-//     }
-
-//     &.reactionBar-right {
-//       right: 50px;
-//     }
-
-//     div {
-//       background-size: 20px;
-//     }
-//   }
-// }
+    .emoji {
+      font-size: 19px;
+    }
+  }
+}

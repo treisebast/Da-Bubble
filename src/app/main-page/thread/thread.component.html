@@ -78,6 +78,14 @@
         </ng-container>
       </mat-menu>
 
+      <!-- Reaction Bar for the original message -->
+      <div class="reaction-button-bar">
+        <div class="reaction-button" *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
+          (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
+          <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -152,12 +160,28 @@
         <!-- Reaction Bar for each thread reply -->
         <div class="reactionBar"
           [ngClass]="{ 'reactionBar-left': message.senderId === currentUserId, 'reactionBar-right': message.senderId !== currentUserId }">
-          <div class="check"></div>
-          <div class="handsUp"></div>
-          <div class="reaction"></div>
+
+          <div class="recent-emoji" *ngIf="lastTwoEmojis[0]" (click)="addOrRemoveReaction(message, lastTwoEmojis[0])">
+            {{ lastTwoEmojis[0] }}
+          </div>
+          <div class="recent-emoji" *ngIf="lastTwoEmojis[1]" (click)="addOrRemoveReaction(message, lastTwoEmojis[1])">
+            {{ lastTwoEmojis[1] }}
+          </div>
+          <div class="reaction" (click)="toggleEmojiPicker(message)"></div>
           <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
           </div>
         </div>
+
+        <emoji-mart *ngIf="showEmojiPicker && message === selectedMessage" set="twitter" theme="light"
+          (emojiClick)="addEmoji($event, message)"></emoji-mart>
+
+        <div class="reaction-button-bar">
+          <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+            (click)="addOrRemoveReaction(message, emoji.key)">
+            <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
+          </div>
+        </div>
+
 
         <mat-menu #menuTrigger="matMenu">
           <ng-container *ngIf="message.senderId === currentUserId">

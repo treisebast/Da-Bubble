@@ -119,14 +119,8 @@ export class ChatService {
    * @param {boolean} isPrivateOrNot - The chat type.
    * @returns {Observable<Message[]>} An observable of the channel's messages.
    */
-  getMessages(
-    channelId: string,
-    isPrivateOrNot: boolean
-  ): Observable<Message[]> {
-    return this.channelMessageService.getChannelMessages(
-      channelId,
-      isPrivateOrNot
-    );
+  getMessages(channelId: string, isPrivateOrNot: boolean): Observable<Message[]> {
+    return this.channelMessageService.getChannelMessages(channelId, isPrivateOrNot);
   }
 
   /**

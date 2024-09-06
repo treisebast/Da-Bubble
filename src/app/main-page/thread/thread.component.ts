@@ -16,16 +16,18 @@ import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 import { getMetadata, getStorage, ref } from 'firebase/storage';
+import { PickerModule } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent],
+  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent, PickerModule],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent implements OnInit {
-
+  showEmojiPicker = false;
+  selectedMessage: Message | null = null;
   currentUserId = '';
   currentUserName = '';
   newMessageText = '';
@@ -44,6 +46,7 @@ export class ThreadComponent implements OnInit {
   errorMessage: string | null = null;
 
   messages: Message[] = [];
+  lastTwoEmojis: string[] = [];
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
   metadataMap: { [url: string]: { name: string, size: number } } = {};
@@ -54,7 +57,6 @@ export class ThreadComponent implements OnInit {
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
-  private dialog = inject(MatDialog);
 
   constructor(
     private firestore: Firestore,
@@ -72,6 +74,9 @@ export class ThreadComponent implements OnInit {
         this.currentUserName = user.displayName || '';
       }
     });
+    this.userService.lastTwoEmojis$.subscribe(emojis => {
+      this.lastTwoEmojis = emojis;
+    });
 
     this.threadService.getCurrentMessageToOpen().subscribe((chatMessage: Message | null) => {
       this.currentMessageToOpen = chatMessage;
@@ -87,7 +92,6 @@ export class ThreadComponent implements OnInit {
             });
         }
 
-        // Metadaten für die original Nachricht laden
         if (this.currentMessageToOpen?.attachments) {
           this.currentMessageToOpen.attachments.forEach((attachment: string) => {
             if (!this.isImage(attachment)) {
@@ -119,7 +123,6 @@ export class ThreadComponent implements OnInit {
       }
     });
 
-    // Metadaten für die Thread-Nachrichten laden
     this.messages.forEach((message) => {
       message.attachments?.forEach((attachment) => {
         if (!this.isImage(attachment)) {
@@ -144,12 +147,11 @@ export class ThreadComponent implements OnInit {
 
     let chatId: string;
 
-    // Überprüfen, ob currentChat existiert und eine ID hat
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       chatId = this.currentChat.id;
     } else {
       console.error('Chat ID not found');
-      return; // Beende die Funktion, wenn keine gültige Chat-ID gefunden wurde
+      return; 
     }
 
     if (this.selectedFile) {
@@ -173,14 +175,12 @@ export class ThreadComponent implements OnInit {
       attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };
 
-    // Füge die Nachricht dem Thread hinzu
     this.threadService.addThread(
       chatId,
       this.threadService.currentMessageId,
       newMessage
     );
 
-    // Zurücksetzen der Eingabefelder nach dem Senden
     this.newMessageText = '';
     this.attachmentUrl = null;
     this.selectedFile = null;
@@ -340,7 +340,7 @@ export class ThreadComponent implements OnInit {
 
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.manageErrorMessage(null);  // Clear any existing error message
+    this.manageErrorMessage(null);
 
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
@@ -467,6 +467,74 @@ export class ThreadComponent implements OnInit {
       return size + ' B';
     } else {
       return (size / 1024).toFixed(2) + ' KB';
+    }
+  }
+
+  toggleEmojiPicker(message: Message) {
+    this.showEmojiPicker = !this.showEmojiPicker;
+    this.selectedMessage = message;
+  }
+
+  addEmoji(event: any, message: Message) {
+    const emoji = event.emoji.native;
+    this.addOrRemoveReaction(message, emoji);
+    this.userService.addEmoji(emoji);
+    this.showEmojiPicker = false;
+  }
+
+  addOrRemoveReaction(message: Message, emoji: string) {
+    const userId = this.currentUserId;
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+    if (message.reactions[emoji]?.includes(userId)) {
+      message.reactions[emoji] = message.reactions[emoji].filter(id => id !== userId);
+  
+      if (message.reactions[emoji].length === 0) {
+        delete message.reactions[emoji];
+      }
+    } else {
+      if (!message.reactions[emoji]) {
+        message.reactions[emoji] = [];
+      }
+      message.reactions[emoji].push(userId);
+    }
+    this.userService.addEmoji(emoji);
+    if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
+      this.updateMessageReactions(this.currentMessageToOpen);
+    } else {
+      this.updateMessageReactions(message);
+    }
+  }
+
+  getReactionCount(message: Message, emoji: string): number {
+    return message.reactions?.[emoji]?.length || 0;
+  }
+
+  updateMessageReactions(message: Message) {
+    const { chatId, id: messageId } = message;
+    if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
+      this.threadService.updateThreadReactions(
+        chatId,
+        this.currentMessageToOpen.id!,
+        this.currentMessageToOpen.id!,
+        message.reactions || {}
+      ).then(() => {
+        console.log('Reactions for original message updated');
+      }).catch(error => {
+        console.error('Error updating reactions for original message:', error);
+      });
+    } else {
+      this.threadService.updateThreadReactions(
+        chatId,
+        this.currentMessageToOpen!.id!,
+        message.id!,
+        message.reactions || {}
+      ).then(() => {
+        console.log('Reactions for thread message updated');
+      }).catch(error => {
+        console.error('Error updating reactions for thread message:', error);
+      });
     }
   }
 }
