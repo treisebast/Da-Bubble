@@ -28,6 +28,7 @@ export class MessageComponent implements OnInit {
   @Output() messageClicked = new EventEmitter<Message>();
   @Output() senderId = new EventEmitter<string>();
   @Output() imageClicked = new EventEmitter<string>();
+  @Input() messageIndex!: number;
 
   screenSmall: boolean = false;
   isEditing: boolean = false;
@@ -45,7 +46,7 @@ export class MessageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('Message Attachments:', this.message.attachments);
+   console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
     console.log('this Chat is Private:', this.isCurrentChatPrivate);
     this.userService.lastTwoEmojis$.subscribe(emojis => {
       this.lastTwoEmojis = emojis;

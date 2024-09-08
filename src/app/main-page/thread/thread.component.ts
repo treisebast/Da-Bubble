@@ -445,7 +445,7 @@ export class ThreadComponent implements OnInit {
   }
 
   loadFileMetadata(attachmentUrl: string): void {
-    console.log(`Lade Metadaten für: ${attachmentUrl}`);
+    console.log(`Lade Metadaten für folgendes Attachment: ${attachmentUrl}`);
     this.firebaseStorageService.getFileMetadata(attachmentUrl)
       .pipe(
         finalize(() => this.cdr.detectChanges())
@@ -456,7 +456,7 @@ export class ThreadComponent implements OnInit {
             name: metadata.name,
             size: metadata.size
           };
-          console.log(`Metadaten geladen für: ${attachmentUrl}`, metadata);
+          console.log(`Metadaten geladen für folgendes Attachment: ${attachmentUrl}`, metadata);
         },
         error: (error) => {
           console.error('Fehler beim Abrufen der Metadaten für:', attachmentUrl, error);

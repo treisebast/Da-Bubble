@@ -482,7 +482,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   private subscribeToCurrentChat(): void {
     this.chatService.currentChat$.subscribe((chat) => {
       this.currentChat = chat;
-      console.log('currentChat:', this.currentChat);
 
       if (this.currentChat) {
         this.handleCurrentChat(this.currentChat);
