@@ -51,10 +51,19 @@
     </div>
 
     <div class="reaction-button-bar">
-      <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-        (click)="addReaction(message, emoji.key, currentUserId)">
+      <div class="reaction-button"
+        *ngFor="let emoji of (message.reactions | keyvalue)"
+        (mouseenter)="showTooltip = emoji.key"
+        (mouseleave)="showTooltip = null"
+        (click)="addOrRemoveReaction(emoji.key)">
+        
         <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
+        
+        <!-- Benutzerdefinierter Tooltip -->
+       <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
+        </div>
       </div>
+      <div class="mart-button" (click)="toggleEmojiPicker()"></div>
     </div>
 
     <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>

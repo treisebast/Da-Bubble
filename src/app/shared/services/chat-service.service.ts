@@ -354,15 +354,11 @@ export class ChatService {
     return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
   }
 
-  updateMessageReactions(message: Message) {
+  updateMessageReactions(message: Message): Promise<void> {
     const isPrivateOrNot = message.chatId.includes('dm');
     const channelId = message.chatId;
     const messageId = message.id!;
-
-    // Reaktionen sicherstellen, dass sie niemals undefined oder null sind
     const reactions = message.reactions || {};
-
-    // Bereinigung der Reaktionen
     const cleanedReactions: { [emoji: string]: string[] } = {};
 
     for (const [emoji, users] of Object.entries(reactions)) {
@@ -374,6 +370,6 @@ export class ChatService {
       }
     }
 
-    this.channelMessageService.updateChannelMessageReactions(channelId, messageId, cleanedReactions, isPrivateOrNot);
-  }
+    return this.channelMessageService.updateChannelMessageReactions(channelId, messageId, cleanedReactions, isPrivateOrNot);
+}
 }

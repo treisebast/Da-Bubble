@@ -13,6 +13,7 @@ $app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @import "./fonts.scss";
 @import "./styles/mixins.scss";
 @import "./styles/colors.scss";
+@import "./styles/reaction-tooltip.scss";
 @import '@ctrl/ngx-emoji-mart/picker';
 
 /* Global styles */

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
 import { User } from '../../shared/models/user.model';
 import { ChatService } from '../../shared/services/chat-service.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
@@ -14,7 +14,7 @@ import { UserService } from '../../shared/services/user.service';
 @Component({
   selector: 'app-message',
   standalone: true,
-  imports: [CommonModule, MatMenuModule, FormsModule, PickerModule],
+  imports: [CommonModule, MatMenuModule, FormsModule, PickerModule, MatTooltipModule],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
@@ -37,6 +37,8 @@ export class MessageComponent implements OnInit {
   fileSize: number = 0;
   showEmojiPicker = false;
   lastTwoEmojis: string[] = [];
+  usernames: { [emoji: string]: string[] } = {};
+  showTooltip: string | null = null;
 
   constructor(
     private chatService: ChatService,
@@ -46,7 +48,7 @@ export class MessageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-   console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
+    console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
     console.log('this Chat is Private:', this.isCurrentChatPrivate);
     this.userService.lastTwoEmojis$.subscribe(emojis => {
       this.lastTwoEmojis = emojis;
@@ -56,6 +58,7 @@ export class MessageComponent implements OnInit {
         this.loadFileMetadata(attachment, this.message);
       }
     });
+    this.loadReactionUsernames();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -194,7 +197,11 @@ export class MessageComponent implements OnInit {
     if (message.reactions[emoji].length === 0) {
       delete message.reactions[emoji];
     }
-    this.chatService.updateMessageReactions(message);
+
+    this.chatService.updateMessageReactions(message).then(() => {
+      this.loadReactionUsernames();
+    });
+
     this.userService.addEmoji(emoji);
   }
 
@@ -214,10 +221,55 @@ export class MessageComponent implements OnInit {
       }
       this.message.reactions[emoji].push(userId);
     }
-    this.chatService.updateMessageReactions(this.message);
+    this.chatService.updateMessageReactions(this.message).then(() => {
+      this.loadReactionUsernames();
+    });
   }
 
   getReactionCount(emoji: string): number {
     return this.message.reactions?.[emoji]?.length || 0;
+  }
+
+
+  getReactionUsernames(emoji: string): string[] {
+    return this.usernames[emoji] || [];
+  }
+
+
+  loadReactionUsernames() {
+    if (this.message.reactions) {
+      Object.keys(this.message.reactions).forEach((emoji) => {
+        const userIds = this.message.reactions?.[emoji];
+        if (userIds) {
+          Promise.all(userIds.map(userId => this.userService.getUserNameById(userId))).then(usernames => {
+            this.usernames[emoji] = usernames.filter(name => name !== null) as string[];
+          });
+        }
+      });
+    }
+  }
+
+
+  // Reaction-Tooltip
+  getTooltipContent(emoji: string): string {
+    const usernames = this.getReactionUsernames(emoji);
+    const numUsers = usernames.length;
+
+    if (numUsers > 3) {
+      const displayedUsers = usernames.slice(0, 3).join(', ');
+      const remainingUsers = numUsers - 3;
+      return `
+      <span class="emoji">${emoji}</span>
+      <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
+      <span class="reaction-text">haben reagiert</span>
+    `;
+    } else {
+      const displayedUsers = usernames.join(', ');
+      return `
+      <span class="emoji">${emoji}</span>
+      <span class="username">${displayedUsers}</span>
+      <span class="reaction-text">hat reagiert</span>
+    `;
+    }
   }
 }
