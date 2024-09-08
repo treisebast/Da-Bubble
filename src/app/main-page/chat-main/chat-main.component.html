@@ -56,11 +56,11 @@
     </div>
     <ng-container *ngIf="selectedChat && !this.isLoading">
 
-      <div *ngFor="let message of messages; let i = index">
+      <div *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
         <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
           <span class="date">{{
             convertToDate(message.timestamp) | date : "fullDate" : "" : "de"
-            }}</span>
+          }}</span>
         </div>
 
         <app-message *ngIf="userProfiles[message.senderId]" [message]="message"

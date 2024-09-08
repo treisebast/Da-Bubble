@@ -17,7 +17,7 @@ import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-po
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin, map, Observable, of } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
@@ -396,26 +396,57 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       : [];
   }
 
-  private handleMessagesResponse(messages: Message[]): void {
-    this.messages = this.sortMessagesByTimestamp(messages);
-    this.loadUserProfiles();
-    this.setLoadingState(false);
 
-    if (this.messages && this.userProfiles) {
-      this.scrollToBottom();
+  private handleMessagesResponse(messages: Message[]): void {
+    const metadataRequests: Observable<Message>[] = messages.map(message => this.loadMetadataForMessage(message));
+    forkJoin(metadataRequests).subscribe((messagesWithMetadata: Message[]) => {
+      this.messages = this.sortMessagesByTimestamp(messagesWithMetadata);
+      this.loadUserProfiles();
+      this.setLoadingState(false);
+  
+      if (this.messages && this.userProfiles) {
+        this.scrollToBottom();
+      }
+    });
+  }
+  
+
+  private loadMetadataForMessage(message: Message): Observable<Message> {
+    if (message.attachments?.length) {
+      const metadataRequests = message.attachments.map(attachment =>
+        this.firebaseStorageService.getFileMetadata(attachment)
+      );
+  
+      return forkJoin(metadataRequests).pipe(
+        map(metadataArray => {
+          message.metadata = {};
+          metadataArray.forEach((metadata, index) => {
+            message.metadata![message.attachments![index]] = {
+              name: metadata.name,
+              size: metadata.size
+            };
+          });
+          return message;
+        })
+      );
+    } else {
+      return of(message);
     }
   }
+
 
   private handleMessagesError(error: any): void {
     console.error('Error loading messages:', error);
     this.setLoadingState(false);
   }
 
+
   private handleMessageSentError(error: any): void {
     console.error('Error sending message:', error);
     this.setLoadingState(false);
   }
 
+  
   private handleMessageSentSuccess(newMessage: Message): void {
     this.messages.push(newMessage);
     this.messages = this.sortMessagesByTimestamp(this.messages);
@@ -585,4 +616,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
+  trackByMessageId(index: number, message: Message): string {
+    return message.id ? message.id : index.toString();
+  }
 }

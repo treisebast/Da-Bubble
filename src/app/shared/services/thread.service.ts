@@ -72,6 +72,14 @@ export class ThreadService {
     });
   }
 
+  updateThreadInfo(channelId: string, messageId: string, threadCount: number, lastReplyTimestamp: Timestamp | null): Promise<void> {
+    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+    return updateDoc(messageDoc, {
+      threadCount,
+      lastReplyTimestamp
+    });
+  }
+
   updateLastReplyTimestamp(channelId: string, messageId: string, lastReplyTimestamp: Timestamp): void {
     const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
     updateDoc(messageDoc, { lastReplyTimestamp });

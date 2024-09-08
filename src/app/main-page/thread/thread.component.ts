@@ -265,13 +265,41 @@ export class ThreadComponent implements OnInit {
         .subscribe({
           next: () => {
             console.log('Message and attachments deleted successfully');
+            this.checkAndUpdateThreadCount(); 
           },
           error: (error) => {
-            console.log('Error deleting message.')
+            console.log('Error deleting message.');
           },
         });
     } else {
       console.error("You cannot delete another user's message.");
+    }
+  }
+  
+  checkAndUpdateThreadCount() {
+    if (this.messages.length === 0) {
+      this.currentMessageToOpen!.threadCount = 0;
+      this.currentMessageToOpen!.lastReplyTimestamp = undefined;
+      this.updateThreadInfoInMainChat();
+    }
+  }
+  
+  updateThreadInfoInMainChat() {
+    if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
+      const { chatId, id: messageId } = this.currentMessageToOpen;
+      
+      this.threadService.updateThreadInfo(
+        chatId,
+        messageId,
+        0,
+        null
+      ).then(() => {
+        console.log('Thread information updated in main chat');
+      }).catch(error => {
+        console.error('Error updating thread information in main chat:', error);
+      });
+    } else {
+      console.error('messageId or chatId is undefined.');
     }
   }
 
