@@ -44,6 +44,7 @@ export class ThreadComponent implements OnInit {
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
   errorMessage: string | null = null;
+  showTooltip: string | null = null;
 
   messages: Message[] = [];
   lastTwoEmojis: string[] = [];
@@ -151,7 +152,7 @@ export class ThreadComponent implements OnInit {
       chatId = this.currentChat.id;
     } else {
       console.error('Chat ID not found');
-      return; 
+      return;
     }
 
     if (this.selectedFile) {
@@ -265,7 +266,7 @@ export class ThreadComponent implements OnInit {
         .subscribe({
           next: () => {
             console.log('Message and attachments deleted successfully');
-            this.checkAndUpdateThreadCount(); 
+            this.checkAndUpdateThreadCount();
           },
           error: (error) => {
             console.log('Error deleting message.');
@@ -275,7 +276,7 @@ export class ThreadComponent implements OnInit {
       console.error("You cannot delete another user's message.");
     }
   }
-  
+
   checkAndUpdateThreadCount() {
     if (this.messages.length === 0) {
       this.currentMessageToOpen!.threadCount = 0;
@@ -283,11 +284,11 @@ export class ThreadComponent implements OnInit {
       this.updateThreadInfoInMainChat();
     }
   }
-  
+
   updateThreadInfoInMainChat() {
     if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
       const { chatId, id: messageId } = this.currentMessageToOpen;
-      
+
       this.threadService.updateThreadInfo(
         chatId,
         messageId,
@@ -517,7 +518,7 @@ export class ThreadComponent implements OnInit {
     }
     if (message.reactions[emoji]?.includes(userId)) {
       message.reactions[emoji] = message.reactions[emoji].filter(id => id !== userId);
-  
+
       if (message.reactions[emoji].length === 0) {
         delete message.reactions[emoji];
       }
@@ -564,5 +565,36 @@ export class ThreadComponent implements OnInit {
         console.error('Error updating reactions for thread message:', error);
       });
     }
+  }
+
+
+  // Tooltip 
+
+  getTooltipContent(message: Message, emoji: string): string {
+    const usernames = this.getReactionUsernames(message, emoji);
+    const numUsers = usernames.length;
+
+    if (numUsers > 3) {
+      const displayedUsers = usernames.slice(0, 3).join(', ');
+      const remainingUsers = numUsers - 3;
+      return `
+        <span class="emoji">${emoji}</span>
+        <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+      `;
+    } else {
+      const displayedUsers = usernames.join(', ');
+      return `
+        <span class="emoji">${emoji}</span>
+        <span class="username">${displayedUsers}</span>
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+      `;
+    }
+  }
+
+  getReactionUsernames(message: Message, emoji: string): string[] {
+    const userIds = message.reactions?.[emoji] || [];
+    const usernames = userIds.map(userId => this.userNames[userId] || 'Unknown');
+    return usernames;
   }
 }

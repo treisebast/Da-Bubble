@@ -97,8 +97,8 @@ export class ThreadService {
     );
   }
 
-updateThreadReactions(channelId: string, messageId: string, threadId: string, reactions: { [emoji: string]: string[] }): Promise<void> {
-  const threadDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}/threads/${threadId}`);
-  return updateDoc(threadDoc, { reactions });
-}
+  updateThreadReactions(channelId: string, messageId: string, threadId: string, reactions: { [emoji: string]: string[] }): Promise<void> {
+    const threadDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}/threads/${threadId}`);
+    return updateDoc(threadDoc, { reactions });
+  }
 }

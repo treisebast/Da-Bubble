@@ -259,17 +259,17 @@ export class MessageComponent implements OnInit {
       const displayedUsers = usernames.slice(0, 3).join(', ');
       const remainingUsers = numUsers - 3;
       return `
-      <span class="emoji">${emoji}</span>
-      <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-      <span class="reaction-text">haben reagiert</span>
-    `;
+        <span class="emoji">${emoji}</span>
+        <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+      `;
     } else {
       const displayedUsers = usernames.join(', ');
       return `
-      <span class="emoji">${emoji}</span>
-      <span class="username">${displayedUsers}</span>
-      <span class="reaction-text">hat reagiert</span>
-    `;
+        <span class="emoji">${emoji}</span>
+        <span class="username">${displayedUsers}</span>
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+      `;
     }
   }
 }

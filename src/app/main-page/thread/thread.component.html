@@ -79,12 +79,21 @@
       </mat-menu>
 
       <!-- Reaction Bar for the original message -->
-      <div class="reaction-button-bar">
-        <div class="reaction-button" *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
-          (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
-          <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
-        </div>
-      </div>
+<!-- Reaction Bar for the original message -->
+<div class="reaction-button-bar">
+  <div class="reaction-button"
+    *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
+    (mouseenter)="showTooltip = emoji.key"
+    (mouseleave)="showTooltip = null"
+    (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
+    
+    <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
+    
+    <!-- Benutzerdefinierter Tooltip -->
+    <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
+    </div>
+  </div>
+</div>
 
     </div>
   </div>
@@ -175,13 +184,19 @@
         <emoji-mart *ngIf="showEmojiPicker && message === selectedMessage" set="twitter" theme="light"
           (emojiClick)="addEmoji($event, message)"></emoji-mart>
 
-        <div class="reaction-button-bar">
-          <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-            (click)="addOrRemoveReaction(message, emoji.key)">
-            <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
+          <div class="reaction-button-bar">
+            <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+              (mouseenter)="showTooltip = emoji.key"
+              (mouseleave)="showTooltip = null"
+              (click)="addOrRemoveReaction(message, emoji.key)">
+              
+              <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
+          
+              <!-- Benutzerdefinierter Tooltip -->
+              <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(message, emoji.key)">
+              </div>
+            </div>
           </div>
-        </div>
-
 
         <mat-menu #menuTrigger="matMenu">
           <ng-container *ngIf="message.senderId === currentUserId">
