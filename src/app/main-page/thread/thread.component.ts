@@ -141,20 +141,21 @@ export class ThreadComponent implements OnInit {
     if (event) {
       event.preventDefault();
     }
-
+  
+    // Stelle sicher, dass entweder Text oder eine Datei vorhanden ist
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return;
     }
-
+  
     let chatId: string;
-
+  
     if (this.currentChat && 'id' in this.currentChat && this.currentChat.id) {
       chatId = this.currentChat.id;
     } else {
       console.error('Chat ID not found');
       return;
     }
-
+  
     if (this.selectedFile) {
       try {
         const autoId = doc(collection(this.firestore, 'dummy')).id;
@@ -167,7 +168,8 @@ export class ThreadComponent implements OnInit {
         console.error('Error uploading file:', error);
       }
     }
-
+  
+    // Erstelle eine Nachricht nur, wenn tatsächlich Text oder Anhänge vorhanden sind
     const newMessage: Message = {
       content: this.newMessageText,
       senderId: this.currentUserId,
@@ -175,13 +177,15 @@ export class ThreadComponent implements OnInit {
       chatId: chatId,
       attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };
-
+  
+    // Nachricht wird jetzt zum Thread hinzugefügt
     this.threadService.addThread(
       chatId,
       this.threadService.currentMessageId,
       newMessage
     );
-
+  
+    // Reset der Felder nach dem Senden
     this.newMessageText = '';
     this.attachmentUrl = null;
     this.selectedFile = null;
@@ -232,7 +236,21 @@ export class ThreadComponent implements OnInit {
   }
 
   loadUserProfiles(messages: Message[]) {
-    const userIds = [...new Set(messages.map(message => message.senderId))];
+    // Extrahiere alle Sender-IDs aus den Nachrichten
+    const userIds = new Set(messages.map(message => message.senderId));
+  
+    // Füge alle Benutzer-IDs aus den Reaktionen hinzu
+    messages.forEach(message => {
+      if (message.reactions) {
+        Object.values(message.reactions).forEach(userList => {
+          userList.forEach(userId => {
+            userIds.add(userId);
+          });
+        });
+      }
+    });
+  
+    // Lade die Benutzerprofile für alle gesammelten Benutzer-IDs
     userIds.forEach(userId => {
       if (!this.userProfiles[userId]) {
         this.userService.getUser(userId).subscribe((user: User) => {
@@ -594,7 +612,7 @@ export class ThreadComponent implements OnInit {
 
   getReactionUsernames(message: Message, emoji: string): string[] {
     const userIds = message.reactions?.[emoji] || [];
-    const usernames = userIds.map(userId => this.userNames[userId] || 'Unknown');
+    const usernames = userIds.map(userId => this.userProfiles[userId]?.name || 'Unknown');
     return usernames;
   }
 }

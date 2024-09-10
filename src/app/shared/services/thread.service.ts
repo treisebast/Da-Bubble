@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, map } from 'rxjs';
 import { Message } from '../models/message.model';
-import { addDoc, Timestamp } from 'firebase/firestore';
+import { addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -29,12 +29,14 @@ export class ThreadService {
     return docData(threadDoc, { idField: 'id' }) as Observable<any>;
   }
 
-  addThread(channelId: string, messageId: string, thread: any): Promise<void> {
+  async addThread(channelId: string, messageId: string, threadMetadata: any): Promise<void> {
     const threadDoc = collection(this.firestore, `channels/${channelId}/messages/${messageId}/threads`);
-    return addDoc(threadDoc, thread).then(() => {
-      this.updateThreadCount(channelId, messageId);
-      this.updateLastReplyTimestamp(channelId, messageId, thread.timestamp);
+    await addDoc(threadDoc, {
+      ...threadMetadata,
+      timestamp: serverTimestamp(),
     });
+    this.updateThreadCount(channelId, messageId);
+    this.updateLastReplyTimestamp(channelId, messageId, Timestamp.now());
   }
 
   updateThread(channelId: string, messageId: string, thread: any): Promise<void> {

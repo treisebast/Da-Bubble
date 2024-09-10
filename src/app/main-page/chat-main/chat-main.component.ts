@@ -189,20 +189,21 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   async openThread(message: Message) {
     this.chatService.setChannelTrue();
+    
     if (!message || !message.id) {
       console.error('Invalid message object:', message);
       return;
     }
-    this.threadService
-      .getThreads(this.currentChat.id, message.id)
-      .subscribe((currentThread) => {
-        this.currentThreadData = currentThread;
-        this.threadService.setCurrentThread(currentThread);
-        if (message.id) {
-          this.threadService.currentMessageId = message.id;
-          this.threadService.setCurrentMessageToOpen(message);
-        }
-      });
+  
+    this.threadService.getThreads(this.currentChat.id, message.id).subscribe((currentThread) => {
+      this.currentThreadData = currentThread;
+      this.threadService.setCurrentThread(currentThread);
+  
+      if (message.id) {
+        this.threadService.currentMessageId = message.id;
+        this.threadService.setCurrentMessageToOpen(message);
+      }
+    });
   }
 
   onMouseEnter(propertyName: string) {
