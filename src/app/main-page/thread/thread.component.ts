@@ -561,9 +561,9 @@ export class ThreadComponent implements OnInit {
   updateMessageReactions(message: Message) {
     const { chatId, id: messageId } = message;
     if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
-      this.threadService.updateThreadReactions(
+
+      this.threadService.updateOriginalMessageReactions(
         chatId,
-        this.currentMessageToOpen.id!,
         this.currentMessageToOpen.id!,
         message.reactions || {}
       ).then(() => {
@@ -572,9 +572,9 @@ export class ThreadComponent implements OnInit {
         console.error('Error updating reactions for original message:', error);
       });
     } else {
-      this.threadService.updateThreadReactions(
+      this.threadService.updateThreadMessageReactions(
         chatId,
-        this.currentMessageToOpen!.id!,
+        this.threadService.currentMessageId,
         message.id!,
         message.reactions || {}
       ).then(() => {

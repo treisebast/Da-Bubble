@@ -99,7 +99,12 @@ export class ThreadService {
     );
   }
 
-  updateThreadReactions(channelId: string, messageId: string, threadId: string, reactions: { [emoji: string]: string[] }): Promise<void> {
+  updateOriginalMessageReactions(channelId: string, messageId: string, reactions: { [emoji: string]: string[] }): Promise<void> {
+    const messageDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+    return updateDoc(messageDoc, { reactions });
+  }
+
+  updateThreadMessageReactions(channelId: string, messageId: string, threadId: string, reactions: { [emoji: string]: string[] }): Promise<void> {
     const threadDoc = doc(this.firestore, `channels/${channelId}/messages/${messageId}/threads/${threadId}`);
     return updateDoc(threadDoc, { reactions });
   }

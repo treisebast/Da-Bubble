@@ -110,6 +110,7 @@
   flex-direction: column;
   z-index: 2;
   border-radius: 30px;
+  width: fit-content;
 
   &.editing {
     width: 100%;
@@ -359,6 +360,8 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  max-width: 700px;
 
   .reaction-button {
     position: relative;

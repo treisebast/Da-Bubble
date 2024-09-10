@@ -693,6 +693,8 @@
   display: flex;
   flex-direction: row;
   gap: 8px;
+  flex-wrap: wrap;
+  max-width: 290px; 
 
   .reaction-button {
     position: relative;
