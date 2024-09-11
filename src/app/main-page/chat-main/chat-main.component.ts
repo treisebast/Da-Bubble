@@ -64,7 +64,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   clickedUserName: string = '';
 
   messages: Message[] = [];
-  newMessageText = '';
+  messages$: Observable<Message[]> = new Observable<Message[]>();  newMessageText = '';
   errorMessage: string | null = null;
   errorTimeout: any;
 
@@ -189,16 +189,16 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   async openThread(message: Message) {
     this.chatService.setChannelTrue();
-    
+
     if (!message || !message.id) {
       console.error('Invalid message object:', message);
       return;
     }
-  
+
     this.threadService.getThreads(this.currentChat.id, message.id).subscribe((currentThread) => {
       this.currentThreadData = currentThread;
       this.threadService.setCurrentThread(currentThread);
-  
+
       if (message.id) {
         this.threadService.currentMessageId = message.id;
         this.threadService.setCurrentMessageToOpen(message);
@@ -404,20 +404,20 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       this.messages = this.sortMessagesByTimestamp(messagesWithMetadata);
       this.loadUserProfiles();
       this.setLoadingState(false);
-  
+
       if (this.messages && this.userProfiles) {
         this.scrollToBottom();
       }
     });
   }
-  
+
 
   private loadMetadataForMessage(message: Message): Observable<Message> {
     if (message.attachments?.length) {
       const metadataRequests = message.attachments.map(attachment =>
         this.firebaseStorageService.getFileMetadata(attachment)
       );
-  
+
       return forkJoin(metadataRequests).pipe(
         map(metadataArray => {
           message.metadata = {};
@@ -447,10 +447,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.setLoadingState(false);
   }
 
-  
+
   private handleMessageSentSuccess(newMessage: Message): void {
-    this.messages.push(newMessage);
-    this.messages = this.sortMessagesByTimestamp(this.messages);
+    // this.messages.push(newMessage);
+    // this.messages = this.sortMessagesByTimestamp(this.messages);
     this.scrollToBottom();
     this.clearMessageInput();
     this.setLoadingState(false);
@@ -486,6 +486,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
       if (this.currentChat) {
         this.handleCurrentChat(this.currentChat);
+        this.messages$ = this.chatService.getMessagesforChat(this.currentChat.id).pipe(
+          map(messages => this.sortMessagesByTimestamp(messages))
+        );
+        this.handleCurrentChat(this.currentChat);
+        this.loadUserProfiles();
         console.log('currentChat:', this.currentChat);
       } else {
         console.error('no chat selected');
@@ -531,9 +536,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   private createAndSendMessage(): void {
     const newMessage: Message = this.buildNewMessage();
+    console.log('newMessage:', newMessage);
+    this.isLoading = false;
 
-    this.chatService
-      .addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
+    this.chatService.addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
       .then(() => {
         this.handleMessageSentSuccess(newMessage);
       })
@@ -577,7 +583,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
 
 
-  // Emoji Picker // 
+  // Emoji Picker //
   ngAfterViewInit() {
     this.scrollToBottom();
     setTimeout(() => {

@@ -122,7 +122,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
       this.channelService.getChannels(false).subscribe((channels) => {
         this.publicChannels = channels;
         this.sharedChannelService.setPublicChannels(this.publicChannels);
-        console.log('Public channels:', this.publicChannels);
       });
     } catch (error) {
       console.error('Error loading public channels:', error);
@@ -137,7 +136,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
       this.channelService.getChannels(true).subscribe((channels) => {
         this.privateChannels = channels;
         this.sharedChannelService.setPrivateChannels(this.privateChannels);
-        console.log('Private channels:', this.privateChannels);
         this.loadPrivateChannelMembers();
       });
     } catch (error) {
@@ -167,11 +165,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
           )[0];
           this.workspaceUsers.unshift(currentUser);
         }
-
-        console.log(
-          'Workspace users (currentUser on top):',
-          this.workspaceUsers
-        );
       });
     } catch (error) {
       console.error('Error loading workspace users:', error);
