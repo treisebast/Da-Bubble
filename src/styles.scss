@@ -1,4 +1,7 @@
 /* Global fontstyle from Angular Material change to fonts Nunito */
+
+//import angular material prebuilt theme azure-blue
+
 @use "@angular/material" as mat;
 
 $open-sans-typography: mat.define-typography-config($font-family: '"Nunito", sans-serif'
@@ -15,10 +18,18 @@ $app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @import "./styles/colors.scss";
 @import "./styles/reaction-tooltip.scss";
 @import '@ctrl/ngx-emoji-mart/picker';
+@font-face {
+  font-family: 'Raleway';
+  src: none;
+}
 
+body {
+  font-family: 'Arial', sans-serif; // Beispiel für eine alternative Schriftart
+}
 /* Global styles */
 * {
-  font-family: Nunito, sans-serif;
+
+  font-family: Nunito, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   scroll-behavior: smooth;
   box-sizing: border-box;
 }

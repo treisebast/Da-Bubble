@@ -56,9 +56,9 @@
         (mouseenter)="showTooltip = emoji.key"
         (mouseleave)="showTooltip = null"
         (click)="addOrRemoveReaction(emoji.key)">
-        
+
         <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
-        
+
         <!-- Benutzerdefinierter Tooltip -->
        <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
         </div>
