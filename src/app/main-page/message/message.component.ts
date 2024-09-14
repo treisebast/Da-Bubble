@@ -198,7 +198,7 @@ export class MessageComponent implements OnInit {
     }
 
     console.log('Updating message reactions:', message.reactions);
-    this.chatService.updateMessageReactions(message).then(() => {
+    this.chatService.updateMessageReactions(this.message, this.isCurrentChatPrivate).then(() => {
       this.loadReactionUsernames();
     });
   }
@@ -219,7 +219,7 @@ export class MessageComponent implements OnInit {
       }
       this.message.reactions[emoji].push(userId);
     }
-    this.chatService.updateMessageReactions(this.message).then(() => {
+    this.chatService.updateMessageReactions(this.message, this.isCurrentChatPrivate).then(() => {
       this.loadReactionUsernames();
     });
   }

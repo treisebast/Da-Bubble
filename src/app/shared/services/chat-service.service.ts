@@ -390,8 +390,7 @@ export class ChatService {
     return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
   }
 
-  updateMessageReactions(message: Message): Promise<void> {
-    const isPrivateOrNot = message.chatId.includes('dm');
+  updateMessageReactions(message: Message, isPrivateOrNot: boolean): Promise<void> {
     const channelId = message.chatId;
     const messageId = message.id!;
     const reactions = message.reactions || {};
