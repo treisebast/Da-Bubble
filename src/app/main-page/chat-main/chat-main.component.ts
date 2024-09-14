@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +13,11 @@ import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { AuthService } from '../../shared/services/auth.service';
-import { Timestamp, FieldValue, serverTimestamp, } from '@angular/fire/firestore';
+import {
+  Timestamp,
+  FieldValue,
+  serverTimestamp,
+} from '@angular/fire/firestore';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
@@ -34,7 +44,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
     ChannelInfoPopupComponent,
     ProfilComponent,
     ImageOverlayComponent,
-    PickerComponent
+    PickerComponent,
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
@@ -64,7 +74,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   clickedUserName: string = '';
 
   messages: Message[] = [];
-  messages$: Observable<Message[]> = new Observable<Message[]>();  newMessageText = '';
+  messages$: Observable<Message[]> = new Observable<Message[]>();
+  newMessageText = '';
   errorMessage: string | null = null;
   errorTimeout: any;
 
@@ -101,10 +112,19 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.loadChannelsForSearch();
   }
 
-
-  isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
+  isNewDay(
+    timestamp: Timestamp | FieldValue | undefined,
+    index: number
+  ): boolean {
     if (index === 0) return true;
-    const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
+
+    // Sicherheitsüberprüfung auf `timestamp` und vorherige Nachricht
+    const prevMessage = this.messages[index - 1];
+    if (!prevMessage || !prevMessage.timestamp || !timestamp) {
+      return false; // oder true, falls du das Verhalten anders willst
+    }
+
+    const prevDate = this.convertToDate(prevMessage.timestamp);
     const currentDate = this.convertToDate(timestamp);
     return prevDate.toDateString() !== currentDate.toDateString();
   }
@@ -143,7 +163,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.setLoadingState(true);
     this.isCurrentChatPrivate = isPrivateOrNot;
 
-    if (this.currentChat?.id) {
+    if (this.currentChat?.id && !this.currentChat?.isPrivate) {
+      this.chatService
+        .getMessages(this.currentChat.id, isPrivateOrNot)
+        .subscribe({
+          next: this.handleMessagesResponse.bind(this),
+          error: this.handleMessagesError.bind(this),
+        });
+    }
+    if (this.currentChat?.id && this.currentChat?.isPrivate) {
       this.chatService
         .getMessages(this.currentChat.id, isPrivateOrNot)
         .subscribe({
@@ -156,17 +184,40 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   }
 
   loadUserProfiles() {
-    const userIds = [
-      ...new Set(this.messages.map((message) => message.senderId)),
-    ];
-    userIds.forEach((userId) => {
-      this.userService.getUser(userId).subscribe((user: User) => {
-        this.userProfiles[userId] = {
-          name: user.name,
-          avatar: user.avatar,
-          status: user.status === 'online',
-        };
-      });
+    this.messages$.subscribe({
+      next: (messages: Message[]) => {
+        const userIds = [
+          ...new Set(messages.map((message) => message.senderId)),
+        ];
+
+        userIds.forEach((userId) => {
+          if (!this.userProfiles[userId]) {
+            this.userService.getUser(userId).subscribe({
+              next: (user: User) => {
+                this.userProfiles[userId] = {
+                  name: user.name,
+                  avatar: user.avatar,
+                  status: user.status === 'online',
+                };
+              },
+              error: (error) => {
+                console.error(
+                  `Error loading user profile for userId ${userId}:`,
+                  error
+                );
+              },
+              complete: () => {
+                console.log(`Completed loading profile for userId ${userId}`);
+              },
+            });
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading messages:', error);
+      },
+      complete: () => {
+      },
     });
   }
 
@@ -195,15 +246,17 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.threadService.getThreads(this.currentChat.id, message.id).subscribe((currentThread) => {
-      this.currentThreadData = currentThread;
-      this.threadService.setCurrentThread(currentThread);
+    this.threadService
+      .getThreads(this.currentChat.id, message.id)
+      .subscribe((currentThread) => {
+        this.currentThreadData = currentThread;
+        this.threadService.setCurrentThread(currentThread);
 
-      if (message.id) {
-        this.threadService.currentMessageId = message.id;
-        this.threadService.setCurrentMessageToOpen(message);
-      }
-    });
+        if (message.id) {
+          this.threadService.currentMessageId = message.id;
+          this.threadService.setCurrentMessageToOpen(message);
+        }
+      });
   }
 
   onMouseEnter(propertyName: string) {
@@ -263,7 +316,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
 
     if (file.size > maxSizeInKB * 1024) {
-      this.setErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+      this.setErrorMessage(
+        `Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`
+      );
       return false;
     }
 
@@ -392,39 +447,42 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
     return match
       ? channels.filter((ch) =>
-        ch.name?.toLowerCase().includes(match[1].toLowerCase())
-      )
+          ch.name?.toLowerCase().includes(match[1].toLowerCase())
+        )
       : [];
   }
-
-
   private handleMessagesResponse(messages: Message[]): void {
-    const metadataRequests: Observable<Message>[] = messages.map(message => this.loadMetadataForMessage(message));
+    const validMessages = messages.filter((message) => message.timestamp);
+    const sortedMessages = this.sortMessagesByTimestamp(validMessages);
+
+    const metadataRequests: Observable<Message>[] = sortedMessages.map(
+      (message) => this.loadMetadataForMessage(message)
+    );
+
     forkJoin(metadataRequests).subscribe((messagesWithMetadata: Message[]) => {
-      this.messages = this.sortMessagesByTimestamp(messagesWithMetadata);
+      this.messages$ = of(messagesWithMetadata);
       this.loadUserProfiles();
       this.setLoadingState(false);
 
-      if (this.messages && this.userProfiles) {
+      if (this.messages$ && this.userProfiles) {
         this.scrollToBottom();
       }
     });
   }
 
-
   private loadMetadataForMessage(message: Message): Observable<Message> {
     if (message.attachments?.length) {
-      const metadataRequests = message.attachments.map(attachment =>
+      const metadataRequests = message.attachments.map((attachment) =>
         this.firebaseStorageService.getFileMetadata(attachment)
       );
 
       return forkJoin(metadataRequests).pipe(
-        map(metadataArray => {
+        map((metadataArray) => {
           message.metadata = {};
           metadataArray.forEach((metadata, index) => {
             message.metadata![message.attachments![index]] = {
               name: metadata.name,
-              size: metadata.size
+              size: metadata.size,
             };
           });
           return message;
@@ -435,18 +493,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   private handleMessagesError(error: any): void {
     console.error('Error loading messages:', error);
     this.setLoadingState(false);
   }
 
-
   private handleMessageSentError(error: any): void {
     console.error('Error sending message:', error);
     this.setLoadingState(false);
   }
-
 
   private handleMessageSentSuccess(newMessage: Message): void {
     // this.messages.push(newMessage);
@@ -483,19 +538,31 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   private subscribeToCurrentChat(): void {
     this.chatService.currentChat$.subscribe((chat) => {
       this.currentChat = chat;
+      if (!this.currentChat) {
+        console.error('No chat selected');
+        return;
+      }
 
-      if (this.currentChat) {
-        this.handleCurrentChat(this.currentChat);
-        this.messages$ = this.chatService.getMessagesforChat(this.currentChat.id).pipe(
-          map(messages => this.sortMessagesByTimestamp(messages))
-        );
-        this.handleCurrentChat(this.currentChat);
-        this.loadUserProfiles();
-        console.log('currentChat:', this.currentChat);
+      this.handleCurrentChat(this.currentChat);
+
+      if (this.currentChat.isPrivate) {
+        this.loadPrivateChatMessages(this.currentChat.id);
       } else {
-        console.error('no chat selected');
+        this.loadPublicChatMessages(this.currentChat.id);
       }
     });
+  }
+
+  private loadPublicChatMessages(channelId: string): void {
+    this.messages$ = this.chatService
+      .getMessagesforChat(channelId)
+      .pipe(map((messages) => this.sortMessagesByTimestamp(messages)));
+  }
+
+  private loadPrivateChatMessages(channelId: string): void {
+    this.messages$ = this.chatService
+      .getMessagesforPrivateChat(channelId)
+      .pipe(map((messages) => this.sortMessagesByTimestamp(messages)));
   }
 
   private subscribeToSelectedChat(): void {
@@ -536,10 +603,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   private createAndSendMessage(): void {
     const newMessage: Message = this.buildNewMessage();
-    console.log('newMessage:', newMessage);
     this.isLoading = false;
 
-    this.chatService.addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
+    this.chatService
+      .addMessage(this.currentChat.id, newMessage, this.isCurrentChatPrivate)
       .then(() => {
         this.handleMessageSentSuccess(newMessage);
       })
@@ -581,13 +648,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.overlayImageUrl = null;
   }
 
-
-
   // Emoji Picker //
   ngAfterViewInit() {
     this.scrollToBottom();
     setTimeout(() => {
-      document.addEventListener('click', this.closeEmojiPickerOnOutsideClick.bind(this));
+      document.addEventListener(
+        'click',
+        this.closeEmojiPickerOnOutsideClick.bind(this)
+      );
     }, 0);
   }
 
@@ -603,7 +671,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   closeEmojiPickerOnOutsideClick(event: MouseEvent) {
     const pickerElement = document.querySelector('emoji-mart');
     const targetElement = event.target as Node;
-    if (!this.preventImmediateClose && pickerElement && !pickerElement.contains(targetElement)) {
+    if (
+      !this.preventImmediateClose &&
+      pickerElement &&
+      !pickerElement.contains(targetElement)
+    ) {
       this.showEmojiPicker = false;
     }
     this.preventImmediateClose = true;

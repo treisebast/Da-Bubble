@@ -3,7 +3,13 @@ import { BehaviorSubject, forkJoin, from, Observable, switchMap } from 'rxjs';
 import { Channel } from '../models/channel.model';
 import { ChannelMessageService } from './channel-message.service';
 import { Message } from '../models/message.model';
-import { collection, collectionData, FieldValue, Firestore, Timestamp } from '@angular/fire/firestore';
+import {
+  collection,
+  collectionData,
+  FieldValue,
+  Firestore,
+  Timestamp,
+} from '@angular/fire/firestore';
 import { User } from '../models/user.model';
 import { FirebaseStorageService } from './firebase-storage.service';
 
@@ -33,7 +39,7 @@ export class ChatService {
     private channelMessageService: ChannelMessageService,
     private storageService: FirebaseStorageService,
     private firestore: Firestore
-  ) { }
+  ) {}
 
   /**
    * Sets the current chat and loads its messages.
@@ -82,6 +88,8 @@ export class ChatService {
             this.messagesSource.next(messages);
             // Notify that loading is complete
             this.setLoadingState(false);
+            console.log('Messages loaded successfully');
+            console.log('Messages:', messages);
           },
           error: (error) => {
             console.error('Error loading messages:', error);
@@ -120,13 +128,30 @@ export class ChatService {
    * @param {boolean} isPrivateOrNot - The chat type.
    * @returns {Observable<Message[]>} An observable of the channel's messages.
    */
-  getMessages(channelId: string, isPrivateOrNot: boolean): Observable<Message[]> {
-    return this.channelMessageService.getChannelMessages(channelId, isPrivateOrNot);
+  getMessages(
+    channelId: string,
+    isPrivateOrNot: boolean
+  ): Observable<Message[]> {
+    return this.channelMessageService.getChannelMessages(
+      channelId,
+      isPrivateOrNot
+    );
   }
+
   getMessagesforChat(channelId: string): Observable<Message[]> {
     const messageCollection = collection(
       this.firestore,
       `channels/${channelId}/messages`
+    );
+    return collectionData(messageCollection, { idField: 'id' }) as Observable<
+      Message[]
+    >;
+  }
+
+  getMessagesforPrivateChat(channelId: string): Observable<Message[]> {
+    const messageCollection = collection(
+      this.firestore,
+      `directMessages/${channelId}/messages`
     );
     return collectionData(messageCollection, { idField: 'id' }) as Observable<
       Message[]
@@ -146,6 +171,7 @@ export class ChatService {
     return this.channelMessageService
       .addChannelMessage(channelId, message, isPrivateOrNot)
       .then(() => {
+        console.log('Message added successfully');
         // const currentMessages = this.messagesSource.getValue();
         // currentMessages.push(message);
         // currentMessages.sort(
@@ -373,13 +399,26 @@ export class ChatService {
 
     for (const [emoji, users] of Object.entries(reactions)) {
       if (users && Array.isArray(users)) {
-        const validUsers = users.filter(user => user !== undefined && user !== null);
+        const validUsers = users.filter(
+          (user) => user !== undefined && user !== null
+        );
         if (validUsers.length > 0) {
           cleanedReactions[emoji] = validUsers;
         }
       }
     }
 
-    return this.channelMessageService.updateChannelMessageReactions(channelId, messageId, cleanedReactions, isPrivateOrNot);
-}
+    // Log to check cleaned reactions
+    console.log('Cleaned reactions before saving:', cleanedReactions);
+
+    return this.channelMessageService
+      .updateChannelMessageReactions(
+        channelId,
+        messageId,
+        cleanedReactions,
+        isPrivateOrNot
+      )
+      .then(() => console.log('Reactions successfully updated'))
+      .catch((error) => console.error('Error updating reactions:', error));
+  }
 }

@@ -1,10 +1,10 @@
 <div class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }">
-  <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" alt="{{ userProfile.name }}" class="profile-img" />
+  <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
     <div class="message-header">
       <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'HH:mm' }} Uhr</span>
-      <span class="name" (click)="openProfilePopup(message.senderId)">{{ userProfile.name }}</span>
+      <span class="name" (click)="openProfilePopup(message.senderId)">{{ userProfile?.name }}</span>
     </div>
 
     <div class="reactionBar" [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">
@@ -60,7 +60,7 @@
         <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
 
         <!-- Benutzerdefinierter Tooltip -->
-       <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
+        <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
         </div>
       </div>
       <div class="mart-button" (click)="toggleEmojiPicker()"></div>

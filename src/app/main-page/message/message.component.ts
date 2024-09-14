@@ -21,7 +21,7 @@ import { UserService } from '../../shared/services/user.service';
 
 export class MessageComponent implements OnInit {
   @Input() message!: Message;
-  @Input() userProfile!: User;
+  @Input() userProfile: User | undefined;
   @Input() currentUserId!: string;
   @Input() isCurrentUser!: boolean;
   @Input() isCurrentChatPrivate!: boolean;
@@ -49,7 +49,6 @@ export class MessageComponent implements OnInit {
 
   ngOnInit(): void {
     console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
-    console.log('this Chat is Private:', this.isCurrentChatPrivate);
     this.userService.lastTwoEmojis$.subscribe(emojis => {
       this.lastTwoEmojis = emojis;
     });
@@ -198,11 +197,10 @@ export class MessageComponent implements OnInit {
       delete message.reactions[emoji];
     }
 
+    console.log('Updating message reactions:', message.reactions);
     this.chatService.updateMessageReactions(message).then(() => {
       this.loadReactionUsernames();
     });
-
-    this.userService.addEmoji(emoji);
   }
 
   addOrRemoveReaction(emoji: string) {

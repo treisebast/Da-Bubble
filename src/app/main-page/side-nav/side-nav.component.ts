@@ -243,8 +243,8 @@ export class SideNavComponent implements OnInit, OnDestroy {
   async findOrCreatePrivateChannelWithUser(user: UserWithImageStatus) {
     const isSelfChat = user.userId === this.currentUser.userId;
     const privateChat = this.findExistingPrivateChannel(user, isSelfChat);
-
     if (!privateChat) {
+      console.log('Creating new private channel with user:', user);
       const newChannel = this.createNewChannel(user, isSelfChat);
       await this.addAndSetChannel(newChannel);
     } else {
@@ -306,6 +306,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
       const createdChannel = { ...newChannel, id: docRef.id };
       this.privateChannels.push(createdChannel);
       this.chatService.setCurrentChat(createdChannel, true);
+      this.showChannel(createdChannel, true);
     } catch (error) {
       console.error('Error creating private channel:', error);
     }
@@ -336,7 +337,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
    * Shows a channel.
    * @param {Channel} channel - The channel to show.
    */
-  showChannel(channel: Channel, isPrivate: boolean = false) {
+  showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
   }
 
