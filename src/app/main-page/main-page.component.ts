@@ -67,7 +67,7 @@ export class MainPageComponent implements OnInit {
   currentView: 'channels' | 'main' | 'secondary' = 'channels';
   isMobileView: boolean = false;
   private chatService = inject(ChatService);
-
+  private previousChatId: string | null = null;
   workspaceMenu: string = 'Workspace-Menü schließen';
 
   @HostListener('window:resize', ['$event'])
@@ -80,6 +80,13 @@ export class MainPageComponent implements OnInit {
 
     this.chatService.getChannelStatus().subscribe((status: boolean) => {
       this.showSecondary = status;
+    });
+
+    this.chatService.currentChat$.subscribe((chat) => {
+      if (this.previousChatId && chat?.id !== this.previousChatId) {
+        this.closeThreadComponent();
+      }
+      this.previousChatId = chat?.id || null;
     });
   }
 
