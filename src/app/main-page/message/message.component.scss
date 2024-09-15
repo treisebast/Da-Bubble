@@ -240,7 +240,7 @@
 .message-left,
 .message-right {
   display: flex;
-  margin: 8px 0;
+  margin: 8px 0px 8px 8px;
 }
 
 .message-left .message-header {
@@ -253,11 +253,11 @@
   flex-direction: row-reverse;
   align-items: flex-start;
 
-  >.profile-img {
+  > .profile-img {
     left: 16px;
   }
 
-  >.reactionBar {
+  > .reactionBar {
     left: 16px;
   }
 }
@@ -267,11 +267,11 @@
   flex-direction: row;
   align-items: flex-start;
 
-  >.profile-img {
+  > .profile-img {
     right: 16px;
   }
 
-  >.reactionBar {
+  > .reactionBar {
     right: 16px;
   }
 }
@@ -309,7 +309,6 @@
     font-size: 22px;
     line-height: 1;
   }
-
 
   &.reactionBar-left {
     left: 100px;
@@ -590,5 +589,4 @@
   &:hover {
     background-image: url(../../../assets/img/chatChannel/add_reaction_hover.svg);
   }
-
 }

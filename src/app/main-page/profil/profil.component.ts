@@ -14,6 +14,7 @@ import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../../shared/services/chat-service.service';
+import { AvatarChoiceComponent } from '../../main-sign-in/avatar-choice/avatar-choice.component';
 
 @Component({
   selector: 'app-profil',
@@ -28,6 +29,7 @@ import { ChatService } from '../../shared/services/chat-service.service';
     MatCardModule,
     MatButtonModule,
     EditProfilComponent,
+    AvatarChoiceComponent,
   ],
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
@@ -38,6 +40,7 @@ export class ProfilComponent implements OnInit {
   onclickUserID: string = '';
 
   isEditing = false;
+  isEditingAvatar = false;
   profiltext: string = 'Profil';
   ownUser: Partial<User> = {};
   ownUserID: string = '';
@@ -94,5 +97,9 @@ export class ProfilComponent implements OnInit {
       this.subs.add(userSub);
       this.closeProfil();
     });
+  }
+
+  editingAvatar() {
+    this.isEditingAvatar = true;
   }
 }

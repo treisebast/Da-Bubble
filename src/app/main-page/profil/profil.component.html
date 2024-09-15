@@ -1,14 +1,18 @@
 <div class="modal-background" (click)="closeProfil()">
   <div class="max-width">
 
-    <mat-card class="profil-card" (click)="$event.stopPropagation()">
+    <app-avatar-choice class="profil-card" *ngIf="isEditingAvatar"
+      (click)="$event.stopPropagation()"></app-avatar-choice>
+    <!-- TODO: rework -->
+
+    <mat-card class="profil-card" (click)="$event.stopPropagation()" *ngIf="!isEditingAvatar">
       <div class="profil-card-container">
         <div class="profil-header">
           <mat-card-title>{{ profiltext }}</mat-card-title>
           <div class="close-img" (click)="closeProfil()"></div>
         </div>
 
-        <div class="profil-img-container">
+        <div class="profil-img-container" (click)="isEditing ? editingAvatar() : null; $event.stopPropagation()">
           <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser" />
         </div>
 
@@ -25,7 +29,9 @@
               <img
                 [src]="onclickUser.status === 'online' ? './../../../assets/img/profilecard/online.svg' : './../../../assets/img/profilecard/offline.svg'"
                 alt="Statusimage" />
-              <mat-card-subtitle>{{ onclickUser.status }}</mat-card-subtitle>
+              <mat-card-subtitle [ngClass]="onclickUser.status === 'online' ? 'online' : 'offline'">{{
+                onclickUser.status
+                }}</mat-card-subtitle>
             </div>
           </div>
 

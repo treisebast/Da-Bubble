@@ -178,11 +178,18 @@
     gap: 15px;
 
     mat-card-subtitle {
-      color: var(--online-green, rgb(146, 200, 62));
       font-size: 20px;
       margin: 0;
     }
   }
+}
+
+.online {
+  color: var(--online-green, rgb(146, 200, 62));
+}
+
+.offline {
+  color: var(--text-grey, rgba(104, 104, 104, 1));
 }
 
 .mail-container {
