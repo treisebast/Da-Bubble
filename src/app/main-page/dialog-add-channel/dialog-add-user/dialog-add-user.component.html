@@ -7,46 +7,23 @@
     <h2>für Channel: {{ channel.name }}</h2>
     <mat-dialog-content class="mat-typography">
       <div class="custom-radio-group">
-        <div
-          class="custom-radio-button"
-          (click)="selectOption('allFromChannel')"
-        >
-          <div
-            class="radio-circle"
-            [class.checked]="selectedRadio === 'allFromChannel'"
-          ></div>
+        <div class="custom-radio-button" (click)="selectOption('allFromChannel')">
+          <div class="radio-circle" [class.checked]="selectedRadio === 'allFromChannel'"></div>
           <mat-label>Alle Mitglieder von OfficeTeam hinzufügen</mat-label>
         </div>
-        <div
-          class="custom-radio-button"
-          (click)="selectOption('chooseUsersToAdd')"
-        >
-          <div
-            class="radio-circle"
-            [class.checked]="selectedRadio === 'chooseUsersToAdd'"
-          ></div>
+        <div class="custom-radio-button" (click)="selectOption('chooseUsersToAdd')">
+          <div class="radio-circle" [class.checked]="selectedRadio === 'chooseUsersToAdd'"></div>
           <mat-label>Bestimmte Leute hinzufügen</mat-label>
         </div>
       </div>
       <p>You selected {{ selectedRadio }}</p>
-      <input
-        matInput
-        [(ngModel)]="searchInput"
-        (ngModelChange)="filterUsers()"
-        *ngIf="
+      <input matInput [(ngModel)]="searchInput" (ngModelChange)="filterUsers()" *ngIf="
           selectedRadio === 'chooseUsersToAdd' || selectedRadio === undefined
-        "
-        type="text"
-        placeholder="Name eingeben"
-      />
+        " type="text" placeholder="Name eingeben" />
 
       <div *ngIf="filteredUsers.length > 0">
         <span *ngFor="let user of filteredUsers">
-          <div
-            class="userToClick"
-            (click)="checkUsers(user)"
-            [ngClass]="{ 'selected': isSelected(user) }"
-          >
+          <div class="userToClick" (click)="selectUsers(user)" [ngClass]="{ 'selected': isSelected(user) }">
             <h2>
               {{ user.name }}
             </h2>
@@ -56,13 +33,8 @@
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button
-        class="addUsersBtn"
-        mat-dialog-close
-        [disabled]="loading"
-        (click)="addUsersToChannel(channel)"
-        mat-flat-button
-      >
+      <button class="addUsersBtn" mat-dialog-close [disabled]="loading" (click)="addUsersToChannel(channel, this.selectedRadio)"
+        mat-flat-button>
         Erstellen
       </button>
     </mat-dialog-actions>

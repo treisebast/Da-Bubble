@@ -11,6 +11,7 @@ import {
   query,
   orderBy,
   DocumentReference,
+  setDoc,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
@@ -51,24 +52,34 @@ export class ChannelService {
   /**
    * Add a new channel (public or private)
    * @param channel - Channel object
-   * @returns Promise<void>
+   * @returns Promise<DocumentReference>
    */
   async addChannel(channel: Channel): Promise<DocumentReference> {
-    const collectionRef = channel.isPrivate ? collection(this.firestore, 'directMessages') : collection(this.firestore, 'channels');
-    const docRef = await addDoc(collectionRef, channel);
-    await updateDoc(docRef, { id: docRef.id });
+    const collectionRef = channel.isPrivate
+      ? collection(this.firestore, 'directMessages')
+      : collection(this.firestore, 'channels');
+
+    const docRef = doc(collectionRef);
+    channel.id = docRef.id;
+    await setDoc(docRef, channel);
+
     return docRef;
   }
 
   /**
-   * Update an existing channel (public or private)
-   * @param channel - Channel object
-   * @returns Promise<void>
+   * Updates a channel with the specified channelId.
+   *
+   * @param channelId - The ID of the channel to be updated.
+   * @param updatedFields - The updated fields of the channel.
+   * @returns A promise that resolves when the channel is successfully updated.
    */
-  updateChannel(channel: Channel): Promise<void> {
-    const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
-    const channelDoc = doc(this.firestore, `${collectionPath}/${channel.id}`);
-    return updateDoc(channelDoc, { ...channel });
+  updateChannel(channel: Channel, updatedFields: Partial<Omit<Channel, 'id'>>): Promise<void> {
+    const channelDocRef = doc(this.firestore, `channels/${channel.id}`);
+
+    return updateDoc(channelDocRef, {
+      ...updatedFields,
+      updatedAt: new Date(),
+    });
   }
 
   /**
@@ -82,25 +93,4 @@ export class ChannelService {
     const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
     return deleteDoc(channelDoc);
   }
-
-
-  /**
-   * Private method to add a channel to Firestore
-   * @param channel - Channel object
-   * @param collectionRef - Firestore collection reference
-   * @param collectionPath - string collection path
-   * @returns Promise<void>
-   */
-  private async addChannelToCollection(channel: Channel, collectionRef: any, collectionPath: string): Promise<void> {
-    try {
-      const docRef = await addDoc(collectionRef, channel);
-      await updateDoc(doc(this.firestore, `${collectionPath}/${docRef.id}`), { id: docRef.id });
-    } catch (error) {
-      console.error(`Error adding channel to ${collectionPath}:`, error);
-    }
-  }
-
-
-
-
 }

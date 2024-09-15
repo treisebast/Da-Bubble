@@ -34,7 +34,7 @@ import { DialogAddUserComponent } from './dialog-add-user/dialog-add-user.compon
     MatProgressBarModule,
     CommonModule,
     MatDialogModule,
-    DialogAddUserComponent
+    DialogAddUserComponent,
   ],
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss'],
@@ -81,35 +81,41 @@ export class DialogAddChannelComponent {
   }
 
   /**
-   * Save the new channel
+   * Creates a new channel and navigates to the add users page.
    */
   async createChannelAndGoToAddUsers() {
     const newChannel: Channel = this.createChannelObject();
     try {
-      await this.saveChannelToFirbase(newChannel);
+      await this.saveChannelToFirebase(newChannel).then(() => {
+        this.openAddUsersToChannelDialog(newChannel);
+      });
     } catch (error) {
       console.error('Error creating channel:', error);
-    } finally {
-      this.addUsersToChannel(newChannel);
     }
   }
 
   /**
-   * Add users to the channel
-   * @param newChannel
+   * Opens the dialog to add users to a channel.
+   * @param newChannel - The new channel to add users to.
    */
-  addUsersToChannel(newChannel: Channel) {
+  openAddUsersToChannelDialog(newChannel: Channel) {
     const dialogRef = this.dialog.open(DialogAddUserComponent, {
       data: { channel: newChannel },
     });
   }
 
-  async saveChannelToFirbase(newChannel: Channel) {
+  /**
+   * Saves a channel to Firebase.
+   * @param newChannel - The new channel to be saved.
+   */
+  async saveChannelToFirebase(newChannel: Channel) {
     this.loading = true;
 
     try {
-      // await this.channelService.addChannel(newChannel);
-      await this.fakeDelay();
+      const channelDocRef = await this.channelService.addChannel(newChannel);
+      newChannel.id = channelDocRef.id;
+
+      console.log('adding Channel:', newChannel);
       this.dialogRef.close(newChannel);
     } catch (error) {
       console.error('Error adding channel:', error);
@@ -118,20 +124,13 @@ export class DialogAddChannelComponent {
     }
   }
 
-  fakeDelay() {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 1000);
-    });
-  }
-
   /**
    * Create a Channel object
    * @returns Channel
    */
   private createChannelObject(): Channel {
     return {
+      id: '',
       name: this.channelName,
       description: this.description,
       createdBy: this.currentUserId,

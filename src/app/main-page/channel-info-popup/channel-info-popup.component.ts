@@ -37,17 +37,19 @@ export class ChannelInfoPopupComponent {
   }
 
   async saveName() {
-    if (this.channel) {
+    if (this.channel && this.editedName !== this.channel.name) {
+      const updatedFields = { name: this.editedName };
+      await this.channelService.updateChannel(this.channel, updatedFields);
       this.channel.name = this.editedName;
-      await this.channelService.updateChannel(this.channel);
       this.isEditingName = false;
     }
   }
 
   async saveDescription() {
-    if (this.channel) {
+    if (this.channel && this.editedDescription !== this.channel.description) {
+      const updatedFields = { description: this.editedDescription };
+      await this.channelService.updateChannel(this.channel, updatedFields);
       this.channel.description = this.editedDescription;
-      await this.channelService.updateChannel(this.channel);
       this.isEditingDescription = false;
     }
   }

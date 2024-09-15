@@ -15,7 +15,12 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Channel } from '../../../shared/models/channel.model';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +28,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { UserService } from '../../../shared/services/user.service';
 import { User } from '../../../shared/models/user.model';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ChannelService } from '../../../shared/services/channel.service';
 
 @Component({
   selector: 'app-dialog-add-user',
@@ -66,7 +72,8 @@ export class DialogAddUserComponent {
   constructor(
     private dialogRef: MatDialogRef<DialogAddUserComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { channel: Channel },
-    private userService: UserService
+    private userService: UserService,
+    private channelService: ChannelService
   ) {
     this.channel = data.channel;
     this.initialize();
@@ -97,14 +104,26 @@ export class DialogAddUserComponent {
    * Add users to the channel and close the dialog
    * @param channel - The channel to which users will be added
    */
-  addUsersToChannel(channel: Channel): void {
+  async addUsersToChannel(
+    channel: Channel,
+    selectedRadio: string
+  ): Promise<void> {
     this.loading = true;
-    console.log('Adding users to channel:', this.selectedUsers);
-    // fake delay
-    setTimeout(() => {
+
+    const usersToAdd = (
+      selectedRadio === 'allFromChannel' ? this.loadedUsers : this.selectedUsers
+    ).map((user) => user.userId);
+
+    try {
+      const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
+      await this.channelService.updateChannel(channel, {
+        members: updatedMembers,
+      });
+    } catch (error) {
+      console.error('Error adding users to channel:', error);
+    } finally {
       this.loading = false;
-      this.closeDialog();
-    }, 1000); // fake async operation with a timeout
+    }
   }
 
   /**
@@ -118,15 +137,15 @@ export class DialogAddUserComponent {
    * Check or uncheck users in the selection list
    * @param user - The user object that was clicked
    */
-  checkUsers(user: User): void {
-    const index = this.selectedUsers.findIndex(u => u.userId === user.userId);
+  selectUsers(user: User): void {
+    const index = this.selectedUsers.findIndex((u) => u.userId === user.userId);
     if (index === -1) {
       this.selectedUsers.push(user);
+      console.log('user added to selectedUsers:', this.selectedUsers);
     } else {
       this.selectedUsers.splice(index, 1);
+      console.log('user removed from selectedUsers:', this.selectedUsers);
     }
-    console.log('Selected User:', user);
-    console.log('Selected Users Array:', this.selectedUsers);
   }
 
   /**
@@ -135,7 +154,7 @@ export class DialogAddUserComponent {
    * @returns boolean - Whether the user is selected or not
    */
   isSelected(user: User): boolean {
-    return this.selectedUsers.some(u => u.userId === user.userId);
+    return this.selectedUsers.some((u) => u.userId === user.userId);
   }
 
   // -----------------------------------------------------
