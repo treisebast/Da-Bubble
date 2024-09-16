@@ -47,7 +47,7 @@ export class UserService {
     return setDoc(userDoc, user);
   }
 
-  
+
   /**
    * Updates an existing user in the Firestore collection.
    * @param {User} user - The user to update.

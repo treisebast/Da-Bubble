@@ -68,6 +68,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   currentThreadData: any;
   overlayImageUrl: string | null = null;
   userProfiles: { [key: string]: any } = {};
+  usersOfSelectedChannel: User[] = [];
   currentUserId = '';
   currentUserName = '';
   clickedUser: User | null = null;
@@ -514,7 +515,20 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   private handleCurrentChat(chat: any): void {
     const isPrivateOrNot = chat.isPrivate;
     this.getUserNameById(chat);
+    this.getUsersOfSelectedChannel(chat);
+    console.log('handleCurrentChat:', chat);
     this.loadMessages(isPrivateOrNot);
+  }
+
+  private getUsersOfSelectedChannel(chat: any) {
+    if (chat && chat.members && chat.members.length > 0) {
+      this.userService.getUsers().subscribe((users) => {
+        this.usersOfSelectedChannel = users.filter((user) =>
+          chat.members.includes(user.userId)
+        );
+        console.log('usersOfSelectedChannel:', this.usersOfSelectedChannel);
+      });
+    }
   }
 
   private setLoadingState(isLoading: boolean) {
@@ -538,6 +552,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   private subscribeToCurrentChat(): void {
     this.chatService.currentChat$.subscribe((chat) => {
       this.currentChat = chat;
+      console.log('currentChat:', this.currentChat);
       if (!this.currentChat) {
         console.error('No chat selected');
         return;
@@ -638,6 +653,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.attachmentUrl = null;
     this.selectedFile = null;
     this.previewUrl = null;
+  }
+
+  addUserPopup(currentChannel: Channel) {
+    console.log('addUserPopup:', currentChannel);
+  }
+
+  showUserListPopup(currentChannel: Channel) {
+    console.log('showUserListPopup:', currentChannel);
   }
 
   openOverlay(imageUrl: string) {

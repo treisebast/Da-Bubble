@@ -44,7 +44,13 @@
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
-        <div>
+        <div class="channelMembersIcons"  (click)="showUserListPopup(currentChat)">
+          <ng-container *ngFor="let user of usersOfSelectedChannel | slice:0:3">
+            <img *ngIf="currentChat.members.length > 0" [src]="user.avatar" alt="user" />
+          </ng-container>
+          <div class="amountUsersIcon"> {{ usersOfSelectedChannel.length }} </div>
+        </div>
+        <div class="addUserIconDiv"  (click)="addUserPopup(currentChat)">
           <img src="../assets/img/chatChannel/add_members_button.svg" alt="add user" />
         </div>
       </div>

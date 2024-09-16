@@ -106,13 +106,53 @@
     width: 200px;
     padding-right: 16px;
 
-    div {
+    .channelMembersIcons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 30px;
+
+      img:first-child {
+        margin-left: 0px;
+      }
+
+
+      img {
+        width: 40px;
+        height: 40px;
+        border-radius: 100%;
+        border: 2px solid #fff;
+        margin-left: -10px;
+      }
+
+      .amountUsersIcon {
+        margin: 0 10px;
+        font-size: 20px;
+        line-height: 27.28px;
+        font-weight: 600;
+        font-family: 'Nunito';
+      }
+
+      &:hover {
+        transition: all 0.2s ease-in;
+        background:  #ECEEFE;
+        cursor: pointer;
+
+        .amountUsersIcon {
+          color: #535AF1;
+        }
+      }
+    }
+
+    .addUserIconDiv {
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: var(--main-background);
       padding: 8px;
       border-radius: 20px;
+      margin-left: 10px;
 
       img {
         &:hover {
