@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChannelService } from '../../shared/services/channel.service';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
+import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-channel-info-popup',
@@ -18,13 +19,17 @@ export class ChannelInfoPopupComponent {
   isEditingDescription = false;
   editedName: string = '';
   editedDescription: string = '';
+  createdByName: string = '';
 
-  constructor(private channelService: ChannelService) {}
+  constructor(private channelService: ChannelService, private userService: UserService) { }
 
   ngOnInit() {
     if (this.channel) {
       this.editedName = this.channel.name ?? '';
       this.editedDescription = this.channel.description ?? '';
+      this.userService.getUser(this.channel.createdBy).subscribe((user) => {
+        this.createdByName = user.name;
+      });
     }
   }
 
