@@ -11,8 +11,10 @@
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
         <img src="{{ currentUser.avatar }}" alt="" class="profile-img" />
-        <img *ngIf="currentUser.status === 'online'" src="./assets/img/online.png" alt="" class="online" />
-        <img *ngIf="currentUser.status === 'offline'" src="./assets/img/offline.png" alt="" class="online" />
+        <!-- Status icons -->
+        <div *ngIf="currentUser.status === 'online'" class="status-indicator online"></div>
+        <div *ngIf="currentUser.status === 'away'" class="status-indicator away"></div>
+        <div *ngIf="currentUser.status === 'offline'" class="status-indicator offline"></div>
       </div>
       <mat-icon fontIcon="keyboard_arrow_down"></mat-icon>
     </div>

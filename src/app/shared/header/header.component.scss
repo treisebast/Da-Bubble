@@ -44,10 +44,26 @@ header {
           width: 100%;
         }
 
-        .online {
+        .status-indicator {
           position: absolute;
           bottom: 0;
           right: 0;
+          width: 17px;
+          height: 17px;
+          border-radius: 50%;
+          border: 2px solid #eceefe;
+
+          &.online {
+            background-color: #92c83e;
+          }
+
+          &.away {
+            background-color: #ffc107;
+          }
+
+          &.offline {
+            background-color: #686868;
+          }
         }
       }
 

@@ -19,8 +19,77 @@ import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
   providedIn: 'root',
 })
 export class AuthService {
+  private awayTimeout: any;
+  private offlineTimeout: any;
+  private readonly AWAY_LIMIT = 5000;
+  private readonly OFFLINE_LIMIT = 10000;
+  private currentStatus: 'online' | 'away' | 'offline' = 'offline';
+
   constructor(private auth: Auth, private firestore: Firestore) {
     this.checkAndSetUserOnlineStatus();
+    this.monitorUserActivity();
+  }
+
+  /**
+   * Monitors user activity by listening for 'mousemove' and 'keypress' events.
+   * When these events are detected, it updates the user's online status.
+   * Additionally, it resets any existing timeouts related to user activity.
+   *
+   * @private
+   */
+  private monitorUserActivity(): void {
+    document.addEventListener('mousemove', this.setOnlineStatus.bind(this));
+    document.addEventListener('keypress', this.setOnlineStatus.bind(this));
+    this.resetTimeouts();
+  }
+
+  /**
+   * Sets the online status of the current user to 'online' if they are authenticated
+   * and their current status is not already 'online'. It also resets any existing timeouts.
+   *
+   * @private
+   * @returns {void}
+   */
+  private setOnlineStatus(): void {
+    if (this.auth.currentUser && this.currentStatus !== 'online') {
+      this.setUserOnlineStatus(this.auth.currentUser.uid, 'online');
+      this.currentStatus = 'online';
+    }
+    this.resetTimeouts();
+  }
+
+  /**
+   * Resets the away and offline timeouts for the current user.
+   *
+   * This method clears any existing timeouts for setting the user's status to 'away' or 'offline',
+   * and then sets new timeouts based on the predefined limits (`AWAY_LIMIT` and `OFFLINE_LIMIT`).
+   *
+   * When the `awayTimeout` is triggered, it checks if the current user is authenticated and if their
+   * status is not already 'away'. If these conditions are met, it updates the user's status to 'away'.
+   *
+   * Similarly, when the `offlineTimeout` is triggered, it checks if the current user is authenticated
+   * and if their status is not already 'offline'. If these conditions are met, it updates the user's
+   * status to 'offline'.
+   *
+   * @private
+   */
+  private resetTimeouts(): void {
+    clearTimeout(this.awayTimeout);
+    clearTimeout(this.offlineTimeout);
+
+    this.awayTimeout = setTimeout(() => {
+      if (this.auth.currentUser && this.currentStatus !== 'away') {
+        this.setUserOnlineStatus(this.auth.currentUser.uid, 'away');
+        this.currentStatus = 'away';
+      }
+    }, this.AWAY_LIMIT);
+
+    this.offlineTimeout = setTimeout(() => {
+      if (this.auth.currentUser && this.currentStatus !== 'offline') {
+        this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline');
+        this.currentStatus = 'offline';
+      }
+    }, this.OFFLINE_LIMIT);
   }
 
   /**
@@ -127,7 +196,7 @@ export class AuthService {
    */
   private setUserOnlineStatus(
     userId: string,
-    status: 'online' | 'offline'
+    status: 'online' | 'away' | 'offline'
   ): Promise<void> {
     const userDocRef = doc(this.firestore, `users/${userId}`);
     return updateDoc(userDocRef, {

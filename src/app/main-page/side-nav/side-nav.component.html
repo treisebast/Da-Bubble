@@ -31,20 +31,24 @@
     <table>
       <div [@dropDown]="directMessagesIsDropedDown ? 'expanded' : 'collapsed'" class="channels"
         [ngStyle]="{'overflow-y': directMessagesIsDropedDown ? 'visible' : 'hidden'}">
-        <tr class="message-tr" *ngFor="let user of workspaceUsers"
+        <tr class="message-tr" *ngFor="let user of workspaceUsers; trackBy: trackByUserId"
           (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
 
-          <!-- Placeholder spinner while image is loading -->
-          <mat-spinner *ngIf="!user.isImageLoaded" diameter="30"></mat-spinner>
+          <!-- Avatar -->
+          <ng-container>
+            <img *ngIf="user.avatar; else avatarSpinner" class="table-profile-img" [src]="user.avatar"
+              alt="profile image" (load)="onImageLoad(user.userId)" (error)="onImageError(user.userId)" />
 
-          <!-- Profile Image with load event -->
-          <img *ngIf="user.avatar" class="table-profile-img" [src]="user.avatar" alt="profile image"
-            (load)="onImageLoad(user.userId)" (error)="onImageError(user.userId)"
-            [style.display]="user.isImageLoaded ? 'block' : 'none'" />
+            <!-- Fallback to Spinner if avatar is not available -->
+            <ng-template #avatarSpinner>
+              <mat-spinner class="table-profile-img" diameter="30"></mat-spinner>
+            </ng-template>
+          </ng-container>
 
           <!-- Status icons -->
-          <img *ngIf="user.status === 'online'" src="./assets/img/online.png" alt="" class="online" />
-          <img *ngIf="user.status !== 'online'" src="./assets/img/offline.png" alt="" class="online" />
+          <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
+          <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
+          <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
 
           <!-- Mark the current user with (Du) -->
           <ng-container *ngIf="user.userId === currentUser.userId">{{ user.name }} (Du)</ng-container>
