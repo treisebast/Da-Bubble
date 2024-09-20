@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { Message } from '../../shared/models/message.model';
 import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
@@ -39,7 +39,7 @@ export class MessageComponent implements OnInit {
   lastTwoEmojis: string[] = [];
   usernames: { [emoji: string]: string[] } = {};
   showTooltip: string | null = null;
-
+  @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
   constructor(
     private chatService: ChatService,
     private elementRef: ElementRef,
@@ -47,6 +47,7 @@ export class MessageComponent implements OnInit {
     private storageService: FirebaseStorageService
   ) { }
 
+  
   ngOnInit(): void {
     console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
     this.userService.lastTwoEmojis$.subscribe(emojis => {
@@ -67,9 +68,12 @@ export class MessageComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+    if (!this.showEmojiPicker) {
+      return;
+    }
 
-    if (!clickedInside && this.showEmojiPicker) {
+    const emojiPickerElement = this.emojiPickerContainer?.nativeElement;
+    if (emojiPickerElement && !emojiPickerElement.contains(event.target)) {
       this.showEmojiPicker = false;
     }
   }
@@ -168,8 +172,15 @@ export class MessageComponent implements OnInit {
 
   // Emoji reactions //
 
-  toggleEmojiPicker() {
+  toggleEmojiPicker(event: MouseEvent) {
+    event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker;
+  }
+
+  onMouseLeave() {
+    if (this.showEmojiPicker) {
+      this.showEmojiPicker = false;
+    }
   }
 
   addEmoji(event: any) {

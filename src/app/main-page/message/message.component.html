@@ -1,4 +1,6 @@
-<div class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }">
+<div class="singelMessageContainer"
+[ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }"
+(mouseleave)="onMouseLeave()">
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
@@ -14,7 +16,7 @@
       <div class="recent-emoji" *ngIf="lastTwoEmojis[1]" (click)="addOrRemoveReaction(lastTwoEmojis[1])">
         {{ lastTwoEmojis[1] }}
       </div>
-      <div class="reaction" (click)="toggleEmojiPicker()"></div>
+      <div class="reaction" (click)="toggleEmojiPicker($event)"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
       <div *ngIf="isCurrentUser" class="vertPoints" [matMenuTriggerFor]="menu">
       </div>
@@ -51,10 +53,8 @@
     </div>
 
     <div class="reaction-button-bar">
-      <div class="reaction-button"
-        *ngFor="let emoji of (message.reactions | keyvalue)"
-        (mouseenter)="showTooltip = emoji.key"
-        (mouseleave)="showTooltip = null"
+      <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+        (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
         (click)="addOrRemoveReaction(emoji.key)">
 
         <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
@@ -63,10 +63,13 @@
         <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
         </div>
       </div>
-      <div class="mart-button" (click)="toggleEmojiPicker()"></div>
+      <div class="mart-button" (click)="toggleEmojiPicker($event)"></div>
     </div>
 
-    <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>
+    <div #emojiPickerContainer>
+      <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"
+        (click)="$event.stopPropagation()"></emoji-mart>
+    </div>
 
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count" [ngClass]="{
         'thread-count-end': isCurrentUser && screenSmall,

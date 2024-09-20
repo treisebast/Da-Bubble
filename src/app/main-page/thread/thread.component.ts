@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef, HostListener } from '@angular/core';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
@@ -517,9 +517,30 @@ export class ThreadComponent implements OnInit {
     }
   }
 
-  toggleEmojiPicker(message: Message) {
-    this.showEmojiPicker = !this.showEmojiPicker;
-    this.selectedMessage = message;
+  toggleEmojiPicker(event: MouseEvent, message: Message) {
+    event.stopPropagation();
+    if (this.selectedMessage === message && this.showEmojiPicker) {
+      this.showEmojiPicker = false;
+      this.selectedMessage = null;
+    } else {
+      this.showEmojiPicker = true;
+      this.selectedMessage = message;
+    }
+  }
+
+  onMouseLeave(message: Message) {
+    if (this.showEmojiPicker && this.selectedMessage === message) {
+      this.showEmojiPicker = false;
+      this.selectedMessage = null;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.showEmojiPicker) {
+      this.showEmojiPicker = false;
+      this.selectedMessage = null;
+    }
   }
 
   addEmoji(event: any, message: Message) {

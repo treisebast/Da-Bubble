@@ -17,7 +17,7 @@
 <div class="chat-container" #chatContainer>
 
   <!-- Original message, to which the thread belongs -->
-  <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
+  <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25" (mouseleave)="onMouseLeave(currentMessageToOpen)"
     [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
     <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
       [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
@@ -111,7 +111,7 @@
       <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
     </div>
 
-    <div class="singelMessageContainer"
+    <div class="singelMessageContainer" (mouseleave)="onMouseLeave(message)"
       [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
 
       <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
@@ -176,13 +176,18 @@
           <div class="recent-emoji" *ngIf="lastTwoEmojis[1]" (click)="addOrRemoveReaction(message, lastTwoEmojis[1])">
             {{ lastTwoEmojis[1] }}
           </div>
-          <div class="reaction" (click)="toggleEmojiPicker(message)"></div>
+          <div class="reaction" (click)="toggleEmojiPicker($event, message)"></div>
           <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
           </div>
         </div>
 
-        <emoji-mart *ngIf="showEmojiPicker && message === selectedMessage" set="twitter" theme="light"
-          (emojiClick)="addEmoji($event, message)"></emoji-mart>
+        <div *ngIf="showEmojiPicker && message === selectedMessage" (click)="$event.stopPropagation()">
+          <emoji-mart
+            set="twitter"
+            theme="light"
+            (emojiClick)="addEmoji($event, message)"
+          ></emoji-mart>
+        </div>
 
           <div class="reaction-button-bar">
             <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
