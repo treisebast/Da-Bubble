@@ -113,6 +113,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     this.loadChannelsForSearch();
   }
 
+  trackByUserId(index: number, user: User): string {
+    return user.userId; // userId is unique
+  }
+
   isNewDay(
     timestamp: Timestamp | FieldValue | undefined,
     index: number
