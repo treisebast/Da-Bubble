@@ -1,3 +1,7 @@
+:host {
+  overflow: visible;
+}
+
 .popup-container {
   display: flex;
   box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
@@ -10,6 +14,7 @@
   padding-right: 20px;
   padding-bottom: 40px;
   z-index: 10;
+  width: 710px;
 }
 
 mat-label,
@@ -26,7 +31,7 @@ mat-label,
   margin: 0;
 }
 
-input {
+.addChannelInputs {
   width: 100%;
   height: 60px;
   border-radius: 30px;
@@ -97,6 +102,7 @@ mat-dialog-content {
 
 ::ng-deep .mat-mdc-dialog-surface.mdc-dialog__surface {
   border-radius: 25px !important;
+  overflow: visible !important;
 }
 
 .addUsersBtn {
@@ -170,6 +176,14 @@ mat-label {
   > h2 {
     margin: 0;
     padding: 0;
+    color: var(--Black, #000);
+    font-size: 18px;
+  }
+  img {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    border-radius: 50%;
   }
 }
 
@@ -208,4 +222,83 @@ mat-label {
   100% {
     transform: scale(1);
   }
+}
+
+.inputDiv {
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 30px;
+  border: 1px solid rgba(173, 176, 217, 1);
+  outline-color: var(--purple-one);
+  font-size: 18px;
+  color: var(--black);
+  margin-bottom: 16px;
+
+  position: relative;
+  &:hover,
+  &:focus-within {
+    border-color: var(--purple-one);
+  }
+}
+
+.addUserInput {
+  width: 100%;
+  height: 60px;
+  border-radius: 30px;
+  border: transparent;
+  outline-color: none;
+  outline: none;
+  font-size: 18px;
+  color: var(--black);
+  padding: 20px;
+}
+
+.hoveringUserList {
+  display: flex;
+  width: 335px;
+  padding: 20px 21px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 15px;
+
+  position: absolute;
+  top: 43px;
+  left: 22px;
+  z-index: 10;
+
+  border-radius: 0px 20px 20px 20px;
+  border: 1px solid var(--ligth-purple-lines, #adb0d9);
+  background: var(--White, #fff);
+  /* header */
+  box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.08);
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid #fff;
+  margin-left: -26px;
+  margin-top: 30px;
+  margin-right: 8px;
+  flex-shrink: 0;
+
+  &.online {
+    background-color: #92c83e;
+  }
+
+  &.away {
+    background-color: #ffc107;
+  }
+
+  &.offline {
+    background-color: #686868;
+  }
+}
+
+.addUserContent {
+  overflow: visible;
 }

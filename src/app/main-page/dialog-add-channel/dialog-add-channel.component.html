@@ -12,23 +12,16 @@
       </p>
 
       <h4>Channel-Name</h4>
-      <input
-        [(ngModel)]="channelName"
-        type="text"
-        placeholder="#   z.B. Kooperationsprojekte"
-      />
+      <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte"
+        class="addChannelInputs" />
 
       <h4>Beschreibung <span class="optional">(optional)</span></h4>
-      <input [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
+      <input class="addChannelInputs" [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button
-        class="saveChannelBtn"
-        [disabled]="loading || !channelName"
-        (click)="createChannelAndGoToAddUsers()"
-        mat-flat-button
-      >
+      <button class="saveChannelBtn" [disabled]="loading || !channelName" (click)="createChannelAndGoToAddUsers()"
+        mat-flat-button>
         Erstellen
       </button>
     </mat-dialog-actions>
@@ -39,60 +32,53 @@
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <h2 mat-dialog-title>Leute hinzufügen</h2>
     <h2>für Channel: {{ channel.name }}</h2>
-    <mat-dialog-content class="mat-typography">
+    <mat-dialog-content class="addUserContent">
       <div class="custom-radio-group">
         <div class="custom-radio-button" (click)="selectOption('allFromChannel')">
-          <div
-            class="radio-circle"
-            [class.checked]="selectedRadio === 'allFromChannel'"
-          ></div>
+          <div class="radio-circle" [class.checked]="selectedRadio === 'allFromChannel'"></div>
           <mat-label>Alle Mitglieder von Devspace hinzufügen</mat-label>
         </div>
         <div class="custom-radio-button" (click)="selectOption('chooseUsersToAdd')">
-          <div
-            class="radio-circle"
-            [class.checked]="selectedRadio === 'chooseUsersToAdd'"
-          ></div>
+          <div class="radio-circle" [class.checked]="selectedRadio === 'chooseUsersToAdd'"></div>
           <mat-label>Bestimmte Leute hinzufügen</mat-label>
         </div>
       </div>
 
       <!-- Show search input and user list if choosing specific users -->
       <div *ngIf="selectedRadio === 'chooseUsersToAdd'">
-        <input
-          matInput
-          [(ngModel)]="searchInput"
-          (ngModelChange)="filterUsers()"
-          type="text"
-          placeholder="Name eingeben"
-        />
+        <div class="inputDiv">
+          <input [(ngModel)]="searchInput" (ngModelChange)="filterUsers()" type="text" placeholder="Name eingeben"
+            class="addUserInput" />
 
-        <div *ngIf="filteredUsers.length > 0">
-          <div
-            *ngFor="let user of filteredUsers"
-            class="userToClick"
-            (click)="selectUsers(user)"
-            [ngClass]="{ 'selected': isSelected(user) }"
-          >
-            <h2>{{ user.name }}</h2>
+          <!-- Hovering User List -->
+          <div *ngIf="searchInput.trim()" class="hoveringUserList">
+            <div *ngIf="filteredUsers.length > 0; else noUsersFound">
+              <!-- User List -->
+              <div *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="userToClick"
+                (click)="selectUsers(user)" [ngClass]="{ 'selected': isSelected(user) }">
+                <img src="{{ user.avatar }}" alt="" />
+                <!-- Status icons -->
+                <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
+                <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
+                <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
+                <h2>{{ user.name }}</h2>
+              </div>
+            </div>
+            <!-- No Users Found Message -->
+            <ng-template #noUsersFound>
+              <p>Keine Benutzer gefunden.</p>
+            </ng-template>
           </div>
         </div>
-        <div *ngIf="filteredUsers.length === 0">
-          <p>Keine Benutzer gefunden.</p>
-        </div>
       </div>
+
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button
-        class="addUsersBtn"
-        [disabled]="
+      <button class="addUsersBtn" [disabled]="
           loading ||
           (selectedRadio === 'chooseUsersToAdd' && selectedUsers.length === 0)
-        "
-        (click)="addUsersToChannel(channel, selectedRadio)"
-        mat-flat-button
-      >
+        " (click)="addUsersToChannel(channel, selectedRadio)" mat-flat-button>
         Bestätigen
       </button>
     </mat-dialog-actions>

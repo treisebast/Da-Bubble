@@ -21,6 +21,7 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -40,6 +41,7 @@ import { MatRadioModule } from '@angular/material/radio';
     MatCheckboxModule,
     MatRadioModule,
     JsonPipe,
+    MatCardModule
   ],
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss'],
@@ -90,6 +92,10 @@ export class DialogAddChannelComponent {
     this.dialogProgressState = 'addChannel';
   }
 
+  trackByUserId(index: number, user: User): string {
+    return user.userId;
+  }
+
   /**
    * Subscribe to dialog events
    */
@@ -120,7 +126,6 @@ export class DialogAddChannelComponent {
   private loadUsers(): void {
     this.userService.getUsers().subscribe((users) => {
       this.loadedUsers = users;
-      this.filterUsers();
     });
   }
 
@@ -133,7 +138,7 @@ export class DialogAddChannelComponent {
       ? this.loadedUsers.filter((user) =>
           user.name.toLowerCase().includes(searchTerm)
         )
-      : this.loadedUsers;
+      : [];
   }
 
   /**
