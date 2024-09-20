@@ -1,6 +1,7 @@
 <div *ngIf="isDialogOpen" class="modal-background" (click)="closeDialog()"></div>
 <div class="popup-container">
-  <ng-container>
+  <!-- Add Channel View -->
+  <ng-container *ngIf="dialogProgressState == 'addChannel'">
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <h2 mat-dialog-title>Channel erstellen</h2>
 
@@ -11,16 +12,88 @@
       </p>
 
       <h4>Channel-Name</h4>
-      <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte" />
+      <input
+        [(ngModel)]="channelName"
+        type="text"
+        placeholder="#   z.B. Kooperationsprojekte"
+      />
 
       <h4>Beschreibung <span class="optional">(optional)</span></h4>
       <input [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
-
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button class="saveChannelBtn" mat-dialog-close [disabled]="loading" (click)="createChannelAndGoToAddUsers()" mat-flat-button>
+      <button
+        class="saveChannelBtn"
+        [disabled]="loading || !channelName"
+        (click)="createChannelAndGoToAddUsers()"
+        mat-flat-button
+      >
         Erstellen
+      </button>
+    </mat-dialog-actions>
+  </ng-container>
+
+  <!-- Add Users View -->
+  <ng-container *ngIf="dialogProgressState == 'addUsers'">
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <h2 mat-dialog-title>Leute hinzufügen</h2>
+    <h2>für Channel: {{ channel.name }}</h2>
+    <mat-dialog-content class="mat-typography">
+      <div class="custom-radio-group">
+        <div class="custom-radio-button" (click)="selectOption('allFromChannel')">
+          <div
+            class="radio-circle"
+            [class.checked]="selectedRadio === 'allFromChannel'"
+          ></div>
+          <mat-label>Alle Mitglieder von Devspace hinzufügen</mat-label>
+        </div>
+        <div class="custom-radio-button" (click)="selectOption('chooseUsersToAdd')">
+          <div
+            class="radio-circle"
+            [class.checked]="selectedRadio === 'chooseUsersToAdd'"
+          ></div>
+          <mat-label>Bestimmte Leute hinzufügen</mat-label>
+        </div>
+      </div>
+
+      <!-- Show search input and user list if choosing specific users -->
+      <div *ngIf="selectedRadio === 'chooseUsersToAdd'">
+        <input
+          matInput
+          [(ngModel)]="searchInput"
+          (ngModelChange)="filterUsers()"
+          type="text"
+          placeholder="Name eingeben"
+        />
+
+        <div *ngIf="filteredUsers.length > 0">
+          <div
+            *ngFor="let user of filteredUsers"
+            class="userToClick"
+            (click)="selectUsers(user)"
+            [ngClass]="{ 'selected': isSelected(user) }"
+          >
+            <h2>{{ user.name }}</h2>
+          </div>
+        </div>
+        <div *ngIf="filteredUsers.length === 0">
+          <p>Keine Benutzer gefunden.</p>
+        </div>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button
+        class="addUsersBtn"
+        [disabled]="
+          loading ||
+          (selectedRadio === 'chooseUsersToAdd' && selectedUsers.length === 0)
+        "
+        (click)="addUsersToChannel(channel, selectedRadio)"
+        mat-flat-button
+      >
+        Bestätigen
       </button>
     </mat-dialog-actions>
   </ng-container>

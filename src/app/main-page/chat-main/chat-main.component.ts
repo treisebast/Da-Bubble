@@ -114,7 +114,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
   }
 
   trackByUserId(index: number, user: User): string {
-    return user.userId; // userId is unique
+    return user.userId;
   }
 
   isNewDay(
