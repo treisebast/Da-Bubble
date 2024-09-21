@@ -53,7 +53,7 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
   styleUrls: ['./dialog-add-channel.component.scss'],
 })
 export class DialogAddChannelComponent {
-  isTesting = true; // Set this to true when testing without Firebase
+  isTesting = false; // Set this to true when testing without Firebase
   loading = false;
   channelName = '';
   description = '';
