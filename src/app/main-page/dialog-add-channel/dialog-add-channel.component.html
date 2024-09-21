@@ -47,8 +47,33 @@
       <!-- Show search input and user list if choosing specific users -->
       <div *ngIf="selectedRadio === 'chooseUsersToAdd'">
         <div class="inputDiv">
-          <input [(ngModel)]="searchInput" (ngModelChange)="filterUsers()" type="text" placeholder="Name eingeben"
-            class="addUserInput" />
+
+          <mat-chip-grid #chipGrid aria-label="Enter User">
+            <mat-chip-row
+              *ngFor="let user of selectedUsers; trackBy: trackByUserId"
+              (removed)="remove(user)"
+            >
+              <div (click)="remove(user)" class="chip-content">
+                <img src="{{ user.avatar }}" alt="{{ user.name }}" />
+                <span>{{ user.name }}</span>
+              </div>
+              <button matChipRemove [attr.aria-label]="'remove ' + user.name">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-chip-row>
+            <input
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="addOnBlur"
+              [(ngModel)]="searchInput"
+              (ngModelChange)="filterUsers()"
+              type="text"
+              placeholder="Name eingeben"
+              class="addUserInput"
+            />
+          </mat-chip-grid>
+
+
 
           <!-- Hovering User List -->
           <div *ngIf="searchInput.trim()" class="hoveringUserList">

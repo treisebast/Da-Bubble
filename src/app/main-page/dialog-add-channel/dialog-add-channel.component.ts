@@ -1,5 +1,5 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -22,6 +22,10 @@ import { User } from '../../shared/models/user.model';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCardModule } from '@angular/material/card';
+import {MatChipEditedEvent, MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -41,7 +45,9 @@ import { MatCardModule } from '@angular/material/card';
     MatCheckboxModule,
     MatRadioModule,
     JsonPipe,
-    MatCardModule
+    MatCardModule,
+    MatChipsModule,
+    MatIconModule
   ],
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss'],
@@ -60,6 +66,9 @@ export class DialogAddChannelComponent {
   selectedUsers: User[] = [];
   searchInput: string = '';
   selectedRadio: string = 'allFromChannel';
+  announcer = inject(LiveAnnouncer);
+  addOnBlur = true;
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   channel: Channel = {
     id: '',
@@ -158,8 +167,21 @@ export class DialogAddChannelComponent {
     const index = this.selectedUsers.findIndex((u) => u.userId === user.userId);
     if (index === -1) {
       this.selectedUsers.push(user);
+      this.searchInput = '';
     } else {
       this.selectedUsers.splice(index, 1);
+      this.announcer.announce(`Removed ${user.name} from selection`);
+
+    }
+  }
+
+  remove(user: User): void {
+    const index = this.selectedUsers.indexOf(user);
+
+    if (index >= 0) {
+      this.selectedUsers.splice(index, 1);
+      this.announcer.announce(`Removed ${user.name} from selection`);
+
     }
   }
 

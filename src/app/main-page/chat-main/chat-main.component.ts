@@ -530,7 +530,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
         this.usersOfSelectedChannel = users.filter((user) =>
           chat.members.includes(user.userId)
         );
-        console.log('usersOfSelectedChannel:', this.usersOfSelectedChannel);
       });
     }
   }
