@@ -1,18 +1,16 @@
-// src/app/main-page/thread/thread.component.ts
 import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef, HostListener, OnDestroy } from '@angular/core';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
-import { collection, doc, FieldValue, serverTimestamp, Timestamp, getDocs } from 'firebase/firestore';
+import { collection, doc, FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Message } from '../../shared/models/message.model';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
-import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { catchError, finalize, firstValueFrom, forkJoin, from, of, switchMap, takeUntil } from 'rxjs';
+import { finalize, firstValueFrom, takeUntil } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -23,9 +21,15 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent, PickerModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatMenuModule,
+    ImageOverlayComponent,
+    PickerModule,
+  ],
   templateUrl: './thread.component.html',
-  styleUrls: ['./thread.component.scss']
+  styleUrls: ['./thread.component.scss'],
 })
 export class ThreadComponent implements OnInit, OnDestroy {
   showEmojiPicker = false;
@@ -52,7 +56,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   lastTwoEmojis: string[] = [];
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
-  metadataMap: { [url: string]: { name: string, size: number } } = {};
+  metadataMap: { [url: string]: { name: string; size: number } } = {};
 
   errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -70,134 +74,118 @@ export class ThreadComponent implements OnInit, OnDestroy {
     private firestore: Firestore,
     private firebaseStorageService: FirebaseStorageService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit() {
     // Authentifizierung des Benutzers
-    this.authService.getUser().pipe(takeUntil(this.unsubscribe$)).subscribe(user => {
-      if (user) {
-        this.currentUserId = user.uid;
-        this.currentUserName = user.displayName || '';
-      }
-    });
+    this.authService
+      .getUser()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (user) => {
+          if (user) {
+            this.currentUserId = user.uid;
+            this.currentUserName = user.displayName || '';
+          }
+        },
+        error: (error) => {
+          console.error('Fehler beim Abrufen des Benutzers:', error);
+        },
+      });
 
     // Emoji-Abonnements
-    this.userService.lastTwoEmojis$.pipe(takeUntil(this.unsubscribe$)).subscribe(emojis => {
-      this.lastTwoEmojis = emojis;
-    });
+    this.userService.lastTwoEmojis$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (emojis) => {
+          this.lastTwoEmojis = emojis;
+        },
+        error: (error) => {
+          console.error('Fehler beim Abrufen der letzten Emojis:', error);
+        },
+      });
 
     // Aktuelle Nachricht für den Thread öffnen
-    this.threadService.getCurrentMessageToOpen().pipe(takeUntil(this.unsubscribe$)).subscribe((chatMessage: Message | null) => {
-      if (chatMessage) {
-        this.currentMessageToOpen = chatMessage;
-        this.resolveUserName(chatMessage.senderId);
-        this.loadUserProfiles([chatMessage]);
+    this.threadService
+      .getCurrentMessageToOpen()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (chatMessage: Message | null) => {
+          if (chatMessage) {
+            this.currentMessageToOpen = chatMessage;
+            this.resolveUserName(chatMessage.senderId);
+            this.loadUserProfiles([chatMessage]);
 
-        if (this.currentChat && this.currentChat.id && chatMessage.id) {
-          const chatId = this.currentChat.id;
-          this.threadService.watchMessageChanges(chatId, chatMessage.id)
-            .pipe(takeUntil(this.unsubscribe$))
-            .subscribe(updatedMessage => {
-              this.currentMessageToOpen = updatedMessage;
-              this.loadUserProfiles([updatedMessage]);
-            });
-        }
+            if (this.currentChat && this.currentChat.id && chatMessage.id) {
+              const chatId = this.currentChat.id;
+              this.threadService
+                .watchMessageChanges(chatId, chatMessage.id)
+                .pipe(takeUntil(this.unsubscribe$))
+                .subscribe({
+                  next: (updatedMessage) => {
+                    this.currentMessageToOpen = updatedMessage;
+                    this.loadUserProfiles([updatedMessage]);
+                  },
+                  error: (error) => {
+                    console.error(
+                      'Fehler beim Überwachen der Nachrichtenänderungen:',
+                      error
+                    );
+                  },
+                });
+            }
 
-        this.loadAttachments(chatMessage.attachments);
-      }
-    });
+            this.loadAttachments(chatMessage.attachments);
+          }
+        },
+        error: (error) => {
+          console.error('Fehler beim Abrufen der aktuellen Nachricht:', error);
+        },
+      });
 
     // Aktuellen Chat abonnieren
-    this.chatService.currentChat$.pipe(takeUntil(this.unsubscribe$)).subscribe(({ chat, isPrivate }) => {
-      this.currentChat = chat;
-      // Falls benötigt, kannst du `isPrivate` ebenfalls speichern
-      // this.isPrivate = isPrivate;
+    this.chatService.currentChat$.pipe(takeUntil(this.unsubscribe$)).subscribe({
+      next: ({ chat }) => {
+        this.currentChat = chat;
+      },
+      error: (error) => {
+        console.error('Fehler beim Abrufen des aktuellen Chats:', error);
+      },
     });
 
     // Aktuelle Threads abonnieren
-    this.threadService.currentThread$.pipe(takeUntil(this.unsubscribe$)).subscribe(async currentThread => {
-      if (Array.isArray(currentThread)) {
-        this.messages = this.sortMessagesByTimestamp(currentThread);
-        await this.resolveUserNames(this.messages);
-        this.loadUserProfiles(this.messages);
-        this.totalReplies = this.messages.length;
+    this.threadService.currentThread$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: async (currentThread) => {
+          if (Array.isArray(currentThread)) {
+            this.messages = this.sortMessagesByTimestamp(currentThread);
+            await this.resolveUserNames(this.messages);
+            this.loadUserProfiles(this.messages);
+            this.totalReplies = this.messages.length;
 
-        for (const message of this.messages) {
-          this.loadAttachments(message.attachments);
-        }
-      } else {
-        this.messages = [];
-      }
-    });
+            for (const message of this.messages) {
+              this.loadAttachments(message.attachments);
+            }
+          } else {
+            this.messages = [];
+          }
+        },
+        error: (error) => {
+          console.error('Fehler beim Abrufen der aktuellen Threads:', error);
+        },
+      });
   }
 
-  ngOnDestroy() {// Hinzugefügt für die Bereinigung von Subscriptions
-    this.unsubscribe$.next(); // Signal zum Beenden senden
-    this.unsubscribe$.complete(); // Abo beenden
-    this.clearErrorMessage(); // Fehlermeldung löschen
+  ngOnDestroy() {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+    this.clearErrorMessage();
   }
 
   onCloseThread() {
     this.closeThread.emit();
   }
-
-  // async sendMessage(event?: Event) {
-  //   if (event) {
-  //     event.preventDefault();
-  //   }
-
-  //   // Stelle sicher, dass entweder Text oder eine Datei vorhanden ist
-  //   if (this.newMessageText.trim() === '' && !this.selectedFile) {
-  //     return;
-  //   }
-
-  //   let chatId: string;
-
-  //   if (this.currentChat && this.currentChat.id) {
-  //     chatId = this.currentChat.id;
-  //   } else {
-  //     console.error('Chat ID not found');
-  //     return;
-  //   }
-
-  //   if (this.selectedFile) {
-  //     try {
-  //       const autoId = doc(collection(this.firestore, 'dummy')).id;
-  //       const filePath = `thread-files/${chatId}/${autoId}_${this.selectedFile.name}`;
-  //       const downloadUrl = await firstValueFrom(
-  //         this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
-  //       );
-  //       this.attachmentUrl = downloadUrl as string;
-  //     } catch (error) {
-  //       console.error('Error uploading file:', error);
-  //     }
-  //   }
-
-  //   // Erstelle eine Nachricht nur, wenn tatsächlich Text oder Anhänge vorhanden sind
-  //   const newMessage: Message = {
-  //     content: this.newMessageText,
-  //     senderId: this.currentUserId,
-  //     timestamp: serverTimestamp(),
-  //     chatId: chatId,
-  //     attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
-  //   };
-
-  //   // Nachricht wird jetzt zum Thread hinzugefügt
-  //   try {
-  //     await this.threadService.addThread(
-  //       chatId,
-  //       this.threadService.currentMessageId,
-  //       newMessage
-  //     );
-  //     // Reset der Felder nach dem Senden
-  //     this.newMessageText = '';
-  //     this.attachmentUrl = null;
-  //     this.selectedFile = null;
-  //     this.previewUrl = null;
-  //   } catch (error) {
-  //     console.error('Error sending thread message:', error);
-  //   }
-  // }
 
   async sendMessage(event?: Event) {
     if (event) event.preventDefault();
@@ -219,7 +207,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async uploadAttachment(): Promise<void> {
     if (this.selectedFile) {
       const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${this.selectedFile.name}`;
+      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${
+        this.selectedFile.name
+      }`;
       const downloadUrl = await firstValueFrom(
         this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
       );
@@ -237,7 +227,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
     };
 
     if (this.currentChat?.id) {
-      await this.threadService.addThread(this.currentChat.id, this.threadService.currentMessageId, newMessage);
+      await this.threadService.addThread(
+        this.currentChat.id,
+        this.threadService.currentMessageId,
+        newMessage
+      );
     } else {
       console.error('Current chat or chat ID is undefined.');
     }
@@ -275,7 +269,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   async resolveUserNames(messages: Message[]) {
-    const userIds = [...new Set(messages.map(msg => msg.senderId))];
+    const userIds = [...new Set(messages.map((msg) => msg.senderId))];
     for (const userId of userIds) {
       await this.resolveUserName(userId);
     }
@@ -292,48 +286,90 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return this.userNames[userId] || 'Unknown';
   }
 
+  /**
+   * Loads user profiles for the given messages.
+   *
+   * This method collects all user IDs from the provided messages and filters out
+   * the ones that are already loaded. It then fetches the profiles of the new user IDs
+   * using the UserService's bulk-fetch method and assigns them to the userProfiles object.
+   * @param {Message[]} messages - An array of message objects from which user IDs are collected.
+   * @returns {void} This method does not return a value.
+   */
   loadUserProfiles(messages: Message[]) {
-    const userIds = new Set<string>();
-
-    // Sammle alle Benutzer-IDs aus den Nachrichten und Reaktionen
-    messages.forEach(message => {
-      userIds.add(message.senderId);
-      if (message.reactions) {
-        Object.values(message.reactions).forEach(userList => {
-          userList.forEach(userId => userIds.add(userId));
-        });
-      }
-    });
-
-    const newUserIds = Array.from(userIds).filter(userId => !this.userProfiles[userId]);
+    const allUserIds = this.collectUserIds(messages);
+    const newUserIds = allUserIds.filter(
+      (userId) => !this.userProfiles[userId]
+    );
 
     if (newUserIds.length === 0) return;
 
-    // Erstelle eine Liste von Observables für die neuen Benutzer-IDs
-    const userObservables = newUserIds.map(userId =>
-      this.userService.getUser(userId).pipe(
-        catchError(error => {
-          console.error(`Error loading user profile for userId ${userId}:`, error);
-          return of(null);
-        })
-      )
-    );
-
-    // Verwende forkJoin, um alle Benutzerprofile gleichzeitig zu laden
-    forkJoin(userObservables).pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      users.forEach((user, index) => {
-        const userId = newUserIds[index];
-        if (user) {
-          this.userProfiles[userId] = user;
-          console.log("User profile loaded:", user);
-        }
+    // Lade alle neuen Benutzerprofile mit der Bulk-Fetch-Methode aus dem UserService
+    this.userService
+      .getUsersOnce(newUserIds)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (users) => this.assignUserProfiles(users, newUserIds),
+        error: (error) => {
+          console.error(
+            'Fehler beim Laden der Benutzerprofile mit getUsersOnce:',
+            error
+          );
+        },
       });
+  }
+
+  // Collects all user IDs from the given messages and their reactions
+  private collectUserIds(messages: Message[]): string[] {
+    const userIds = new Set<string>();
+    messages.forEach(({ senderId, reactions }) => {
+      userIds.add(senderId);
+      if (reactions) {
+        Object.values(reactions).flat().forEach(userIds.add, userIds);
+      }
+    });
+    return Array.from(userIds);
+  }
+
+  // Assigns the fetched user profiles to the corresponding user IDs
+  private assignUserProfiles(users: User[], newUserIds: string[]): void {
+    users.forEach((user) => {
+      if (user) {
+        this.userProfiles[user.userId] = user;
+      }
+    });
+    // Setze Standard-Avatare für Benutzer, die nicht gefunden wurden
+    this.setStandardAvatars(newUserIds);
+    this.cdr.detectChanges(); // Änderungserkennung manuell auslösen
+  }
+
+  // Sets standard avatars for users that were not found in the database
+  setStandardAvatars(userIds: string[]) {
+    userIds.forEach((userId, index) => {
+      if (!this.userProfiles[userId]) {
+        this.userProfiles[userId] = {
+          userId,
+          name: 'Unknown',
+          email: '',
+          avatar: `assets/img/profile/${index % 10}.svg`,
+          status: 'offline',
+          lastSeen: null,
+        };
+      }
     });
   }
 
+  trackByMessageId(index: number, message: any): number {
+    return message.id;
+  }
+
+  /**
+   * Loads the attachments and processes each one.
+   * If the attachment is not an image, it loads the file metadata.
+   * @param attachments - An array of attachment URLs or undefined.
+   */
   loadAttachments(attachments: string[] | undefined): void {
     if (attachments) {
-      attachments.forEach(attachment => {
+      attachments.forEach((attachment) => {
         if (!this.isImage(attachment)) {
           this.loadFileMetadata(attachment);
         }
@@ -351,10 +387,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Löscht die ausgewählte Nachricht, wenn der aktuelle Benutzer der Absender ist.
-   * @param {Message} message - Die zu löschende Nachricht.
-   */
   async deleteMessage(message: Message) {
     if (this.canDeleteMessage(message)) {
       try {
@@ -378,17 +410,17 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Updates the thread information in the main chat.
+   * @returns {Promise<void>} A promise that resolves when the thread information is successfully updated.
+   * @throws Will log an error message if the `updateThreadInfo` method fails or if `messageId` or `chatId` is undefined.
+   */
   async updateThreadInfoInMainChat() {
     if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
       const { chatId, id: messageId } = this.currentMessageToOpen;
 
       try {
-        await this.threadService.updateThreadInfo(
-          chatId,
-          messageId,
-          0,
-          null
-        );
+        await this.threadService.updateThreadInfo(chatId, messageId, 0, null);
         console.log('Thread information updated in main chat');
       } catch (error) {
         console.error('Error updating thread information in main chat:', error);
@@ -420,7 +452,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   private getFilePathFromUrl(fileUrl: string): string {
-    const pathParts = decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
+    const pathParts = decodeURIComponent(fileUrl)
+      .split('/o/')[1]
+      .split('?alt=media')[0];
     return pathParts;
   }
 
@@ -434,15 +468,18 @@ export class ThreadComponent implements OnInit, OnDestroy {
   saveEdit(message: Message) {
     if (this.editContent.trim() !== '') {
       message.content = this.editContent;
-      this.threadService.updateThread(
-        message.chatId!,
-        this.threadService.currentMessageId,
-        message
-      ).then(() => {
-        console.log('Message updated successfully');
-      }).catch(error => {
-        console.error('Error updating message:', error);
-      });
+      this.threadService
+        .updateThread(
+          message.chatId!,
+          this.threadService.currentMessageId,
+          message
+        )
+        .then(() => {
+          console.log('Message updated successfully');
+        })
+        .catch((error) => {
+          console.error('Error updating message:', error);
+        });
     }
     this.editingMessageId = null;
   }
@@ -453,7 +490,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   isImage(url: string): boolean {
     const imageTypes = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
-    return imageTypes.some((type) => url.split('?')[0].toLowerCase().endsWith(type));
+    return imageTypes.some((type) =>
+      url.split('?')[0].toLowerCase().endsWith(type)
+    );
   }
 
   openFileDialog() {
@@ -480,7 +519,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
     const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
 
     if (file.size > maxSizeInKB * 1024) {
-      this.manageErrorMessage(`Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`);
+      this.manageErrorMessage(
+        `Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`
+      );
       return false;
     }
 
@@ -510,7 +551,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.manageErrorMessage(null);
   }
 
-  private manageErrorMessage(message: string | null, timeout: number = 4000): void {
+  private manageErrorMessage(
+    message: string | null,
+    timeout: number = 4000
+  ): void {
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
       this.errorTimeout = null;
@@ -539,8 +583,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   loadFileMetadata(attachmentUrl: string): void {
-    console.log(`Lade Metadaten für folgendes Attachment: ${attachmentUrl}`);
-    this.firebaseStorageService.getFileMetadata(attachmentUrl)
+    this.firebaseStorageService
+      .getFileMetadata(attachmentUrl)
       .pipe(
         finalize(() => this.cdr.detectChanges()),
         takeUntil(this.unsubscribe$)
@@ -549,20 +593,21 @@ export class ThreadComponent implements OnInit, OnDestroy {
         next: (metadata) => {
           this.metadataMap[attachmentUrl] = {
             name: metadata.name,
-            size: metadata.size
+            size: metadata.size,
           };
-          console.log(`Metadaten geladen für folgendes Attachment: ${attachmentUrl}`, metadata);
         },
         error: (error) => {
-          console.error('Fehler beim Abrufen der Metadaten für:', attachmentUrl, error);
-        }
+          console.error('Fehler beim Abrufen der Metadaten', error);
+        },
       });
   }
 
   async logAttachmentMetadata(attachmentUrl: string) {
     try {
       const storage = getStorage();
-      const filePath = decodeURIComponent(attachmentUrl).split('/o/')[1].split('?alt=media')[0];
+      const filePath = decodeURIComponent(attachmentUrl)
+        .split('/o/')[1]
+        .split('?alt=media')[0];
       const storageRef = ref(storage, filePath);
       const metadata = await getMetadata(storageRef);
 
@@ -570,8 +615,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
         name: metadata.name,
         size: metadata.size,
       };
-
-      console.log('Metadaten geladen:', this.metadataMap[attachmentUrl]);
     } catch (error) {
       console.error('Fehler beim Abrufen der Metadaten:', error);
     }
@@ -626,36 +669,86 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.showEmojiPicker = false;
   }
 
-  addOrRemoveReaction(message: Message, emoji: string) {
+  /**
+   * Fügt eine Reaktion hinzu oder entfernt sie.
+   * @param message Die Nachricht, auf die reagiert wird.
+   * @param emoji Das Emoji der Reaktion.
+   */
+  addOrRemoveReaction(message: Message, emoji: string): void {
     const userId = this.currentUserId;
-    if (!message.reactions) {
-      message.reactions = {};
-    }
-    if (message.reactions[emoji]?.includes(userId)) {
-      message.reactions[emoji] = message.reactions[emoji].filter(id => id !== userId);
 
-      if (message.reactions[emoji].length === 0) {
-        delete message.reactions[emoji];
-      }
-    } else {
-      if (!message.reactions[emoji]) {
-        message.reactions[emoji] = [];
-      }
-      message.reactions[emoji].push(userId);
-    }
+    this.toggleUserReaction(message, emoji, userId);
     this.userService.addEmoji(emoji);
-    if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
-      this.updateMessageReactions(this.currentMessageToOpen);
+
+    if (this.isOriginalMessage(message)) {
+      if (this.currentMessageToOpen) {
+        this.updateMessageReactions(this.currentMessageToOpen);
+      }
     } else {
       this.updateMessageReactions(message);
     }
+  }
+
+  /**
+   * Entscheidet, ob eine Reaktion hinzugefügt oder entfernt werden soll.
+   * @param message Die Nachricht, auf die reagiert wird.
+   * @param emoji Das Emoji der Reaktion.
+   * @param userId Die ID des Benutzers.
+   */
+  private toggleUserReaction(message: Message, emoji: string, userId: string): void {
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+
+    if (this.hasUserReacted(message, emoji, userId)) {
+      this.removeUserReaction(message, emoji, userId);
+    } else {
+      this.addUserReaction(message, emoji, userId);
+    }
+  }
+
+  private hasUserReacted(message: Message, emoji: string, userId: string): boolean {
+    return !!message.reactions?.[emoji]?.includes(userId);
+  }
+
+  private addUserReaction(message: Message, emoji: string, userId: string): void {
+    if (!message.reactions) {
+      message.reactions = {};
+    }
+    if (!message.reactions[emoji]) {
+      message.reactions[emoji] = [];
+    }
+    message.reactions[emoji].push(userId);
+  }
+
+  private removeUserReaction(message: Message, emoji: string, userId: string): void {
+    if (!message.reactions || !message.reactions[emoji]) {
+      return;
+    }
+
+    message.reactions[emoji] = message.reactions[emoji].filter(
+      (id) => id !== userId
+    );
+
+    if (message.reactions[emoji].length === 0) {
+      delete message.reactions[emoji];
+    }
+  }
+
+  private isOriginalMessage(message: Message): boolean {
+    return (
+      this.currentMessageToOpen !== null &&
+      message.id === this.currentMessageToOpen.id
+    );
   }
 
   getReactionCount(message: Message, emoji: string): number {
     return message.reactions?.[emoji]?.length || 0;
   }
 
-  async updateMessageReactions(message: Message) {
+
+  // updates the reactions for the given message
+  private async updateMessageReactions(message: Message): Promise<void> {
     const { chatId, id: messageId } = message;
     if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
       try {
@@ -667,6 +760,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
         console.log('Reactions for original message updated');
       } catch (error) {
         console.error('Error updating reactions for original message:', error);
+        // Optional: Benutzer informieren, dass das Aktualisieren fehlgeschlagen ist
       }
     } else {
       try {
@@ -684,7 +778,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   // Tooltip
-
   getTooltipContent(message: Message, emoji: string): string {
     const usernames = this.getReactionUsernames(message, emoji);
     const numUsers = usernames.length;
@@ -695,21 +788,27 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
+        } reagiert</span>
       `;
     } else {
       const displayedUsers = usernames.join(', ');
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
+        } reagiert</span>
       `;
     }
   }
 
   getReactionUsernames(message: Message, emoji: string): string[] {
     const userIds = message.reactions?.[emoji] || [];
-    const usernames = userIds.map(userId => this.userProfiles[userId]?.name || 'Unknown');
+    const usernames = userIds.map(
+      (userId) => this.userProfiles[userId]?.name || 'Unknown'
+    );
     return usernames;
   }
 

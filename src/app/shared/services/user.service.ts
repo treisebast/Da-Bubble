@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, docData, collectionData, collection, setDoc, updateDoc, deleteDoc, getDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Firestore, doc, docData, collectionData, collection, setDoc, updateDoc, deleteDoc, getDoc, query, getDocs, where } from '@angular/fire/firestore';
+import { BehaviorSubject, catchError, forkJoin, from, map, Observable, of } from 'rxjs';
 import { User } from '../models/user.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
   private usersCollection = collection(this.firestore, 'users');
@@ -16,15 +16,15 @@ export class UserService {
     this.loadEmojisFromLocalStorage();
   }
 
-
   /**
    * Gets all users from the Firestore collection.
    * @returns {Observable<User[]>} An observable array of users.
    */
   getUsers(): Observable<User[]> {
-    return collectionData(this.usersCollection, { idField: 'userId' }) as Observable<User[]>;
+    return collectionData(this.usersCollection, {
+      idField: 'userId',
+    }) as Observable<User[]>;
   }
-
 
   /**
    * Gets a specific user by ID from the Firestore collection.
@@ -38,6 +38,40 @@ export class UserService {
 
 
   /**
+   * Gets a specific user by ID from the Firestore collection.
+   * @param {string} id - The ID of the user.
+   * @returns {Observable<User>} An observable of the user.
+   */
+  getUsersOnce(userIds: string[]): Observable<User[]> {
+    const chunkSize = 10; // Firestore erlaubt maximal 10 Elemente im 'in'-Operator
+    const chunks = [];
+
+    for (let i = 0; i < userIds.length; i += chunkSize) {
+      chunks.push(userIds.slice(i, i + chunkSize));
+    }
+
+    const observables = chunks.map(chunk => {
+      const q = query(collection(this.firestore, 'users'), where('userId', 'in', chunk));
+      return from(getDocs(q)).pipe(
+        map(snapshot =>
+          snapshot.docs.map(docSnap => ({
+            ...docSnap.data(),
+            userId: docSnap.id,
+          }) as User)
+        ),
+        catchError(error => {
+          console.error('Fehler beim Laden der Benutzer mit getUsersOnce:', error);
+          return of([]); // Rückgabe eines leeren Arrays bei Fehler
+        })
+      );
+    });
+
+    return forkJoin(observables).pipe(
+      map(results => results.flat())
+    );
+  }
+
+  /**
    * Adds a new user to the Firestore collection.
    * @param {User} user - The user to add.
    * @returns {Promise<void>} A promise that resolves when the user is added.
@@ -46,7 +80,6 @@ export class UserService {
     const userDoc = doc(this.firestore, `users/${user.userId}`);
     return setDoc(userDoc, user);
   }
-
 
   /**
    * Updates an existing user in the Firestore collection.
@@ -58,7 +91,6 @@ export class UserService {
     return updateDoc(userDoc, { ...user });
   }
 
-
   /**
    * Deletes a user from the Firestore collection by ID.
    * @param {string} id - The ID of the user.
@@ -69,12 +101,11 @@ export class UserService {
     return deleteDoc(userDoc);
   }
 
-
   /**
- * Fetches the name of the user by a specific user ID from the Firestore.
- * @param userId The ID of the user to fetch.
- * @returns A promise that resolves to the user's name.
- */
+   * Fetches the name of the user by a specific user ID from the Firestore.
+   * @param userId The ID of the user to fetch.
+   * @returns A promise that resolves to the user's name.
+   */
   async getUserNameById(userId: string): Promise<string | null> {
     const userRef = doc(this.firestore, `users/${userId}`);
     const docSnap = await getDoc(userRef);
@@ -87,43 +118,39 @@ export class UserService {
     }
   }
 
-
   /**
- * Updates the last two emojis and saves them to the local storage.
- * @param emojis An array of emojis to be set as the last two emojis.
- */
+   * Updates the last two emojis and saves them to the local storage.
+   * @param emojis An array of emojis to be set as the last two emojis.
+   */
   setLastTwoEmojis(emojis: string[]) {
     this.lastTwoEmojisSubject.next(emojis.slice(0, 2));
     this.saveEmojisToLocalStorage(emojis.slice(0, 2));
   }
 
-
   /**
- * Retrieves the last two emojis stored in the behavior subject.
- * @returns An array of the last two emojis.
- */
+   * Retrieves the last two emojis stored in the behavior subject.
+   * @returns An array of the last two emojis.
+   */
   getLastTwoEmojis(): string[] {
     return this.lastTwoEmojisSubject.getValue();
   }
 
-
   /**
- * Adds a new emoji to the list of last two emojis.
- * If the emoji already exists, it will be moved to the front of the array.
- * @param emoji The emoji to be added or moved to the front.
- */
+   * Adds a new emoji to the list of last two emojis.
+   * If the emoji already exists, it will be moved to the front of the array.
+   * @param emoji The emoji to be added or moved to the front.
+   */
   addEmoji(emoji: string) {
     let currentEmojis = this.getLastTwoEmojis();
-    currentEmojis = currentEmojis.filter(e => e !== emoji);
+    currentEmojis = currentEmojis.filter((e) => e !== emoji);
     const updatedEmojis = [emoji, ...currentEmojis].slice(0, 2);
     this.setLastTwoEmojis(updatedEmojis);
   }
 
-
   /**
- * Loads the last two emojis from local storage and updates the behavior subject.
- * If no emojis are found in local storage, the behavior subject remains unchanged.
- */
+   * Loads the last two emojis from local storage and updates the behavior subject.
+   * If no emojis are found in local storage, the behavior subject remains unchanged.
+   */
   private loadEmojisFromLocalStorage() {
     const savedEmojis = localStorage.getItem(this.localStorageKey);
     if (savedEmojis) {
@@ -132,9 +159,9 @@ export class UserService {
   }
 
   /**
- * Saves the last two emojis to the local storage.
- * @param emojis An array of emojis to be saved in local storage.
- */
+   * Saves the last two emojis to the local storage.
+   * @param emojis An array of emojis to be saved in local storage.
+   */
   private saveEmojisToLocalStorage(emojis: string[]) {
     localStorage.setItem(this.localStorageKey, JSON.stringify(emojis));
   }

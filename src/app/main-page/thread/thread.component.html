@@ -104,7 +104,7 @@
   </div>
 
   <!-- Thread replies -->
-  <div *ngFor="let message of messages; let i = index">
+  <div *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
     <!-- Date divider -->
     <div *ngIf="isNewDay(message.timestamp, i)" class="date-divider">
       <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
