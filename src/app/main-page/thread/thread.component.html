@@ -17,7 +17,8 @@
 <div class="chat-container" #chatContainer>
 
   <!-- Original message, to which the thread belongs -->
-  <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25" (mouseleave)="onMouseLeave(currentMessageToOpen)"
+  <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
+    (mouseleave)="onMouseLeave(currentMessageToOpen)"
     [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
     <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
       [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
@@ -79,21 +80,19 @@
       </mat-menu>
 
       <!-- Reaction Bar for the original message -->
-<!-- Reaction Bar for the original message -->
-<div class="reaction-button-bar">
-  <div class="reaction-button"
-    *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
-    (mouseenter)="showTooltip = emoji.key"
-    (mouseleave)="showTooltip = null"
-    (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
-    
-    <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
-    
-    <!-- Benutzerdefinierter Tooltip -->
-    <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
-    </div>
-  </div>
-</div>
+      <div class="reaction-button-bar">
+        <div class="reaction-button" *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
+          (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
+          (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
+
+          <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
+
+          <!-- Benutzerdefinierter Tooltip -->
+          <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip"
+            [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -182,26 +181,22 @@
         </div>
 
         <div *ngIf="showEmojiPicker && message === selectedMessage" (click)="$event.stopPropagation()">
-          <emoji-mart
-            set="twitter"
-            theme="light"
-            (emojiClick)="addEmoji($event, message)"
-          ></emoji-mart>
+          <emoji-mart set="twitter" theme="light" (emojiClick)="addEmoji($event, message)"></emoji-mart>
         </div>
 
-          <div class="reaction-button-bar">
-            <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-              (mouseenter)="showTooltip = emoji.key"
-              (mouseleave)="showTooltip = null"
-              (click)="addOrRemoveReaction(message, emoji.key)">
-              
-              <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
-          
-              <!-- Benutzerdefinierter Tooltip -->
-              <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(message, emoji.key)">
-              </div>
+        <div class="reaction-button-bar">
+          <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+            (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
+            (click)="addOrRemoveReaction(message, emoji.key)">
+
+            <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
+
+            <!-- Benutzerdefinierter Tooltip -->
+            <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip"
+              [innerHTML]="getTooltipContent(message, emoji.key)">
             </div>
           </div>
+        </div>
 
         <mat-menu #menuTrigger="matMenu">
           <ng-container *ngIf="message.senderId === currentUserId">

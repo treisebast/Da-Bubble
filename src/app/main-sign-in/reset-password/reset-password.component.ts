@@ -99,7 +99,8 @@ export class ResetPasswordComponent {
    */
   private openDialog(message: string, image: string): void {
     this.dialog.open(ConfirmationDialogComponent, {
-      data: { message, image }
+      data: { message, image },
+      hasBackdrop: false
     });
   }
 }

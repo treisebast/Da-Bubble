@@ -172,6 +172,7 @@ export class SignUpComponent {
   private showConfirmationDialog(message: string): void {
     this.dialog.open(ConfirmationDialogComponent, {
       data: { message: message },
+      hasBackdrop: false
     });
   }
 

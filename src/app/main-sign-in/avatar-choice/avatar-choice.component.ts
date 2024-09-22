@@ -180,7 +180,8 @@ export class AvatarChoiceComponent implements OnInit {
  */
   showConfirmationDialog() {
     this.dialog.open(ConfirmationDialogComponent, {
-      data: { message: 'Avatar ausgewählt' }
+      data: { message: 'Avatar ausgewählt' },
+      hasBackdrop: false
     });
   }
 

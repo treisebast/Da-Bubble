@@ -1,4 +1,13 @@
-import { Component, Input, OnInit, Output, EventEmitter, HostListener, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+  HostListener,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { Message } from '../../shared/models/message.model';
 import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
@@ -14,11 +23,16 @@ import { UserService } from '../../shared/services/user.service';
 @Component({
   selector: 'app-message',
   standalone: true,
-  imports: [CommonModule, MatMenuModule, FormsModule, PickerModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    MatMenuModule,
+    FormsModule,
+    PickerModule,
+    MatTooltipModule,
+  ],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
-
 export class MessageComponent implements OnInit {
   @Input() message!: Message;
   @Input() userProfile: User | undefined;
@@ -45,12 +59,14 @@ export class MessageComponent implements OnInit {
     private elementRef: ElementRef,
     private userService: UserService,
     private storageService: FirebaseStorageService
-  ) { }
+  ) {}
 
-  
   ngOnInit(): void {
-    console.log(`Message ${this.messageIndex + 1} Attachments:`, this.message.attachments);
-    this.userService.lastTwoEmojis$.subscribe(emojis => {
+    console.log(
+      `Message ${this.messageIndex + 1} Attachments:`,
+      this.message.attachments
+    );
+    this.userService.lastTwoEmojis$.subscribe((emojis) => {
       this.lastTwoEmojis = emojis;
     });
     this.message.attachments?.forEach((attachment) => {
@@ -100,12 +116,7 @@ export class MessageComponent implements OnInit {
 
   saveEdit() {
     if (this.editContent.trim() !== '') {
-      this.chatService.editMessage(
-        this.message.chatId!,
-        this.message.id!,
-        this.editContent,
-        this.isCurrentChatPrivate
-      );
+      this.chatService.editMessage(this.message.id!, this.editContent);
     }
     this.isEditing = false;
   }
@@ -122,11 +133,7 @@ export class MessageComponent implements OnInit {
 
   deleteMessage() {
     if (this.isCurrentUser) {
-      this.chatService.deleteMessage(
-        this.message.chatId!,
-        this.message.id!,
-        this.isCurrentChatPrivate
-      );
+      this.chatService.deleteMessage(this.message.id!);
     } else {
       console.error(
         'Du kannst die Nachricht eines anderen Benutzers nicht löschen.'
@@ -149,17 +156,20 @@ export class MessageComponent implements OnInit {
   }
 
   loadFileMetadata(url: string, message: Message) {
-    this.storageService.getFileMetadata(url).subscribe(metadata => {
-      if (!message.metadata) {
-        message.metadata = {};
+    this.storageService.getFileMetadata(url).subscribe(
+      (metadata) => {
+        if (!message.metadata) {
+          message.metadata = {};
+        }
+        message.metadata[url] = {
+          name: metadata.name,
+          size: metadata.size,
+        };
+      },
+      (error) => {
+        console.error('Fehler beim Abrufen der Metadaten:', error);
       }
-      message.metadata[url] = {
-        name: metadata.name,
-        size: metadata.size
-      };
-    }, error => {
-      console.error('Fehler beim Abrufen der Metadaten:', error);
-    });
+    );
   }
 
   formatFileSize(size: number): string {
@@ -209,7 +219,7 @@ export class MessageComponent implements OnInit {
     }
 
     console.log('Updating message reactions:', message.reactions);
-    this.chatService.updateMessageReactions(this.message, this.isCurrentChatPrivate).then(() => {
+    this.chatService.updateMessageReactions(this.message).then(() => {
       this.loadReactionUsernames();
     });
   }
@@ -220,7 +230,9 @@ export class MessageComponent implements OnInit {
       this.message.reactions = {};
     }
     if (this.message.reactions[emoji]?.includes(userId)) {
-      this.message.reactions[emoji] = this.message.reactions[emoji].filter(id => id !== userId);
+      this.message.reactions[emoji] = this.message.reactions[emoji].filter(
+        (id) => id !== userId
+      );
       if (this.message.reactions[emoji].length === 0) {
         delete this.message.reactions[emoji];
       }
@@ -230,7 +242,7 @@ export class MessageComponent implements OnInit {
       }
       this.message.reactions[emoji].push(userId);
     }
-    this.chatService.updateMessageReactions(this.message, this.isCurrentChatPrivate).then(() => {
+    this.chatService.updateMessageReactions(this.message).then(() => {
       this.loadReactionUsernames();
     });
   }
@@ -239,25 +251,26 @@ export class MessageComponent implements OnInit {
     return this.message.reactions?.[emoji]?.length || 0;
   }
 
-
   getReactionUsernames(emoji: string): string[] {
     return this.usernames[emoji] || [];
   }
-
 
   loadReactionUsernames() {
     if (this.message.reactions) {
       Object.keys(this.message.reactions).forEach((emoji) => {
         const userIds = this.message.reactions?.[emoji];
         if (userIds) {
-          Promise.all(userIds.map(userId => this.userService.getUserNameById(userId))).then(usernames => {
-            this.usernames[emoji] = usernames.filter(name => name !== null) as string[];
+          Promise.all(
+            userIds.map((userId) => this.userService.getUserNameById(userId))
+          ).then((usernames) => {
+            this.usernames[emoji] = usernames.filter(
+              (name) => name !== null
+            ) as string[];
           });
         }
       });
     }
   }
-
 
   // Reaction-Tooltip
   getTooltipContent(emoji: string): string {
@@ -270,14 +283,18 @@ export class MessageComponent implements OnInit {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
+        } reagiert</span>
       `;
     } else {
       const displayedUsers = usernames.join(', ');
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'} reagiert</span>
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
+        } reagiert</span>
       `;
     }
   }

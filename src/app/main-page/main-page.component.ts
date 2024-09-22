@@ -15,7 +15,6 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { min } from 'rxjs';
 
 @Component({
   selector: 'app-main-page',
@@ -63,7 +62,7 @@ import { min } from 'rxjs';
 })
 export class MainPageComponent implements OnInit {
   showChannels: boolean = true;
-  showSecondary: boolean | null = false;
+  showSecondary: boolean = false;
   currentView: 'channels' | 'main' | 'secondary' = 'channels';
   isMobileView: boolean = false;
   private chatService = inject(ChatService);
@@ -78,11 +77,7 @@ export class MainPageComponent implements OnInit {
   ngOnInit() {
     this.checkMobileView();
 
-    this.chatService.getChannelStatus().subscribe((status: boolean) => {
-      this.showSecondary = status;
-    });
-
-    this.chatService.currentChat$.subscribe((chat) => {
+    this.chatService.currentChat$.subscribe(({ chat }) => {
       if (this.previousChatId && chat?.id !== this.previousChatId) {
         this.closeThreadComponent();
       }
@@ -98,25 +93,26 @@ export class MainPageComponent implements OnInit {
   }
 
   openCloseChatChannel() {
-    if (this.showChannels) this.workspaceMenu = 'Workspace-Menü öffnen';
-    else this.workspaceMenu = 'Workspace-Menü schließen';
+    if (this.showChannels) {
+      this.workspaceMenu = 'Workspace-Menü öffnen';
+    } else {
+      this.workspaceMenu = 'Workspace-Menü schließen';
+    }
     this.showChannels = !this.showChannels;
   }
 
   closeThreadComponent() {
-    console.log('Closing thread component'); // Debugging output
-    this.chatService.setChannelFalse();
+    console.log('Closing thread component');
     this.showSecondary = false;
   }
 
   openThreadComponent() {
-    console.log('Opening thread component'); // Debugging output
-    this.chatService.setChannelTrue();
+    console.log('Opening thread component');
     this.showSecondary = true;
   }
 
   switchTo(view: 'channels' | 'main' | 'secondary') {
-    console.log('Switching to view:', view); // Debugging output
+    console.log('Switching to view:', view);
     this.currentView = view;
   }
 }

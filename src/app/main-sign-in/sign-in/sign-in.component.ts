@@ -127,7 +127,6 @@ export class SignInComponent {
 
     console.log('Sign-In Successful', credential);
     this.showConfirmationDialog();
-    this.router.navigate(['/main']);
   }
 
 
@@ -138,8 +137,14 @@ export class SignInComponent {
   private showConfirmationDialog() {
     this.dialog.open(ConfirmationDialogComponent, {
       data: {
-        message: 'Erfolgreich angemeldet'
-      }
+        message: 'Erfolgreich angemeldet',
+      },
+      hasBackdrop: false
+    }).afterOpened().subscribe(() => {
+      setTimeout(() => {
+        this.dialog.closeAll();
+        this.router.navigate(['/main']);
+      }, 2000);
     });
   }
 
@@ -206,7 +211,7 @@ export class SignInComponent {
    */
   private async handleGoogleUser(user: any) {
     const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
-  
+
     if (!userDoc) {
       await this.addNewGoogleUser(user);
     }

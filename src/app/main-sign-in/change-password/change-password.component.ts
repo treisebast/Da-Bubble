@@ -126,7 +126,8 @@ export class ChangePasswordComponent {
       data: {
         message: 'Ihr Passwort wurde erfolgreich geändert.',
         image: ''
-      }
+      },
+      hasBackdrop: false
     });
   }
 }

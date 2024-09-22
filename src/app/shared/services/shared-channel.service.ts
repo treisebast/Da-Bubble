@@ -3,14 +3,14 @@ import { BehaviorSubject } from 'rxjs';
 import { Channel } from '../models/channel.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SharedChannelService {
   private privateChannelsSource = new BehaviorSubject<Channel[]>([]);
   privateChannels$ = this.privateChannelsSource.asObservable();
-  
-  private puplicChannelsSource = new BehaviorSubject<Channel[]>([]);
-  puplicChannels$ = this.puplicChannelsSource.asObservable();
+
+  private publicChannelsSource = new BehaviorSubject<Channel[]>([]);
+  publicChannels$ = this.publicChannelsSource.asObservable();
 
   setPrivateChannels(channels: Channel[]) {
     this.privateChannelsSource.next(channels);
@@ -21,10 +21,10 @@ export class SharedChannelService {
   }
 
   setPublicChannels(channels: Channel[]) {
-    this.puplicChannelsSource.next(channels);
+    this.publicChannelsSource.next(channels);
   }
 
   getPuplicChannels() {
-    return this.puplicChannelsSource.value;
+    return this.publicChannelsSource.value;
   }
 }

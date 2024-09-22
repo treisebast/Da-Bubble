@@ -12,7 +12,6 @@ import { Routes } from '@angular/router';
              { path: "change-password", loadComponent: () => import('./main-sign-in/change-password/change-password.component').then(m => m.ChangePasswordComponent) },
              { path: "imprint", loadComponent: () => import('./shared/imprint/imprint.component').then(m => m.ImprintComponent) },
              { path: "privacy", loadComponent: () => import('./shared/privacypolicy/privacypolicy.component').then(m => m.PrivacypolicyComponent) },
-             { path: "confirmation", loadComponent: () => import('./shared/confirmation-dialog/confirmation-dialog.component').then(m => m.ConfirmationDialogComponent) },
          ],
      },
      { path: "main", loadComponent: () => import('./main-page/main-page.component').then(m => m.MainPageComponent) },

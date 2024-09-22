@@ -1,4 +1,4 @@
-<div class="confirmation-box">
+<div class="confirmation-box" (animationend)="onAnimationEnd($event)">
   <div *ngIf="data.image">
     <img [src]="data.image" alt="confirmation image">
   </div>
