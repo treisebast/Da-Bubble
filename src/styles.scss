@@ -125,8 +125,7 @@ body {
 
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
-  display: none !important;
-  opacity: 0 !important;
+  opacity: 0;
 }
 
 html,

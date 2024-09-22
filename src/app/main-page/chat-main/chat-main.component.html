@@ -1,17 +1,30 @@
+<!-- Neue Nachricht -->
 <div *ngIf="!selectedChat" class="newMessageChatContainer">
+  <!-- Header für Neue Nachricht -->
   <div class="header column">
     <h2>Neue Nachricht</h2>
-    <input type="text" (keyup)="onKeyUp($event)" placeholder="An: #channel, oder @jemand oder E-Mail Adresse" />
+    <input
+      type="text"
+      (keyup)="onKeyUp($event)"
+      placeholder="An: #channel, oder @jemand oder E-Mail Adresse"
+    />
+    <!-- Gefilterte Kanäle -->
     <ul *ngIf="filteredChannels.length > 0">
       <li *ngFor="let channel of filteredChannels">{{ channel.name }}</li>
     </ul>
+    <!-- Gefilterte Öffentliche Kanäle -->
     <ul *ngIf="filteredPuplicChannels.length > 0">
       <li *ngFor="let channel of filteredPuplicChannels">{{ channel.name }}</li>
     </ul>
   </div>
+
+  <!-- Nachrichteneingabefeld -->
   <div class="messageBox absolute-bottom">
-    <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"
-      (keydown.enter)="sendMessage($event)"></textarea>
+    <textarea
+      [(ngModel)]="newMessageText"
+      placeholder="Starte eine neue Nachricht"
+      (keydown.enter)="sendMessage($event)"
+    ></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon"></div>
@@ -24,70 +37,98 @@
   </div>
 </div>
 
+<!-- Chat-Schnittstelle -->
 <div class="wrapper" *ngIf="currentChat && selectedChat">
+  <!-- Chat-Header -->
   <div class="header">
     <div class="header-title">
-      <div class="header-channel-name"
-        (click)="isCurrentChatPrivate ? openProfilePopup(clickedUser?.userId!) : openChannelInfoPopup()">
+      <!-- Profilbild oder Kanalname -->
+      <div
+        class="header-channel-name"
+        (click)="isCurrentChatPrivate ? openProfilePopup(clickedUser?.userId!) : openChannelInfoPopup()"
+      >
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
           <img *ngIf="clickedUser" src="{{ clickedUser.avatar }}" alt="" />
-          <img *ngIf="clickedUser && clickedUser.status === 'online'" src="./assets/img/online.png" alt=""
-            class="online" />
-          <img *ngIf="clickedUser && clickedUser.status === 'offline'" src="./assets/img/offline.png" alt=""
-            class="online" />
+          <img
+            *ngIf="clickedUser && clickedUser.status === 'online'"
+            src="./assets/img/online.png"
+            alt=""
+            class="online"
+          />
+          <img
+            *ngIf="clickedUser && clickedUser.status === 'offline'"
+            src="./assets/img/offline.png"
+            alt=""
+            class="online"
+          />
         </div>
-        <img *ngIf="!isCurrentChatPrivate" src="../../../assets/img/chatChannel/tag.svg" alt="">
+        <img *ngIf="!isCurrentChatPrivate" src="../../../assets/img/chatChannel/tag.svg" alt="" />
         <h2 *ngIf="!isCurrentChatPrivate">{{ currentChat.name }}</h2>
         <h2 *ngIf="isCurrentChatPrivate">
           {{ clickedUserName || "Lade Benutzer..." }}
         </h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
+
+      <!-- Kanal-Info -->
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div class="channelMembersIcons" (click)="showUserListPopup(currentChat)">
-          <ng-container *ngFor="let user of usersOfSelectedChannel | slice:0:3; trackBy: trackByUserId">
+          <ng-container *ngFor="let user of usersOfSelectedChannel | slice: 0: 3; trackBy: trackByUserId">
             <img *ngIf="currentChat.members.length > 0" [src]="user.avatar" alt="user" />
           </ng-container>
           <div class="amountUsersIcon">{{ usersOfSelectedChannel.length }}</div>
         </div>
-        <div class="addUserIconDiv"  (click)="addUserPopup(currentChat)">
+        <div class="addUserIconDiv" (click)="addUserPopup(currentChat)">
           <img src="../assets/img/chatChannel/add_members_button.svg" alt="add user" />
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Nachrichtencontainer -->
   <div class="chat-container" #chatContainer>
+    <!-- Ladeindikator -->
     <div class="spinner" *ngIf="this.isLoading">
       <mat-spinner></mat-spinner>
     </div>
-    <ng-container *ngIf="selectedChat && !this.isLoading">
 
+    <!-- Nachrichtenanzeige -->
+    <ng-container *ngIf="selectedChat && !this.isLoading">
       <div *ngFor="let message of messages$ | async; let i = index; trackBy: trackByMessageId">
+        <!-- Tagestrenner -->
         <div *ngIf="message.timestamp && isNewDay(message.timestamp, i)" class="date-divider">
-          <span class="date">{{ convertToDate(message.timestamp) | date : "fullDate" : "" : "de" }}</span>
+          <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
         </div>
 
-        <app-message [message]="message"
-          [userProfile]="userProfiles[message.senderId]" [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)" [isCurrentChatPrivate]="isCurrentChatPrivate" [currentUserId]="currentUserId"
-          (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)" [messageIndex]="i">
-        </app-message>
-
+        <!-- Einzelne Nachricht -->
+        <app-message
+          [message]="message"
+          [userProfile]="userProfiles[message.senderId]"
+          [isCurrentUser]="message.senderId === currentUserId"
+          (messageClicked)="openThread($event)"
+          [isCurrentChatPrivate]="isCurrentChatPrivate"
+          [currentUserId]="currentUserId"
+          (senderId)="openProfilePopup($event)"
+          (imageClicked)="openOverlay($event)"
+          [messageIndex]="i"
+        ></app-message>
       </div>
+
+      <!-- Keine Nachrichten Information -->
       <div [ngClass]="{'hidden': !isCurrentChatPrivate || ((messages$ | async)?.length ?? 0) > 0}" class="message-info">
-        <!-- TODO: design and connect to profile-app -->
         <div>
           <img [src]="clickedUser?.avatar" alt="" />
           <h2>{{ clickedUser?.name }}<span *ngIf="currentUserId == clickedUser?.userId">(Du)</span></h2>
         </div>
-        <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content"><strong>Dieser Raum ist nur für dich
-            da.</strong> Mache dir Notizen,
+        <span *ngIf="currentUserId == clickedUser?.userId" class="mi-content">
+          <strong>Dieser Raum ist nur für dich da.</strong> Mache dir Notizen,
           liste deine To-dos auf oder bewahre Links und Dateien griffbereit auf.
-          Du kannst hier auch gerne Dinge mit dir selbst besprechen.</span>
-
-        <span *ngIf="currentUserId !== clickedUser?.userId">Diese Unterhaltung findet nur zwischen
-          <span class="message-info-user" *ngIf="clickedUser" (click)="openProfilePopup(clickedUser.userId)">&#64;{{
-            clickedUser.name }}
+          Du kannst hier auch gerne Dinge mit dir selbst besprechen.
+        </span>
+        <span *ngIf="currentUserId !== clickedUser?.userId">
+          Diese Unterhaltung findet nur zwischen
+          <span class="message-info-user" *ngIf="clickedUser" (click)="openProfilePopup(clickedUser.userId)">
+            &#64;{{ clickedUser.name }}
           </span>
           und dir statt.
         </span>
@@ -95,7 +136,7 @@
     </ng-container>
   </div>
 
-  <!-- Vorschau des Anhangs -->
+  <!-- Anhang-Vorschau -->
   <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
     <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
       <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
@@ -111,9 +152,14 @@
       </div>
     </ng-template>
   </div>
+
+  <!-- Nachrichteneingabe für aktuellen Chat -->
   <div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
-      (keydown.enter)="sendMessage($event)"></textarea>
+    <textarea
+      [(ngModel)]="newMessageText"
+      placeholder="Nachricht an {{ currentChat.name }}"
+      (keydown.enter)="sendMessage($event)"
+    ></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon" (click)="openFileDialog()"></div>
@@ -124,22 +170,39 @@
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
-    <!-- Error Message Display -->
+    <!-- Fehleranzeige -->
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
   </div>
-  <!-- Emoji-Mart -->
-  <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>
+
+  <!-- Emoji-Auswahl -->
+  <emoji-mart
+    *ngIf="showEmojiPicker"
+    set="twitter"
+    theme="light"
+    (emojiClick)="addEmoji($event)"
+  ></emoji-mart>
 </div>
 
+<!-- Channel Info Popup -->
+<app-channel-info-popup
+  *ngIf="selectedChannel"
+  [channel]="selectedChannel"
+  (click)="closeChannelInfoPopup()"
+></app-channel-info-popup>
 
-<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
-  (click)="closeChannelInfoPopup()"></app-channel-info-popup>
+<!-- Profil-Card -->
+<app-profil
+  class="app-profile-card"
+  [onclickUser]="clickedUser!"
+  (closeProfileCard)="closeProfil()"
+  *ngIf="isProfileOpen"
+></app-profil>
 
-<!-- Profilcard -->
-<app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
-  *ngIf="isProfileOpen"></app-profil>
-
-<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
-  (closeOverlay)="closeOverlay()"></app-image-overlay>
+<!-- Bild-Overlay -->
+<app-image-overlay
+  *ngIf="overlayImageUrl"
+  [imageUrl]="overlayImageUrl"
+  (closeOverlay)="closeOverlay()"
+></app-image-overlay>

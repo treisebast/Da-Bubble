@@ -31,6 +31,8 @@ import { firstValueFrom, forkJoin, map, Observable, of } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { MatDialog, MatDialogClose, MatDialogModule } from '@angular/material/dialog';
+import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-members.component';
 
 @Component({
   selector: 'app-chat-main',
@@ -45,6 +47,8 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
     ProfilComponent,
     ImageOverlayComponent,
     PickerComponent,
+    MatDialogModule,
+    MatDialogClose
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
@@ -97,7 +101,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
     private threadService: ThreadService,
     private firebaseStorageService: FirebaseStorageService,
     private firestore: Firestore,
-    private sharedChannelService: SharedChannelService
+    private sharedChannelService: SharedChannelService,
+    public dialog: MatDialog
   ) {
     registerLocaleData(localeDe);
   }
@@ -221,8 +226,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
       error: (error) => {
         console.error('Error loading messages:', error);
       },
-      complete: () => {
-      },
+      complete: () => {},
     });
   }
 
@@ -274,6 +278,23 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   getUserName(senderId: string): string {
     return this.userProfiles[senderId]?.name || 'Unknown User';
+  }
+
+  showUserListPopup(currentChat: Channel): void {
+    const dialogRef = this.dialog.open(DialogShowMembersComponent, {
+      data: { members: this.usersOfSelectedChannel },
+      hasBackdrop: true,
+      backdropClass: 'backdropVisible',
+    });
+
+    let alreadyOpen = false;
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && !alreadyOpen) {
+        this.openProfilePopup(result.userId);
+        alreadyOpen = true;
+      }
+    });
   }
 
   // ProfileCard
@@ -660,10 +681,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit {
 
   addUserPopup(currentChannel: Channel) {
     console.log('addUserPopup:', currentChannel);
-  }
-
-  showUserListPopup(currentChannel: Channel) {
-    console.log('showUserListPopup:', currentChannel);
   }
 
   openOverlay(imageUrl: string) {
