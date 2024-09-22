@@ -3,7 +3,7 @@
   <mat-card-subtitle>Wir empfehlen dir, die E-Mail-Adresse zu nutzen, die du bei der Arbeit
     verwendest.</mat-card-subtitle>
 
-  <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
+  <form aria-hidden="false" [formGroup]="signInForm" (ngSubmit)="onSubmit()">
     <div class="input-container"
       [ngClass]="{ 'invalid-border': email.invalid && (email.dirty || email.touched || formSubmitted) }">
       <img src="/assets/img/front-page/mail.svg" alt="email icon">
