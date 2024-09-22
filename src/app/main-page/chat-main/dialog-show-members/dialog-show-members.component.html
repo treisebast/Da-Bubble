@@ -1,7 +1,7 @@
 <div class="wrapper">
   <div class="header">
     <span>Mitglieder</span>
-    <mat-icon>close</mat-icon>
+    <mat-icon mat-dialog-close>close</mat-icon>
   </div>
   <mat-dialog-content>
     <div class="memberDiv" *ngFor="let member of data.members" (click)="openProfile(member)">

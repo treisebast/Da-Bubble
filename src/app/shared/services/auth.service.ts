@@ -22,8 +22,8 @@ import { doc, Firestore, setDoc } from '@angular/fire/firestore';
 export class AuthService {
   private awayTimeout?: number;
   private offlineTimeout?: number;
-  private readonly AWAY_LIMIT = 5000;
-  private readonly OFFLINE_LIMIT = 10000;
+  private readonly AWAY_LIMIT = 25000;
+  private readonly OFFLINE_LIMIT = 600000;
   private currentStatus: 'online' | 'away' | 'offline' = 'offline';
 
   constructor(private auth: Auth, private firestore: Firestore) {
