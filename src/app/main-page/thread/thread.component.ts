@@ -12,7 +12,7 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { finalize, firstValueFrom, from, switchMap, takeUntil } from 'rxjs';
+import { catchError, finalize, firstValueFrom, forkJoin, from, of, switchMap, takeUntil } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -293,29 +293,41 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   loadUserProfiles(messages: Message[]) {
-    const userIds = new Set(messages.map(message => message.senderId));
+    const userIds = new Set<string>();
 
-    // Füge alle Benutzer-IDs aus den Reaktionen hinzu
+    // Sammle alle Benutzer-IDs aus den Nachrichten und Reaktionen
     messages.forEach(message => {
+      userIds.add(message.senderId);
       if (message.reactions) {
         Object.values(message.reactions).forEach(userList => {
-          userList.forEach(userId => {
-            userIds.add(userId);
-          });
+          userList.forEach(userId => userIds.add(userId));
         });
       }
     });
 
-    // Lade die Benutzerprofile für alle gesammelten Benutzer-IDs
-    userIds.forEach(userId => {
-      if (!this.userProfiles[userId]) {
-        this.userService.getUser(userId).pipe(takeUntil(this.unsubscribe$)).subscribe((user: User) => {
+    const newUserIds = Array.from(userIds).filter(userId => !this.userProfiles[userId]);
+
+    if (newUserIds.length === 0) return;
+
+    // Erstelle eine Liste von Observables für die neuen Benutzer-IDs
+    const userObservables = newUserIds.map(userId =>
+      this.userService.getUser(userId).pipe(
+        catchError(error => {
+          console.error(`Error loading user profile for userId ${userId}:`, error);
+          return of(null);
+        })
+      )
+    );
+
+    // Verwende forkJoin, um alle Benutzerprofile gleichzeitig zu laden
+    forkJoin(userObservables).pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      users.forEach((user, index) => {
+        const userId = newUserIds[index];
+        if (user) {
           this.userProfiles[userId] = user;
           console.log("User profile loaded:", user);
-        }, error => {
-          console.error(`Error loading user profile for userId ${userId}:`, error);
-        });
-      }
+        }
+      });
     });
   }
 
