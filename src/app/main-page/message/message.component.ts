@@ -62,10 +62,10 @@ export class MessageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log(
-      `Message ${this.messageIndex + 1} Attachments:`,
-      this.message.attachments
-    );
+    // console.log(
+    //   `Message ${this.messageIndex + 1} Attachments:`,
+    //   this.message.attachments
+    // );
     this.userService.lastTwoEmojis$.subscribe((emojis) => {
       this.lastTwoEmojis = emojis;
     });

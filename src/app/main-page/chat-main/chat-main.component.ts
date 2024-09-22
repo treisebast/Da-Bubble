@@ -190,7 +190,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedChat = !!chat;
 
       if (!this.currentChat) {
-        console.error('No chat selected');
+        console.log('No chat selected');
         return;
       }
 
