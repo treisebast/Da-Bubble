@@ -41,7 +41,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
   fileSize: number = 0;
   totalReplies: number = 0;
   editContent: string = '';
-
   currentChat: Channel | null = null;
   currentMessageToOpen: Message | null = null;
   overlayImageUrl: string | null = null;
@@ -51,7 +50,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   attachmentUrl: string | null = null;
   errorMessage: string | null = null;
   showTooltip: string | null = null;
-
+  emojiMartPositionClass: string = '';
   messages: Message[] = [];
   lastTwoEmojis: string[] = [];
   userNames: { [key: string]: string } = {};
@@ -74,7 +73,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
     private firestore: Firestore,
     private firebaseStorageService: FirebaseStorageService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Authentifizierung des Benutzers
@@ -207,9 +206,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async uploadAttachment(): Promise<void> {
     if (this.selectedFile) {
       const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${
-        this.selectedFile.name
-      }`;
+      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${this.selectedFile.name
+        }`;
       const downloadUrl = await firstValueFrom(
         this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
       );
@@ -644,6 +642,14 @@ export class ThreadComponent implements OnInit, OnDestroy {
     } else {
       this.showEmojiPicker = true;
       this.selectedMessage = message;
+      const windowHeight = window.innerHeight;
+      const isBelow = event.clientY > windowHeight / 2;
+      this.emojiMartPositionClass = isBelow ? 'open-above' : 'open-below';
+      if (message.senderId === this.currentUserId) {
+        this.emojiMartPositionClass += ' position-right';
+      } else {
+        this.emojiMartPositionClass += ' position-left';
+      }
     }
   }
 
@@ -788,8 +794,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     } else {
@@ -797,8 +802,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     }

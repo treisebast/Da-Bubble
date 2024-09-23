@@ -1,6 +1,7 @@
 <div class="singelMessageContainer"
 [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }"
-(mouseleave)="onMouseLeave()">
+>
+<!-- (mouseleave)="onMouseLeave()" TBI -->
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
@@ -68,8 +69,7 @@
 
     <div #emojiPickerContainer>
       <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light"
-        class="emoji-mart-message"
-        [ngClass]="{ 'position-left': isCurrentUser, 'position-right': !isCurrentUser }"
+        class="emoji-mart-message {{ emojiMartPositionClass }}"
         (emojiClick)="addEmoji($event)" (click)="$event.stopPropagation()">
       </emoji-mart>
     </div>

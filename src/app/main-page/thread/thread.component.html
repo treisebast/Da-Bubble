@@ -18,8 +18,8 @@
 
   <!-- Original message, to which the thread belongs -->
   <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
-    (mouseleave)="onMouseLeave(currentMessageToOpen)"
-    [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}">
+    [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}"
+    (mouseleave)="onMouseLeave(currentMessageToOpen)">
     <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
       [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
       class="profile-img" />
@@ -110,8 +110,9 @@
       <span class="date">{{ convertToDate(message.timestamp) | date : 'fullDate' : '' : 'de' }}</span>
     </div>
 
-    <div class="singelMessageContainer" (mouseleave)="onMouseLeave(message)"
-      [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}">
+    <div class="singelMessageContainer"
+      [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}"
+      (mouseleave)="onMouseLeave(message)">
 
       <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
         alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
@@ -181,7 +182,9 @@
         </div>
 
         <div *ngIf="showEmojiPicker && message === selectedMessage" (click)="$event.stopPropagation()">
-          <emoji-mart set="twitter" theme="light" (emojiClick)="addEmoji($event, message)"></emoji-mart>
+          <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+            (emojiClick)="addEmoji($event, message)">
+          </emoji-mart>
         </div>
 
         <div class="reaction-button-bar">

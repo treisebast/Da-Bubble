@@ -44,6 +44,7 @@ export class MessageComponent implements OnInit {
   @Output() imageClicked = new EventEmitter<string>();
   @Input() messageIndex!: number;
 
+  emojiMartPositionClass: string = '';
   screenSmall: boolean = false;
   isEditing: boolean = false;
   editContent: string = '';
@@ -185,13 +186,24 @@ export class MessageComponent implements OnInit {
   toggleEmojiPicker(event: MouseEvent) {
     event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker;
-  }
-
-  onMouseLeave() {
+    
     if (this.showEmojiPicker) {
-      this.showEmojiPicker = false;
+      const windowHeight = window.innerHeight;
+      const isBelow = event.clientY > windowHeight / 2;
+      
+      // Determine the base class for positioning
+      this.emojiMartPositionClass = isBelow ? 'open-above' : 'open-below';
+      
+      // Add left or right positioning based on whether it's the current user
+      this.emojiMartPositionClass += this.isCurrentUser ? ' position-left' : ' position-right';
     }
   }
+
+  // onMouseLeave() {
+  //   if (this.showEmojiPicker) {
+  //     this.showEmojiPicker = false;
+  //   }
+  // }
 
   addEmoji(event: any) {
     const emoji = event.emoji.native;

@@ -1,0 +1,125 @@
+.emoji-mart {
+    z-index: 1000;
+    background-color: var(--white) !important;
+    color: var(--black) !important;
+    border: 1px solid #ddd !important;
+
+    .emoji-mart-bar {
+        background-color: var(--white) !important;
+    }
+
+    .emoji-mart-preview,
+    .emoji-mart-anchors {
+        background-color: var(--white) !important;
+    }
+
+    .emoji-mart-preview {
+        height: 50px;
+    }
+
+    .emoji-mart-scroll {
+        overflow-x: hidden;
+    }
+
+    .emoji-mart-skin-swatches {
+        width: fit-content !important;
+    }
+
+    .emoji-mart-anchor-selected {
+        color: var(--purple-two) !important;
+    }
+
+    .emoji-mart-anchor-bar {
+        background-color: var(--purple-two) !important;
+    }
+
+    .emoji-mart-category-label {
+        background-color: var(--white) !important;
+
+        span {
+            background-color: var(--white);
+            color: var(--black);
+        }
+    }
+
+    .emoji-mart-search input {
+        background-color: var(--white) !important;
+        color: var(--black) !important;
+        border: 1px solid #ccc !important;
+    }
+
+    .emoji-mart-emoji:hover,
+    .emoji-mart-emoji:focus {
+        background-color: transparent !important;
+    }
+
+    .emoji-mart-emoji:before {
+        background-color: var(--purple-two) !important;
+    }
+
+    .emoji-mart-scroll {
+        height: 160px;
+    }
+}
+
+
+.emoji-mart-message {
+    position: absolute;
+    top: 0;
+    z-index: 1000;
+    width: fit-content;
+    margin-top: 1px;
+
+    &.position-left {
+        left: 90px;
+        margin-left: 10px;
+      }
+    
+      &.position-right {
+        right: 90px;
+        margin-right: 10px;
+      }
+    
+      &.open-above {
+        top: -331px;
+      }
+    
+      &.open-below {
+        top: 0px;
+      }
+}
+
+
+.emoji-mart-message-box {
+    position: absolute;
+    bottom: 100%;
+    left: 16px;
+    width: fit-content;
+    z-index: 1000;
+}
+
+.emoji-mart-threadmessage {
+    position: absolute;
+    top: 0;
+    z-index: 2000;
+
+    section {
+        width: 245px !important;
+    }
+
+    &.position-left {
+        left: 83px;
+    }
+
+    &.position-right {
+        right: 83px;
+    }
+
+    &.open-above {
+        top: -317px;
+    }
+
+    &.open-below {
+        top: 12px;
+    }
+}
