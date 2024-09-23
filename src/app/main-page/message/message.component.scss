@@ -11,7 +11,7 @@
     left: -32px;
     right: -32px;
     bottom: -16px;
-    z-index: 0;
+    z-index: -1;
     background-color: transparent;
     transition: background-color 0.3s ease;
   }
@@ -39,7 +39,6 @@
 }
 
 .message-wrapper {
-  z-index: 2;
   max-width: 75%;
 
   &.full-width {

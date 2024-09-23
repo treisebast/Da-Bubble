@@ -210,6 +210,10 @@
   }
 }
 
+.relative-container {
+  position: relative;
+}
+
 .messageBox {
   border: 1px solid rgb(213, 215, 235);
   border-radius: 20px;
@@ -220,6 +224,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1;
 
   &:hover {
     border-color: rgb(161, 165, 248);

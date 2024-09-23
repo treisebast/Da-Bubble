@@ -67,8 +67,11 @@
     </div>
 
     <div #emojiPickerContainer>
-      <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"
-        (click)="$event.stopPropagation()"></emoji-mart>
+      <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light"
+        class="emoji-mart-message"
+        [ngClass]="{ 'position-left': isCurrentUser, 'position-right': !isCurrentUser }"
+        (emojiClick)="addEmoji($event)" (click)="$event.stopPropagation()">
+      </emoji-mart>
     </div>
 
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count" [ngClass]="{

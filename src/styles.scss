@@ -4,17 +4,12 @@
 
 @use "@angular/material" as mat;
 
-$open-sans-typography: mat.define-typography-config(
-  $font-family: '"Nunito", sans-serif'
-);
+$open-sans-typography: mat.define-typography-config($font-family: '"Nunito", sans-serif'
+  );
 
 @include mat.typography-hierarchy($open-sans-typography);
 
-$app-theme: mat.define-light-theme(
-  (
-    typography: $open-sans-typography
-  )
-);
+$app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @include mat.all-component-themes($app-theme);
 
 /* Imports */
@@ -23,6 +18,7 @@ $app-theme: mat.define-light-theme(
 @import "./styles/colors.scss";
 @import "./styles/reaction-tooltip.scss";
 @import "@ctrl/ngx-emoji-mart/picker";
+
 @font-face {
   font-family: "Raleway";
   src: none;
@@ -31,6 +27,7 @@ $app-theme: mat.define-light-theme(
 body {
   font-family: "Arial", sans-serif; // Beispiel für eine alternative Schriftart
 }
+
 /* Global styles */
 * {
   font-family:
@@ -125,7 +122,8 @@ body {
 
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
-  opacity: 0;
+  display: none !important;
+  opacity: 0 !important;
 }
 
 html,
@@ -156,9 +154,6 @@ body {
 }
 
 .emoji-mart {
-  position: absolute;
-  bottom: 80px;
-  left: 80px;
   z-index: 1000;
   background-color: var(--white) !important;
   color: var(--black) !important;
@@ -204,4 +199,33 @@ body {
   .emoji-mart-emoji:before {
     background-color: var(--purple-two) !important;
   }
+}
+
+
+/* Spezifische Styles für den Emoji Mart der einzelnen Nachrichten */
+.emoji-mart-message {
+  position: absolute;
+  top: 0;
+  z-index: 1000;
+  width: fit-content;
+  margin-top: 1px;
+
+  &.position-left {
+    left: 90px;
+    margin-left: 10px;
+  }
+
+  &.position-right {
+    right: 90px;
+    margin-right: 10px;
+  }
+}
+
+/* Spezifische Styles für den Emoji Mart in der Nachrichteneingabe */
+.emoji-mart-message-box {
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  width: fit-content;
+  z-index: 1000;
 }

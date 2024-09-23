@@ -129,28 +129,36 @@
     </ng-template>
   </div>
 
+
+
+
+
   <!-- Nachrichteneingabe für aktuellen Chat -->
-  <div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
-      (keydown.enter)="sendMessage($event)"></textarea>
-    <div class="messageBoxBottom">
-      <div class="iconsLeft">
-        <div class="addIcon" (click)="openFileDialog()"></div>
-        <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
-        <div class="border"></div>
-        <div class="emoji" (click)="toggleEmojiPicker()"></div>
-        <div *ngIf="!isCurrentChatPrivate" class="iconMarkUser"></div>
+  <div class="relative-container">
+    <div class="messageBox">
+      <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
+        (keydown.enter)="sendMessage($event)"></textarea>
+      <div class="messageBoxBottom">
+        <div class="iconsLeft">
+          <div class="addIcon" (click)="openFileDialog()"></div>
+          <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
+          <div class="border"></div>
+          <div class="emoji" (click)="toggleEmojiPicker()"></div>
+          <div *ngIf="!isCurrentChatPrivate" class="iconMarkUser"></div>
+        </div>
+        <div (click)="sendMessage()" class="sendMessage"></div>
       </div>
-      <div (click)="sendMessage()" class="sendMessage"></div>
+      <!-- Fehleranzeige -->
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
     </div>
-    <!-- Fehleranzeige -->
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+    <!-- Emoji-Auswahl -->
+    <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" class="emoji-mart-message-box"
+      (emojiClick)="addEmoji($event)">
+    </emoji-mart>
   </div>
 
-  <!-- Emoji-Auswahl -->
-  <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" (emojiClick)="addEmoji($event)"></emoji-mart>
 </div>
 
 <!-- Channel Info Popup -->
