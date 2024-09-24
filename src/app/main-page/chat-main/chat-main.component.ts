@@ -83,6 +83,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUserId = '';
   currentUserName = '';
   clickedUser: User | null = null;
+  private profileSubscription: Subscription | null = null;
   clickedUserName: string = '';
   otherUser: User | null = null;
 
@@ -151,6 +152,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    if (this.profileSubscription) {
+      this.profileSubscription.unsubscribe();
+      this.profileSubscription = null;
+    }
     document.removeEventListener(
       'click',
       this.closeEmojiPickerOnOutsideClick.bind(this)
@@ -458,17 +463,41 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // ProfileCard
+  // // ProfileCard
+  // openProfilePopup(userId: string) {
+  //   if (!this.isProfileOpen){
+  //     this.userService.getUser(userId).subscribe((user: User) => {
+  //       this.clickedUser = user;
+  //       console.log('open Profile for:', user);
+  //     });
+  //     this.isProfileOpen = true;
+  //   }
+  // }
+
+
   openProfilePopup(userId: string) {
-    this.userService.getUser(userId).subscribe((user: User) => {
-      this.clickedUser = user;
+    if (!this.isProfileOpen && userId) {
+      this.profileSubscription = this.userService.getUser(userId).subscribe({
+        next: (user: User) => {
+          this.clickedUser = user;
+          console.log('Profile geöffnet für:', user);
+        },
+        error: (error) => {
+          console.error(`Fehler beim Laden des Profils für Benutzer ${userId}:`, error);
+        },
+      });
       this.isProfileOpen = true;
-      console.log('open Profile for:', user);
-    });
+    }
   }
 
   closeProfil() {
-    this.isProfileOpen = false;
+    if (this.isProfileOpen) {
+      this.isProfileOpen = false;
+      if (this.profileSubscription) {
+        this.profileSubscription.unsubscribe();
+        this.profileSubscription = null;
+      }
+    }
   }
 
   openChannelInfoPopup() {
