@@ -8,7 +8,7 @@ export interface Message {
   timestamp: Timestamp | FieldValue;
   attachments?: string[];
   threadCount?: number;
-  lastReplyTimestamp?: Timestamp | FieldValue;
+  lastReplyTimestamp?: Timestamp | null; 
   edited?: boolean;
   chatId: string;
   metadata?: {

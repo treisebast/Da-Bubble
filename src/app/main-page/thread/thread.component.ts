@@ -17,6 +17,7 @@ import { ImageOverlayComponent } from '../image-overlay/image-overlay.component'
 import { getMetadata, getStorage, ref } from 'firebase/storage';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { Subject } from 'rxjs';
+import { convertToDate } from '../../shared/utils';
 
 @Component({
   selector: 'app-thread',
@@ -206,8 +207,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async uploadAttachment(): Promise<void> {
     if (this.selectedFile) {
       const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${this.selectedFile.name
-        }`;
+      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${
+        this.selectedFile.name
+      }`;
       const downloadUrl = await firstValueFrom(
         this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
       );
@@ -244,25 +246,30 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   sortMessagesByTimestamp(messages: Message[]): Message[] {
     return messages.sort((a, b) => {
-      const dateA = this.convertToDate(a.timestamp);
-      const dateB = this.convertToDate(b.timestamp);
+      const dateA = convertToDate(a.timestamp);
+      const dateB = convertToDate(b.timestamp);
+      if (!dateA || !dateB) return 0;
       return dateA.getTime() - dateB.getTime();
     });
   }
 
-  isNewDay(timestamp: Timestamp | FieldValue, index: number): boolean {
+  isNewDay(timestamp: Timestamp | FieldValue | Date, index: number): boolean {
     if (index === 0) return true;
-    const prevDate = this.convertToDate(this.messages[index - 1].timestamp);
-    const currentDate = this.convertToDate(timestamp);
+    const prevDate = convertToDate(this.messages[index - 1].timestamp);
+    const currentDate = convertToDate(timestamp);
+    if (!prevDate || !currentDate) return false;
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
-  convertToDate(timestamp: Timestamp | FieldValue | Date): Date {
+  convertToDate(
+    timestamp: Timestamp | FieldValue | Date | null | undefined
+  ): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
     } else if (timestamp instanceof Date) {
       return timestamp;
     }
+    // Rückgabe des aktuellen Datums als Fallback
     return new Date();
   }
 
@@ -390,7 +397,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
       try {
         await this.deleteMessageAttachments(message);
         await this.deleteMessageFromThread(message);
-        console.log('Message and attachments deleted successfully');
         this.checkAndUpdateThreadCount();
       } catch (error) {
         console.error('Error deleting message:', error);
@@ -403,9 +409,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
   checkAndUpdateThreadCount() {
     if (this.messages.length === 0 && this.currentMessageToOpen) {
       this.currentMessageToOpen.threadCount = 0;
-      this.currentMessageToOpen.lastReplyTimestamp = undefined;
-      this.updateThreadInfoInMainChat();
+      this.currentMessageToOpen.lastReplyTimestamp = null; // Sicherstellen, dass es auf null gesetzt wird
     }
+    this.updateThreadInfoInMainChat();
   }
 
   /**
@@ -418,8 +424,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
       const { chatId, id: messageId } = this.currentMessageToOpen;
 
       try {
-        await this.threadService.updateThreadInfo(chatId, messageId, 0, null);
-        console.log('Thread information updated in main chat');
+        await this.threadService.updateThreadInfo(
+          chatId,
+          messageId,
+          this.currentMessageToOpen.threadCount!,
+          this.currentMessageToOpen.lastReplyTimestamp ?? null // Sicherstellen, dass undefined zu null wird
+        );
       } catch (error) {
         console.error('Error updating thread information in main chat:', error);
       }
@@ -472,9 +482,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
           this.threadService.currentMessageId,
           message
         )
-        .then(() => {
-          console.log('Message updated successfully');
-        })
         .catch((error) => {
           console.error('Error updating message:', error);
         });
@@ -701,7 +708,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
    * @param emoji Das Emoji der Reaktion.
    * @param userId Die ID des Benutzers.
    */
-  private toggleUserReaction(message: Message, emoji: string, userId: string): void {
+  private toggleUserReaction(
+    message: Message,
+    emoji: string,
+    userId: string
+  ): void {
     if (!message.reactions) {
       message.reactions = {};
     }
@@ -713,11 +724,19 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
-  private hasUserReacted(message: Message, emoji: string, userId: string): boolean {
+  private hasUserReacted(
+    message: Message,
+    emoji: string,
+    userId: string
+  ): boolean {
     return !!message.reactions?.[emoji]?.includes(userId);
   }
 
-  private addUserReaction(message: Message, emoji: string, userId: string): void {
+  private addUserReaction(
+    message: Message,
+    emoji: string,
+    userId: string
+  ): void {
     if (!message.reactions) {
       message.reactions = {};
     }
@@ -727,7 +746,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
     message.reactions[emoji].push(userId);
   }
 
-  private removeUserReaction(message: Message, emoji: string, userId: string): void {
+  private removeUserReaction(
+    message: Message,
+    emoji: string,
+    userId: string
+  ): void {
     if (!message.reactions || !message.reactions[emoji]) {
       return;
     }
@@ -752,11 +775,13 @@ export class ThreadComponent implements OnInit, OnDestroy {
     return message.reactions?.[emoji]?.length || 0;
   }
 
-
   // updates the reactions for the given message
   private async updateMessageReactions(message: Message): Promise<void> {
     const { chatId, id: messageId } = message;
-    if (this.currentMessageToOpen && message.id === this.currentMessageToOpen.id) {
+    if (
+      this.currentMessageToOpen &&
+      message.id === this.currentMessageToOpen.id
+    ) {
       try {
         await this.threadService.updateOriginalMessageReactions(
           chatId,
@@ -794,7 +819,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     } else {
@@ -802,7 +828,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${
+          numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     }

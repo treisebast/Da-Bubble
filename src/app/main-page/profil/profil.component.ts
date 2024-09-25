@@ -62,8 +62,6 @@ export class ProfilComponent implements OnInit {
             if (user) {
               this.ownUser = user;
               this.ownUserID = user.userId;
-              console.log(this.ownUserID);
-              console.log(this.onclickUserID);
             }
           });
         this.subs.add(userSub);
@@ -83,7 +81,7 @@ export class ProfilComponent implements OnInit {
 
   editProfil() {
     this.isEditing = true;
-    console.log(this.onclickUser);
+    console.log('editing profile...');
     this.profiltext = 'Dein Profil bearbeiten';
   }
 
