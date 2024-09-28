@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChannelService } from '../../shared/services/channel.service';
 import { Channel } from '../../shared/models/channel.model';
@@ -14,14 +14,14 @@ import { UserService } from '../../shared/services/user.service';
 })
 export class ChannelInfoPopupComponent {
   @Input() channel: Channel | null = null;
-
+  @Output() close = new EventEmitter<void>();
   isEditingName = false;
   isEditingDescription = false;
   editedName: string = '';
   editedDescription: string = '';
   createdByName: string = '';
 
-  constructor(private channelService: ChannelService, private userService: UserService) { }
+  constructor(private channelService: ChannelService, private userService: UserService,private elementRef: ElementRef) { }
 
   ngOnInit() {
     if (this.channel) {
@@ -59,7 +59,15 @@ export class ChannelInfoPopupComponent {
     }
   }
 
-  closePopup() {
-    this.channel = null;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.closePopup(event);
+    }
+  }
+
+  closePopup(event: Event) {
+    event.stopPropagation();
+    this.close.emit(); // Emitieren Sie das Schließereignis
   }
 }

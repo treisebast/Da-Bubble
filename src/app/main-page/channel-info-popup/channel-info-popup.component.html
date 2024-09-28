@@ -1,8 +1,8 @@
-<div *ngIf="channel" class="modal-background" (click)="closePopup()"></div>
+<!-- <div *ngIf="channel" class="modal-background" (click)="closePopup()"></div> -->
 <div *ngIf="channel" class="channel-popup" (click)="$event.stopPropagation()">
     <div class="popup-header">
         <h2><img src="../../../assets/img/chatChannel/tag.svg"> {{ channel.name }}</h2>
-        <button (click)="closePopup()" class="close-button"></button>
+        <button (click)="closePopup($event)" class="close-button"></button>
     </div>
     <div class="popup-body">
         <div [ngClass]="{'channel-name': true, 'no-padding-border': isEditingName}">
@@ -41,6 +41,6 @@
 
     </div>
     <div class="leave-container">
-        <button class="leave-button" (click)="closePopup()">Channel verlassen</button>
+        <button class="leave-button" (click)="closePopup($event)">Channel verlassen</button>
     </div>
 </div>

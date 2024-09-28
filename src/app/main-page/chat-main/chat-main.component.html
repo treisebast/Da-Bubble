@@ -36,7 +36,7 @@
   <div class="header">
     <div class="header-title">
       <!-- Profilbild oder Kanalname -->
-      <div class="header-channel-name"
+      <div class="header-channel-name " (click)="onHeaderChannelNameClick($event)"
         (click)="isCurrentChatPrivate ? openProfilePopup(clickedUser?.userId!) : openChannelInfoPopup()">
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
           <img *ngIf="clickedUser" [src]="clickedUser.avatar" alt="" />
@@ -50,6 +50,9 @@
         <h2 *ngIf="isCurrentChatPrivate">
           {{ clickedUserName || "Lade Benutzer..." }}
         </h2>
+             <!-- Fügen Sie das Popup hier ein -->
+      <app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel" (close)="closeChannelInfoPopup()"></app-channel-info-popup>
+   
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
 
@@ -162,8 +165,8 @@
 </div>
 
 <!-- Channel Info Popup -->
-<app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
-  (click)="closeChannelInfoPopup()"></app-channel-info-popup>
+<!-- <app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
+  (click)="closeChannelInfoPopup()"></app-channel-info-popup> -->
 
 <!-- Profil-Card -->
 <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"

@@ -1,7 +1,7 @@
 .channel-popup {
-  position: fixed;
-  top: 38%;
-  left: 42%;
+  position: absolute;
+  top: 815%;
+  left: 145%;
   transform: translate(-50%, -50%);
   background-color: var(--white);
   padding: 30px;
@@ -12,6 +12,7 @@
   width: 700px;
   min-height: fit-content;
   z-index: 1000;
+  cursor: default;
 
   .popup-header {
     display: flex;
