@@ -301,7 +301,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.setLoadingState(true);
+    // this.setLoadingState(true);
     this.selectedFile
       ? this.uploadAttachmentAndSendMessage()
       : this.createAndSendMessage();
@@ -315,10 +315,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         this.firebaseStorageService.uploadFile(this.selectedFile!, filePath)
       );
       this.attachmentUrl = downloadUrl;
-      this.createAndSendMessage();
+      await this.createAndSendMessage();
     } catch (error) {
       console.error('Error uploading file:', error);
-    } finally {
       this.setLoadingState(false);
     }
   }
