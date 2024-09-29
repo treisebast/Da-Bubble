@@ -127,6 +127,11 @@ body {
   opacity: 0 !important;
 }
 
+.backdropVisible {
+  display: block !important;
+  opacity: 1 !important;
+}
+
 html,
 body {
   height: 100%;
