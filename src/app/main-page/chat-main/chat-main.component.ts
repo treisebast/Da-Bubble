@@ -31,12 +31,18 @@ import { FirebaseStorageService } from '../../shared/services/firebase-storage.s
 import { Firestore, collection, doc } from '@angular/fire/firestore';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
 import {
+  catchError,
   firstValueFrom,
   forkJoin,
+  from,
   map,
+  mergeMap,
   Observable,
   of,
   Subscription,
+  switchMap,
+  tap,
+  toArray,
 } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -132,15 +138,16 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initializeUser();
     this.subscribeToCurrentChat();
     this.subscribeToLoadingState();
+    this.subscribeToMessages();
 
-    // Subscribe to private channels
+    // Abonnieren der privaten Kanäle
     const privateChannelsSub =
       this.sharedChannelService.privateChannels$.subscribe((channels) => {
         this.privateChannels = channels;
       });
     this.subscriptions.add(privateChannelsSub);
 
-    // Subscribe to public channels
+    // Abonnieren der öffentlichen Kanäle
     const publicChannelsSub =
       this.sharedChannelService.publicChannels$.subscribe((channels) => {
         this.publicChannels = channels;
@@ -172,8 +179,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
-
-
   private initializeUser(): void {
     const authSub = this.authService.getUser().subscribe((user) => {
       if (user) {
@@ -201,30 +206,45 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.getUsersOfSelectedChannel(this.currentChat);
       this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
 
-      // Füge diesen Aufruf hinzu:
+      // Aufruf zum Laden des Benutzernamens
       this.getUserNameById(this.currentChat);
-
-      this.subscribeToMessages();
     });
     this.subscriptions.add(chatSub);
   }
 
   private subscribeToMessages(): void {
-    this.messages$ = this.chatService.messages$.pipe(
-      map((messages) => this.sortMessagesByTimestamp(messages))
-    );
-
-    const messagesSub = this.messages$.subscribe({
-      next: (messages) => {
-        this.messages = messages;
-        this.loadUserProfiles();
-        this.scrollToBottom(); // Hier scrollen
-      },
-      error: (error) => {
-        console.error('Error loading messages:', error);
-      },
+    const messagesSub = this.chatService.messages$.subscribe({
+      next: this.handleMessagesResponse.bind(this),
+      error: this.handleMessagesError.bind(this),
     });
     this.subscriptions.add(messagesSub);
+  }
+
+  private handleMessagesResponse(messages: Message[]): void {
+    const validMessages = messages.filter((message) => message.timestamp);
+    const sortedMessages = this.sortMessagesByTimestamp(validMessages);
+
+    const metadataRequests: Observable<Message>[] = sortedMessages.map(
+      (message) => this.loadMetadataForMessage(message)
+    );
+
+    forkJoin(metadataRequests).subscribe((messagesWithMetadata: Message[]) => {
+      this.messages = messagesWithMetadata;
+      this.loadUserProfiles(messagesWithMetadata);
+      this.setLoadingState(false);
+
+      if (this.messages && this.userProfiles) {
+        this.scrollToBottom();
+      }
+    });
+  }
+
+  private sortMessagesByTimestamp(messages: Message[]): Message[] {
+    return messages.sort(
+      (a, b) =>
+        this.convertToDate(a.timestamp).getTime() -
+        this.convertToDate(b.timestamp).getTime()
+    );
   }
 
   private subscribeToLoadingState(): void {
@@ -252,34 +272,26 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     return null;
   }
 
-  private loadUserProfiles() {
-    const messagesSub = this.messages$.subscribe({
-      next: (messages: Message[]) => {
-        const userIds = [...new Set(messages.map((message) => message.senderId))];
+  private loadUserProfiles(messages: Message[]) {
+    const userIds = [...new Set(messages.map((message) => message.senderId))];
 
-        userIds.forEach((userId) => {
-          if (!this.userProfiles[userId]) {
-            const userSub = this.userService.getUser(userId).subscribe({
-              next: (user: User) => {
-                this.userProfiles[userId] = {
-                  name: user.name,
-                  avatar: user.avatar,
-                  status: user.status === 'online',
-                };
-              },
-              error: (error) => {
-                console.error(`Error loading user profile for userId ${userId}:`, error);
-              },
-            });
-            this.subscriptions.add(userSub);
-          }
+    userIds.forEach((userId) => {
+      if (!this.userProfiles[userId]) {
+        const userSub = this.userService.getUser(userId).subscribe({
+          next: (user: User) => {
+            this.userProfiles[userId] = {
+              name: user.name,
+              avatar: user.avatar,
+              status: user.status === 'online',
+            };
+          },
+          error: (error) => {
+            console.error(`Error loading user profile for userId ${userId}:`, error);
+          },
         });
-      },
-      error: (error) => {
-        console.error('Error loading messages:', error);
-      },
+        this.subscriptions.add(userSub);
+      }
     });
-    this.subscriptions.add(messagesSub);
   }
 
   sendMessage(event?: Event) {
@@ -351,19 +363,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.attachmentUrl = null;
     this.selectedFile = null;
     this.previewUrl = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   private setLoadingState(isLoading: boolean) {
     this.isLoading = isLoading;
     this.chatService.setLoadingState(isLoading);
-  }
-
-  private sortMessagesByTimestamp(messages: Message[]): Message[] {
-    return messages.sort(
-      (a, b) =>
-        this.convertToDate(a.timestamp).getTime() -
-        this.convertToDate(b.timestamp).getTime()
-    );
   }
 
   convertToDate(timestamp: Timestamp | FieldValue): Date {
@@ -396,10 +403,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   ): boolean {
     if (index === 0) return true;
 
-    // Sicherheitsüberprüfung auf `timestamp` und vorherige Nachricht
     const prevMessage = this.messages[index - 1];
     if (!prevMessage || !prevMessage.timestamp || !timestamp) {
-      return false; // oder true, falls du das Verhalten anders willst
+      return false;
     }
 
     const prevDate = this.convertToDate(prevMessage.timestamp);
@@ -417,7 +423,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Emit the event to notify MainPageComponent
+    // Event auslösen, um MainPageComponent zu benachrichtigen
     this.openThreadEvent.emit();
 
     this.threadService
@@ -462,24 +468,13 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // // ProfileCard
-  // openProfilePopup(userId: string) {
-  //   if (!this.isProfileOpen){
-  //     this.userService.getUser(userId).subscribe((user: User) => {
-  //       this.clickedUser = user;
-  //       console.log('open Profile for:', user);
-  //     });
-  //     this.isProfileOpen = true;
-  //   }
-  // }
-
-
+  // Profil-Card öffnen
   openProfilePopup(userId: string) {
     if (!this.isProfileOpen && userId) {
       this.profileSubscription = this.userService.getUser(userId).subscribe({
         next: (user: User) => {
           this.clickedUser = user;
-          console.log('Profile geöffnet für:', user);
+          console.log('Profil geöffnet für:', user);
         },
         error: (error) => {
           console.error(`Fehler beim Laden des Profils für Benutzer ${userId}:`, error);
@@ -533,25 +528,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.createFilePreview(file);
     }
-  }
-
-  private handleMessagesResponse(messages: Message[]): void {
-    const validMessages = messages.filter((message) => message.timestamp);
-    const sortedMessages = this.sortMessagesByTimestamp(validMessages);
-
-    const metadataRequests: Observable<Message>[] = sortedMessages.map(
-      (message) => this.loadMetadataForMessage(message)
-    );
-
-    forkJoin(metadataRequests).subscribe((messagesWithMetadata: Message[]) => {
-      this.messages = messagesWithMetadata; // Assign to this.messages
-      this.loadUserProfiles();
-      this.setLoadingState(false);
-
-      if (this.messages && this.userProfiles) {
-        this.scrollToBottom();
-      }
-    });
   }
 
   private handleMessagesError(error: any): void {

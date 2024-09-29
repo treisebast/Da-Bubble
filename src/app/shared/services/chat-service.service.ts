@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
+  firstValueFrom,
   forkJoin,
   from,
   Observable,
@@ -154,60 +155,49 @@ export class ChatService {
    * Deletes a message in the current channel.
    * @param {string} messageId - The ID of the message.
    */
-  deleteMessage(messageId: string) {
+  async deleteMessage(messageId: string): Promise<void> {
     const { chat, isPrivate } = this.currentChatSubject.getValue();
     if (!chat || !chat.id) {
       console.error('No current chat selected');
       return;
     }
 
-    // First, find the message from the messages$
-    this.messages$
-      .pipe(
-        switchMap((messages) => {
-          const messageToDelete = messages.find((msg) => msg.id === messageId);
-          if (!messageToDelete) {
-            console.error('Message not found');
-            return of(null);
-          }
+    try {
+      const messages = await firstValueFrom(this.messages$);
+      const messageToDelete = messages.find((msg) => msg.id === messageId);
 
-          if (
-            !messageToDelete.attachments ||
-            messageToDelete.attachments.length === 0
-          ) {
-            // No attachments, delete the message directly
-            return from(
-              this.channelMessageService.deleteChannelMessage(
-                chat.id!,
-                messageId,
-                isPrivate
-              )
-            );
-          } else {
-            // Delete attachments first
-            const deleteTasks = messageToDelete.attachments.map((url) =>
-              this.storageService.deleteFile(this.getFilePathFromUrl(url))
-            );
-            return forkJoin(deleteTasks).pipe(
-              switchMap(() =>
-                from(
-                  this.channelMessageService.deleteChannelMessage(
-                    chat.id!,
-                    messageId,
-                    isPrivate
-                  )
-                )
-              )
-            );
-          }
-        })
-      )
-      .subscribe({
-        next: () => {
-          console.log('Message and attachments deleted successfully');
-        },
-        error: (error) => console.error('Error deleting message:', error),
-      });
+      if (!messageToDelete) {
+        console.error('Message not found');
+        return;
+      }
+
+      if (
+        !messageToDelete.attachments ||
+        messageToDelete.attachments.length === 0
+      ) {
+        // Keine Anhänge, Nachricht direkt löschen
+        await this.channelMessageService.deleteChannelMessage(
+          chat.id!,
+          messageId,
+          isPrivate
+        );
+      } else {
+        // Zuerst Anhänge löschen
+        const deleteTasks = messageToDelete.attachments.map((url) =>
+          this.storageService.deleteFile(this.getFilePathFromUrl(url))
+        );
+        await Promise.all(deleteTasks);
+        await this.channelMessageService.deleteChannelMessage(
+          chat.id!,
+          messageId,
+          isPrivate
+        );
+      }
+
+      console.log('Message and attachments deleted successfully');
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
   }
 
   /**

@@ -249,6 +249,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.attachmentUrl = null;
     this.selectedFile = null;
     this.previewUrl = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   sortMessagesByTimestamp(messages: Message[]): Message[] {
@@ -682,20 +685,20 @@ export class ThreadComponent implements OnInit, OnDestroy {
       }, 100);
     }
   }
-  
+
   addEmojiToMessageBox(event: any) {
     this.newMessageText += event.emoji.native;
     this.showMessageBoxEmojiPicker = false;
     this.focusTextarea();
   }
-  
+
   focusTextarea() {
     const textarea = document.querySelector('textarea');
     if (textarea) {
       textarea.focus();
     }
   }
-  
+
   closeEmojiPickerOnOutsideClick(event: MouseEvent) {
     const targetElement = event.target as HTMLElement;
     const pickerElement = document.querySelector('.emoji-mart-message-box');
