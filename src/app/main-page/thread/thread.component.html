@@ -69,7 +69,7 @@
       <!-- Reaction Bar for the thread message -->
       <div class="reactionBar rb-icon"
         [ngClass]="{ 'reactionBar-left': currentMessageToOpen.senderId === currentUserId, 'reactionBar-right': currentMessageToOpen.senderId !== currentUserId }">
-        <div class="reaction"></div>
+        <div class="reaction" (click)="toggleEmojiPicker($event, currentMessageToOpen)"></div>
       </div>
 
       <mat-menu #menu0="matMenu">
@@ -94,6 +94,14 @@
         </div>
       </div>
 
+    </div>
+
+
+    <!-- Emoji Picker for Original Message -->
+    <div *ngIf="showEmojiPicker && currentMessageToOpen === selectedMessage" (click)="$event.stopPropagation()">
+      <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+        (emojiClick)="addEmoji($event, currentMessageToOpen)">
+      </emoji-mart>
     </div>
   </div>
 
@@ -239,7 +247,7 @@
         <div class="addIcon" (click)="openFileDialog()"></div>
         <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
         <div class="border"></div>
-        <div class="emoji"></div>
+        <div class="emoji" (click)="toggleMessageBoxEmojiPicker()"></div>
         <div class="iconMarkUser"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
@@ -249,4 +257,9 @@
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
+
+    <!-- Emoji-Mart -->
+    <emoji-mart *ngIf="showMessageBoxEmojiPicker" set="twitter" theme="light" class="emoji-mart-thread-message-box"
+      (emojiClick)="addEmojiToMessageBox($event)">
+    </emoji-mart>
   </div>

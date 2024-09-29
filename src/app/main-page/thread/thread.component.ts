@@ -58,6 +58,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   userProfiles: { [key: string]: User } = {};
   metadataMap: { [url: string]: { name: string; size: number } } = {};
 
+  showMessageBoxEmojiPicker = false;
+  preventImmediateClose: boolean = true;
   errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private chatService = inject(ChatService);
@@ -180,6 +182,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    this.clearErrorMessage();
+    document.removeEventListener(
+      'click',
+      this.closeEmojiPickerOnOutsideClick.bind(this)
+    );
     this.clearErrorMessage();
   }
 
@@ -666,6 +673,54 @@ export class ThreadComponent implements OnInit, OnDestroy {
       this.selectedMessage = null;
     }
   }
+
+  toggleMessageBoxEmojiPicker() {
+    this.showMessageBoxEmojiPicker = !this.showMessageBoxEmojiPicker;
+    if (this.showMessageBoxEmojiPicker) {
+      setTimeout(() => {
+        this.preventImmediateClose = false;
+      }, 100);
+    }
+  }
+  
+  addEmojiToMessageBox(event: any) {
+    this.newMessageText += event.emoji.native;
+    this.showMessageBoxEmojiPicker = false;
+    this.focusTextarea();
+  }
+  
+  focusTextarea() {
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.focus();
+    }
+  }
+  
+  closeEmojiPickerOnOutsideClick(event: MouseEvent) {
+    const targetElement = event.target as HTMLElement;
+    const pickerElement = document.querySelector('.emoji-mart-message-box');
+    if (
+      !this.preventImmediateClose &&
+      this.showMessageBoxEmojiPicker &&
+      pickerElement &&
+      !pickerElement.contains(targetElement)
+    ) {
+      this.showMessageBoxEmojiPicker = false;
+    }
+    this.preventImmediateClose = true;
+  }
+
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      document.addEventListener(
+        'click',
+        this.closeEmojiPickerOnOutsideClick.bind(this)
+      );
+    }, 0);
+  }
+
+
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
