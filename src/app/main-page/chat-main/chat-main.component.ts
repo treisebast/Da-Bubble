@@ -508,7 +508,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onHeaderChannelNameClick(event: Event) {
-    event.stopPropagation(); // Stoppt die Ereignispropagation
+    event.stopPropagation();
     if (this.isCurrentChatPrivate) {
       this.openProfilePopup(this.clickedUser?.userId!);
     } else {

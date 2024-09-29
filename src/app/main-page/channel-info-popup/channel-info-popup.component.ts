@@ -46,17 +46,17 @@ export class ChannelInfoPopupComponent {
       const updatedFields = { name: this.editedName };
       await this.channelService.updateChannel(this.channel, updatedFields);
       this.channel.name = this.editedName;
-      this.isEditingName = false;
     }
+    this.isEditingName = false;
   }
-
+  
   async saveDescription() {
     if (this.channel && this.editedDescription !== this.channel.description) {
       const updatedFields = { description: this.editedDescription };
       await this.channelService.updateChannel(this.channel, updatedFields);
       this.channel.description = this.editedDescription;
-      this.isEditingDescription = false;
     }
+    this.isEditingDescription = false;
   }
 
   @HostListener('document:click', ['$event'])
@@ -68,6 +68,6 @@ export class ChannelInfoPopupComponent {
 
   closePopup(event: Event) {
     event.stopPropagation();
-    this.close.emit(); // Emitieren Sie das Schließereignis
+    this.close.emit();
   }
 }
