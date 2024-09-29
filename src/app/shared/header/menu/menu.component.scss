@@ -27,7 +27,7 @@
 
 .menu-container {
   display: inline-flex;
-  padding: 30px;
+  padding: 16px;
   flex-direction: column;
   align-items: flex-start;
   gap: 15px;
@@ -45,7 +45,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
     color: var(--black, rgb(0, 0, 0));
     cursor: pointer;

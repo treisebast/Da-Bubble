@@ -73,20 +73,20 @@
     &.position-left {
         left: 90px;
         margin-left: 10px;
-      }
-    
-      &.position-right {
+    }
+
+    &.position-right {
         right: 90px;
         margin-right: 10px;
-      }
-    
-      &.open-above {
+    }
+
+    &.open-above {
         top: -331px;
-      }
-    
-      &.open-below {
+    }
+
+    &.open-below {
         top: 0px;
-      }
+    }
 }
 
 
@@ -95,7 +95,18 @@
     bottom: 100%;
     left: 16px;
     width: fit-content;
-    z-index: 1000;
+    z-index: 2;
+}
+
+.emoji-mart-thread-message-box {
+    position: absolute;
+    bottom: 110%;
+    left: 0px;
+    z-index: 2;
+
+    section {
+        width: 245px !important;
+    }
 }
 
 .emoji-mart-threadmessage {
