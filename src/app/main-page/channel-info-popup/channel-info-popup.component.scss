@@ -1,8 +1,7 @@
 .channel-popup {
   position: absolute;
-  top: 815%;
-  left: 145%;
-  transform: translate(-50%, -50%);
+  top: 20px;
+  left: -200px;
   background-color: var(--white);
   padding: 30px;
   border-top-right-radius: 30px;
@@ -43,7 +42,7 @@
       height: 35px;
       border-radius: 35px;
       background-image: url('../../../assets/img/chatChannel/close.svg');
-      background-size: 38px;
+      background-size: 15px;
       background-repeat: no-repeat;
       background-position: center;
 
@@ -217,4 +216,8 @@
   background-repeat: no-repeat;
   background-position: 8px center;
   box-sizing: border-box;
+}
+
+.modal-container {
+  position: relative;
 }
