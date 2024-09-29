@@ -447,7 +447,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   showUserListPopup(currentChat: Channel): void {
     const dialogRef = this.dialog.open(DialogShowMembersComponent, {
-      data: { members: this.usersOfSelectedChannel },
+      data: { members: this.usersOfSelectedChannel, currentChat },
       hasBackdrop: true,
       backdropClass: 'backdropVisible',
     });

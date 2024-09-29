@@ -29,6 +29,7 @@
   gap: 20px;
 }
 
+
 .header {
   width: 100%;
   display: flex;
@@ -154,5 +155,231 @@ mat-dialog-actions {
     .addUserIcon {
       background-color: #fff;
     }
+  }
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-dialog-content {
+  padding: 8px !important;
+}
+
+::ng-deep .mat-mdc-dialog-surface.mdc-dialog__surface {
+  border-radius: 25px !important;
+  overflow: visible !important;
+}
+
+.userToClick {
+  cursor: pointer;
+  display: flex;
+  padding: 4px 20px;
+  align-items: center;
+  gap: 15px;
+  &:hover {
+    border-radius: 30px;
+    background-color: #eceefe;
+  }
+  > h2 {
+    margin: 0;
+    padding: 0;
+    color: var(--Black, #000);
+    font-size: 18px;
+  }
+  img {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    border-radius: 50%;
+  }
+}
+
+.selected {
+  cursor: pointer;
+  display: flex;
+  padding: 4px 20px;
+  align-items: center;
+  gap: 15px;
+  border-radius: 30px;
+  background-color: #b8beec;
+  &:hover {
+    background-color: #8690df;
+  }
+  h2 {
+    margin: 0;
+  }
+}
+
+
+
+
+.inputDiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  border-radius: 30px;
+  border: 1px solid rgba(173, 176, 217, 1);
+  outline-color: var(--purple-one);
+  font-size: 18px;
+  color: var(--black);
+  margin-bottom: 16px;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--purple-one);
+  }
+
+  mat-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 60px;
+    padding: 10px 20px;
+
+    mat-chip-row {
+      border-radius: 35px;
+      background: var(--Bg-color, #eceefe);
+      display: flex;
+      align-items: center;
+      height: 40px;
+
+      .chip-content {
+        display: flex;
+        text-align: center;
+        align-items: center;
+        gap: 10px;
+        border-radius: 30px;
+      }
+
+      img {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      span {
+        font-size: 16px;
+        color: var(--Black, #000);
+      }
+
+      .mat-chip-remove {
+        margin-left: 0px;
+      }
+    }
+  }
+
+
+  input {
+    flex: 1 1 auto;
+    min-width: 120px;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    color: var(--black);
+    padding: 0 0 0 10px;
+    margin: 0;
+    height: 40px;
+    align-self: center;
+  }
+}
+
+mat-icon {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--black, #000)!important;
+  cursor: pointer;
+}
+
+.addUserInput {
+  width: 100%;
+  height: 60px;
+  border-radius: 30px;
+  border: transparent;
+  outline-color: none;
+  outline: none;
+  font-size: 18px;
+  color: var(--black);
+  padding: 20px;
+}
+
+.hoveringUserList {
+  display: flex;
+  width: 335px;
+  padding: 20px 21px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 15px;
+
+  position: absolute;
+  top: 43px;
+  left: 22px;
+  z-index: 10;
+
+  border-radius: 0px 20px 20px 20px;
+  border: 1px solid var(--ligth-purple-lines, #adb0d9);
+  background: var(--White, #fff);
+  /* header */
+  box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.08);
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid #fff;
+  margin-left: -26px;
+  margin-top: 30px;
+  margin-right: 8px;
+  flex-shrink: 0;
+
+  &.online {
+    background-color: #92c83e;
+  }
+
+  &.away {
+    background-color: #ffc107;
+  }
+
+  &.offline {
+    background-color: #686868;
+  }
+}
+
+.addUserContent {
+  overflow: visible;
+}
+
+.addUsersBtn {
+  display: inline-flex;
+  padding: 12px 25px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border: transparent;
+  border-radius: 25px;
+  background: #444DF2;
+  color: #fff;
+
+  cursor: pointer;
+
+  &:hover {
+    border-radius: 25px;
+    background-color: #797EF3;
+  }
+
+  &:active {
+    border-radius: 25px;
+    background-color:  #444DF2;
+  }
+
+  &:disabled {
+    border-radius: 25px;
+    background-color: #686868;
+    cursor: not-allowed;
   }
 }
