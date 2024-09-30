@@ -82,15 +82,15 @@
       <!-- Reaction Bar for the original message -->
       <div class="reaction-button-bar">
         <div class="reaction-button" *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
-          (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
+          (mouseenter)="showTooltipOriginalMessage  = emoji.key" (mouseleave)="showTooltipOriginalMessage  = null"
           (click)="addOrRemoveReaction(currentMessageToOpen, emoji.key)">
 
           <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
 
-          <!-- Benutzerdefinierter Tooltip -->
-          <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip"
-            [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
-          </div>
+ <!-- Custom Tooltip -->
+ <div *ngIf="showTooltipOriginalMessage === emoji.key" class="reaction-tooltip"
+ [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
+</div>
         </div>
       </div>
 
@@ -196,13 +196,14 @@
 
         <div class="reaction-button-bar">
           <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-            (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
+          (mouseenter)="showTooltip[getMessageKey(message, i)] = emoji.key"
+          (mouseleave)="showTooltip[getMessageKey(message, i)] = null"
             (click)="addOrRemoveReaction(message, emoji.key)">
 
             <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
 
             <!-- Benutzerdefinierter Tooltip -->
-            <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip"
+            <div *ngIf="showTooltip[getMessageKey(message, i)] === emoji.key" class="reaction-tooltip"
               [innerHTML]="getTooltipContent(message, emoji.key)">
             </div>
           </div>

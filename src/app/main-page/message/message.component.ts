@@ -7,6 +7,8 @@ import {
   HostListener,
   ElementRef,
   ViewChild,
+  SimpleChanges,
+  OnChanges,
 } from '@angular/core';
 import { Message } from '../../shared/models/message.model';
 import { CommonModule } from '@angular/common';
@@ -33,7 +35,7 @@ import { UserService } from '../../shared/services/user.service';
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
-export class MessageComponent implements OnInit {
+export class MessageComponent implements OnInit, OnChanges {
   @Input() message!: Message;
   @Input() userProfile: User | undefined;
   @Input() currentUserId!: string;
@@ -76,6 +78,12 @@ export class MessageComponent implements OnInit {
       }
     });
     this.loadReactionUsernames();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['message']) {
+      this.loadReactionUsernames();
+    }
   }
 
   @HostListener('window:resize', ['$event'])

@@ -50,7 +50,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   previewUrl: string | null = null;
   attachmentUrl: string | null = null;
   errorMessage: string | null = null;
-  showTooltip: string | null = null;
+  showTooltip: { [messageId: string]: string | null } = {};
+  showTooltipOriginalMessage: string | null = null;
   emojiMartPositionClass: string = '';
   messages: Message[] = [];
   lastTwoEmojis: string[] = [];
@@ -192,6 +193,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   onCloseThread() {
     this.closeThread.emit();
+  }
+
+  getMessageKey(message: Message, index: number): string {
+    return message.id || `index-${index}`;
   }
 
   async sendMessage(event?: Event) {
