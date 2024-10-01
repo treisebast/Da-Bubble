@@ -17,6 +17,7 @@
                     </p>
                     <div *ngIf="isEditingName" class="input-container">
                         <input [(ngModel)]="editedName" class="edit-input with-hashtag" />
+                        <div *ngIf="nameErrorMessage" class="error-message">{{ nameErrorMessage }}</div>
                     </div>
                 </div>
             </div>

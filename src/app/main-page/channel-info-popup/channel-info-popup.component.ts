@@ -20,7 +20,8 @@ export class ChannelInfoPopupComponent {
   editedName: string = '';
   editedDescription: string = '';
   createdByName: string = '';
-
+  nameErrorMessage: string = '';
+  
   constructor(private channelService: ChannelService, private userService: UserService,private elementRef: ElementRef) { }
 
   ngOnInit() {
@@ -41,13 +42,31 @@ export class ChannelInfoPopupComponent {
     this.isEditingDescription = true;
   }
 
-  async saveName() {
+async saveName() {
     if (this.channel && this.editedName !== this.channel.name) {
-      const updatedFields = { name: this.editedName };
-      await this.channelService.updateChannel(this.channel, updatedFields);
-      this.channel.name = this.editedName;
+      try {
+        // Überprüfung auf Duplikate
+        const duplicateChannel = await this.channelService.getChannelByName(
+          this.editedName,
+          this.channel.isPrivate
+        );
+
+        if (duplicateChannel && duplicateChannel.id !== this.channel.id) {
+          this.nameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
+          return;
+        }
+
+        const updatedFields = { name: this.editedName };
+        await this.channelService.updateChannel(this.channel, updatedFields);
+        this.channel.name = this.editedName;
+        this.isEditingName = false;
+        this.nameErrorMessage = '';
+      } catch (error) {
+        this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuchen Sie es erneut.';
+      }
+    } else {
+      this.isEditingName = false;
     }
-    this.isEditingName = false;
   }
   
   async saveDescription() {

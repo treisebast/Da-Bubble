@@ -12,6 +12,8 @@ import {
   orderBy,
   DocumentReference,
   setDoc,
+  where,
+  getDocs,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Channel } from '../models/channel.model';
@@ -77,6 +79,9 @@ export class ChannelService {
     return updateDoc(channelDocRef, {
       ...updatedFields,
       updatedAt: new Date(),
+    }).catch((error) => {
+      console.error('Fehler beim Aktualisieren des Channels:', error);
+      throw error;
     });
   }
 
@@ -90,5 +95,19 @@ export class ChannelService {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
     return deleteDoc(channelDoc);
+  }
+
+
+  async getChannelByName(name: string, isPrivate: boolean): Promise<Channel | null> {
+    const collectionPath = isPrivate ? 'directMessages' : 'channels';
+    const collectionRef = collection(this.firestore, collectionPath);
+    const channelsQuery = query(collectionRef, where('name', '==', name));
+    const querySnapshot = await getDocs(channelsQuery);
+
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].data() as Channel;
+    } else {
+      return null;
+    }
   }
 }

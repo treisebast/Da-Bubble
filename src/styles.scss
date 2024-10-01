@@ -158,3 +158,10 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 10;
 }
+
+.error-message {
+  color: var(--error-color);
+  font-size: 14px;
+  margin-left: 12px;
+  margin-top: 8px;
+}
