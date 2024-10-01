@@ -221,3 +221,10 @@
 .modal-container {
   position: relative;
 }
+
+.error-message {
+  color: var(--error-color);
+  font-size: 14px;
+  margin-left: 12px;
+  margin-top: 8px;
+}

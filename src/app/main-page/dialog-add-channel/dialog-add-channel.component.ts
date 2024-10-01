@@ -22,10 +22,10 @@ import { User } from '../../shared/models/user.model';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCardModule } from '@angular/material/card';
-import {MatChipEditedEvent, MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
+import { MatChipEditedEvent, MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {LiveAnnouncer} from '@angular/cdk/a11y';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -59,6 +59,10 @@ export class DialogAddChannelComponent {
   description = '';
   isDialogOpen = false;
   currentUserId = '';
+
+  channelNameErrorMessage: string = '';
+  showChannelNameErrorMessage: boolean = false;
+  private channelNameErrorTimeout: any;
 
   dialogProgressState: 'addChannel' | 'addUsers' = 'addChannel';
   loadedUsers: User[] = [];
@@ -145,8 +149,8 @@ export class DialogAddChannelComponent {
     const searchTerm = this.searchInput.trim().toLowerCase();
     this.filteredUsers = searchTerm
       ? this.loadedUsers.filter((user) =>
-          user.name.toLowerCase().includes(searchTerm)
-        )
+        user.name.toLowerCase().includes(searchTerm)
+      )
       : [];
   }
 
@@ -233,12 +237,28 @@ export class DialogAddChannelComponent {
    * Creates a new channel and navigates to the add users page.
    */
   async createChannelAndGoToAddUsers() {
-    const newChannel: Channel = this.createChannelObject();
+    this.channelNameErrorMessage = '';
+    this.showChannelNameErrorMessage = false;
+
     try {
+      const duplicateChannel = await this.channelService.getChannelByName(
+        this.channelName,
+        false
+      );
+
+      if (duplicateChannel) {
+        this.channelNameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
+        this.showChannelNameErrorMessage = true;
+        return;
+      }
+
+      const newChannel: Channel = this.createChannelObject();
       await this.saveChannelToFirebase(newChannel);
       this.dialogProgressState = 'addUsers';
     } catch (error) {
-      console.error('Error creating channel:', error);
+      console.error('Fehler beim Erstellen des Channels:', error);
+      this.channelNameErrorMessage = 'Fehler beim Erstellen des Channels. Bitte versuchen Sie es erneut.';
+      this.showChannelNameErrorMessage = true;
     }
   }
 
