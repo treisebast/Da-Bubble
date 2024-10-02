@@ -210,14 +210,14 @@ tr {
   flex-shrink: 0;
 
   &.online {
-    background-color: #92c83e;
+    background-color: var(--online-green, rgb(146, 200, 62));
   }
 
   &.away {
-    background-color: #ffc107;
+    background-color: var(--away-orange, rgb(255, 193, 7));
   }
 
   &.offline {
-    background-color: #686868;
+    background-color: var(--text-grey, rgba(104, 104, 104, 1));
   }
 }

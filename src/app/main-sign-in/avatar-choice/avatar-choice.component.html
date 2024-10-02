@@ -21,8 +21,16 @@
         </div>
         <span *ngIf="fileError" class="validMsg">{{fileError}}</span>
     </div>
-    <div class="login-actions jc-end">
+    <div class="login-actions jc-end" *ngIf="!ownUser">
         <button (click)="logSelectedAvatar()" class="prio-button"
             [disabled]="isContinueButtonDisabled()">Weiter</button>
     </div>
+
+    <!-- Change the avatar after registry button -->
+    <div class="login-actions jc-end" *ngIf="ownUser">
+        <button (click)="logSelectedAvatar()" class="prio-button"
+            [disabled]="isContinueButtonDisabled()">Auswählen</button>
+    </div>
+    <!-- TODO: rework -->
+
 </mat-card>

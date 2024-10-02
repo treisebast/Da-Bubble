@@ -108,6 +108,13 @@
   }
 }
 
+.hover-effect {
+  &:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+}
+
 .profil-name-container {
   display: flex;
   flex-direction: column;
@@ -184,12 +191,37 @@
   }
 }
 
+.status-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid #fff;
+  flex-shrink: 0;
+
+  &.online {
+    background-color: var(--online-green, rgb(146, 200, 62));
+  }
+
+  &.away {
+    background-color: var(--away-orange, rgb(255, 193, 7));
+  }
+
+  &.offline {
+    background-color: var(--text-grey, rgba(104, 104, 104, 1));
+  }
+}
+
 .online {
   color: var(--online-green, rgb(146, 200, 62));
 }
 
 .offline {
   color: var(--text-grey, rgba(104, 104, 104, 1));
+}
+
+.away {
+  color: var(--away-orange, rgb(255, 193, 7));
 }
 
 .mail-container {

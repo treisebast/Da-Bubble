@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, ViewChild, ElementRef, ChangeDetectorRef, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+  OnInit,
+  Input,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -16,25 +24,34 @@ import { firstValueFrom } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 
-
 @Component({
   selector: 'app-avatar-choice',
   standalone: true,
   imports: [
-    CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule,
-    RouterOutlet, RouterModule
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterOutlet,
+    RouterModule,
   ],
   templateUrl: './avatar-choice.component.html',
   styleUrls: ['./avatar-choice.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AvatarChoiceComponent implements OnInit {
+  @Input() ownUser!: Partial<User>;
   selectedAvatar: string = '';
   avatars: string[] = [];
   userName: string = 'Max Mustermann';
-  @ViewChild('uploadedImage', { static: false }) uploadedImage!: ElementRef<HTMLImageElement>;
-  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('uploadedImage', { static: false })
+  uploadedImage!: ElementRef<HTMLImageElement>;
+  @ViewChild('fileInput', { static: false })
+  fileInput!: ElementRef<HTMLInputElement>;
   fileError: string = '';
 
   constructor(
@@ -56,32 +73,41 @@ export class AvatarChoiceComponent implements OnInit {
   }
 
   /**
- * Lifecycle hook that is called after Angular has initialized all data-bound properties.
- * It calls the method to load avatars.
- */
+   * Lifecycle hook that is called after Angular has initialized all data-bound properties.
+   * It calls the method to load avatars.
+   */
   ngOnInit() {
     this.loadAvatars();
   }
 
-
   /**
- * Loads the avatar images from specified paths and sets the first one as the selected avatar.
- * Updates the component's state after loading avatars.
- * @async
- */
+   * Loads the avatar images from specified paths and sets the first one as the selected avatar.
+   * Updates the component's state after loading avatars.
+   * @async
+   */
   async loadAvatars() {
-    const avatarPaths = ['avatars/1.svg', 'avatars/2.svg', 'avatars/3.svg', 'avatars/4.svg', 'avatars/5.svg', 'avatars/6.svg'];
-    this.avatars = await Promise.all(avatarPaths.map(path => firstValueFrom(this.storageService.getFileUrl(path))));
+    const avatarPaths = [
+      'avatars/1.svg',
+      'avatars/2.svg',
+      'avatars/3.svg',
+      'avatars/4.svg',
+      'avatars/5.svg',
+      'avatars/6.svg',
+    ];
+    this.avatars = await Promise.all(
+      avatarPaths.map((path) =>
+        firstValueFrom(this.storageService.getFileUrl(path))
+      )
+    );
     this.selectedAvatar = this.avatars[0];
     this.cdr.detectChanges();
   }
 
-
   /**
- * Selects an avatar and updates the component's state.
- * If a file input is present, it resets the input value.
- * @param {string} avatar - The URL of the selected avatar.
- */
+   * Selects an avatar and updates the component's state.
+   * If a file input is present, it resets the input value.
+   * @param {string} avatar - The URL of the selected avatar.
+   */
   selectAvatar(avatar: string) {
     this.selectedAvatar = avatar;
     this.fileError = '';
@@ -91,11 +117,10 @@ export class AvatarChoiceComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-
   /**
- * Handles the file selection event. Validates the file type and reads the file if valid.
- * @param {Event} event - The file selection event.
- */
+   * Handles the file selection event. Validates the file type and reads the file if valid.
+   * @param {Event} event - The file selection event.
+   */
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -112,22 +137,20 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
- * Checks if the given file type is a valid image type.
- * @param {string} fileType - The MIME type of the file.
- * @returns {boolean} True if the file type is valid, false otherwise.
- */
+   * Checks if the given file type is a valid image type.
+   * @param {string} fileType - The MIME type of the file.
+   * @returns {boolean} True if the file type is valid, false otherwise.
+   */
   isValidImageType(fileType: string): boolean {
     const validImageTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
     return validImageTypes.includes(fileType);
   }
 
-
   /**
- * Reads the selected file and updates the selected avatar with the file's data URL.
- * @param {File} file - The selected file.
- */
+   * Reads the selected file and updates the selected avatar with the file's data URL.
+   * @param {File} file - The selected file.
+   */
   readFile(file: File) {
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -136,12 +159,11 @@ export class AvatarChoiceComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-
   /**
- * Updates the selected avatar URL and updates the component's state.
- * If an uploaded image element is present, it sets its source to the new avatar URL.
- * @param {string} avatarUrl - The URL of the new avatar.
- */
+   * Updates the selected avatar URL and updates the component's state.
+   * If an uploaded image element is present, it sets its source to the new avatar URL.
+   * @param {string} avatarUrl - The URL of the new avatar.
+   */
   updateSelectedAvatar(avatarUrl: string) {
     this.selectedAvatar = avatarUrl;
     if (this.uploadedImage && this.uploadedImage.nativeElement) {
@@ -150,13 +172,12 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
- * Logs the selected avatar to the console, retrieves the current user,
- * and updates the user's avatar URL in the database.
- * Navigates to the main page after updating.
- * @async
- */
+   * Logs the selected avatar to the console, retrieves the current user,
+   * and updates the user's avatar URL in the database.
+   * Navigates to the main page after updating.
+   * @async
+   */
   async logSelectedAvatar() {
     console.log('Selected Avatar:', this.selectedAvatar);
     try {
@@ -174,53 +195,51 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
- * Displays a confirmation dialog indicating that the avatar has been selected.
- */
+   * Displays a confirmation dialog indicating that the avatar has been selected.
+   */
   showConfirmationDialog() {
     this.dialog.open(ConfirmationDialogComponent, {
       data: { message: 'Avatar ausgewählt' },
-      hasBackdrop: false
+      hasBackdrop: false,
     });
   }
 
-
   /**
- * Retrieves the currently authenticated user.
- * @returns {Promise<any>} The current user.
- * @async
- */
+   * Retrieves the currently authenticated user.
+   * @returns {Promise<any>} The current user.
+   * @async
+   */
   async getCurrentUser() {
     return await firstValueFrom(this.authService.getUser());
   }
 
-
   /**
- * Gets the avatar URL for the specified user ID.
- * If a file is selected in the file input, it uploads the file and returns its URL.
- * Otherwise, it returns the currently selected avatar URL.
- * @param {string} userId - The ID of the user.
- * @returns {Promise<string>} The avatar URL.
- * @async
- */
+   * Gets the avatar URL for the specified user ID.
+   * If a file is selected in the file input, it uploads the file and returns its URL.
+   * Otherwise, it returns the currently selected avatar URL.
+   * @param {string} userId - The ID of the user.
+   * @returns {Promise<string>} The avatar URL.
+   * @async
+   */
   async getAvatarUrl(userId: string): Promise<string> {
     const fileInputElement = this.fileInput.nativeElement;
     if (fileInputElement.files && fileInputElement.files[0]) {
       const file = fileInputElement.files[0];
-      return await firstValueFrom(this.storageService.uploadFile(file, `avatars/${userId}`));
+      return await firstValueFrom(
+        this.storageService.uploadFile(file, `avatars/${userId}`)
+      );
     }
     return this.selectedAvatar;
   }
 
-
   /**
- * Updates the user's avatar URL in the database.
- * Logs success or error messages based on the update result.
- * @param {string} userId - The ID of the user.
- * @param {string} avatarUrl - The new avatar URL.
- * @async
- */
+   * Updates the user's avatar URL in the database.
+   * Logs success or error messages based on the update result.
+   * @param {string} userId - The ID of the user.
+   * @param {string} avatarUrl - The new avatar URL.
+   * @async
+   */
   async updateUserAvatar(userId: string, avatarUrl: string) {
     const updatedUser: Partial<User> = { avatar: avatarUrl };
     const userDoc = await firstValueFrom(this.userService.getUser(userId));
@@ -232,11 +251,10 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
- * Determines if the continue button should be enabled.
- * @returns {boolean} True if the button should be enabled, false otherwise.
- */
+   * Determines if the continue button should be enabled.
+   * @returns {boolean} True if the button should be enabled, false otherwise.
+   */
   isContinueButtonDisabled(): boolean {
     return this.fileError !== '';
   }

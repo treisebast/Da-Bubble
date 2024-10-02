@@ -1,7 +1,7 @@
 <div class="modal-background" (click)="closeProfil()">
   <div class="max-width">
 
-    <app-avatar-choice class="profil-card" *ngIf="isEditingAvatar"
+    <app-avatar-choice class="profil-card" *ngIf="isEditingAvatar" [ownUser]="onclickUser"
       (click)="$event.stopPropagation()"></app-avatar-choice>
     <!-- TODO: rework -->
 
@@ -13,7 +13,8 @@
         </div>
 
         <div class="profil-img-container" (click)="isEditing ? editingAvatar() : null; $event.stopPropagation()">
-          <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser" />
+          <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser"
+            [ngClass]="isEditing ? 'hover-effect' : ''" />
         </div>
 
         <ng-template [ngIf]="!isEditing && onclickUser">
@@ -26,10 +27,11 @@
               <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil()">Bearbeiten</span>
             </div>
             <div class="profil-status">
-              <img
-                [src]="onclickUser.status === 'online' ? './../../../assets/img/profilecard/online.svg' : './../../../assets/img/profilecard/offline.svg'"
-                alt="Statusimage" />
-              <mat-card-subtitle [ngClass]="onclickUser.status === 'online' ? 'online' : 'offline'">{{
+              <div class="status-indicator"
+                [ngClass]="onclickUser.status === 'online' ? 'online' : onclickUser.status === 'away' ? 'away' : 'offline'">
+              </div>
+              <mat-card-subtitle
+                [ngClass]="onclickUser.status === 'online' ? 'online' : onclickUser.status === 'away' ? 'away' : 'offline'">{{
                 onclickUser.status
                 }}</mat-card-subtitle>
             </div>
