@@ -65,7 +65,7 @@
       <!-- Kanal-Info -->
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div class="channelMembersIcons" (click)="showUserListPopup(currentChat)">
-          <ng-container *ngFor="let user of usersOfSelectedChannel | slice: 0: 3; trackBy: trackByUserId">
+          <ng-container *ngFor="let user of usersOfSelectedChannel | slice: 0: 3; let i = index; trackBy: trackByUserId">
             <img *ngIf="currentChat.members.length > 0" [src]="user.avatar" alt="user" />
           </ng-container>
           <div class="amountUsersIcon">{{ usersOfSelectedChannel.length }}</div>
@@ -78,7 +78,7 @@
   </div>
 
   <!-- Nachrichtencontainer -->
-  <div class="chat-container" #chatContainer>
+  <div class="chat-container" [ngClass]="{'no-messages-active': messages.length === 0}" #chatContainer>
     <!-- Ladeindikator -->
     <div class="spinner" *ngIf="isLoading">
       <mat-spinner></mat-spinner>
@@ -86,6 +86,25 @@
 
     <!-- Nachrichtenanzeige -->
     <ng-container *ngIf="currentChat && !isLoading">
+      <!-- If no Messages: -->
+      <div *ngIf="messages.length == 0">
+        <div class="no-messages">
+          <div class="nm_header">
+            <img class="nm_hastag" src="assets/img/chatChannel/tag.svg" alt="hastag">
+            <span class="nm_channelName">{{ currentChat.name }}</span>
+            <!--ToDo:  when hovering the header, the arrowdown should be displayed. and when clicking the channel, the channel-info-popup should show-->
+            <!-- <img class="" src="" alt="" (click)=""/> -->
+          </div>
+          <div class="nm_content">
+            <span *ngIf="currentChat.createdBy == currentUserId" class="nm_text">Du hast diesen Channel heute erstellt. </span>
+            <span class="nm_text">Das ist der Anfang des Channels </span>
+            <span class="nm_text_channelName"># {{ currentChat.name }}</span>
+            <span class="nm_text">.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- if there are Messages -->
       <div *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
         <!-- Tagestrenner -->
         <div *ngIf="message.timestamp && isNewDay(message.timestamp, i)" class="date-divider">

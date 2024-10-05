@@ -215,6 +215,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private handleMessagesResponse(messages: Message[]): void {
+    if (!messages || messages.length === 0) {
+      this.messages = [];
+      this.setLoadingState(false);
+      return;
+    }
+
     const validMessages = messages.filter((message) => message.timestamp);
     const sortedMessages = this.sortMessagesByTimestamp(validMessages);
 
@@ -248,7 +254,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(loadingSub);
   }
 
-  private getUsersOfSelectedChannel(chat: any) {
+  private getUsersOfSelectedChannel(chat: Channel) {
     if (chat && chat.members && chat.members.length > 0) {
       const usersSub = this.userService.getUsers().subscribe((users) => {
         this.usersOfSelectedChannel = users.filter((user) =>
@@ -386,8 +392,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 300);
   }
 
+
   trackByUserId(index: number, user: User): string {
-    return user.userId;
+    return user.userId ? user.userId : index.toString();
   }
 
   isNewDay(
