@@ -16,11 +16,8 @@
 
   <!-- Nachrichteneingabefeld -->
   <div class="messageBox absolute-bottom">
-    <textarea
-      [(ngModel)]="newMessageText"
-      placeholder="Starte eine neue Nachricht"
-      (keydown.enter)="sendMessage($event)"
-    ></textarea>
+    <textarea [(ngModel)]="newMessageText" placeholder="Starte eine neue Nachricht"
+      (keydown.enter)="sendMessage($event)"></textarea>
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon"></div>
@@ -37,6 +34,9 @@
 <div class="wrapper" *ngIf="currentChat">
   <!-- Chat-Header -->
   <div class="header">
+    <!-- Kanal-Info-Popup -->
+    <app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
+      (close)="closeChannelInfoPopup()"></app-channel-info-popup>
     <div class="header-title">
       <!-- Profilbild oder Kanalname -->
       <div class="header-channel-name " (click)="onHeaderChannelNameClick($event)">
@@ -52,20 +52,14 @@
         <h2 *ngIf="isCurrentChatPrivate">
           {{ clickedUserName || "Lade Benutzer..." }}
         </h2>
-        <!-- Kanal-Info-Popup -->
-        <app-channel-info-popup
-          *ngIf="selectedChannel"
-          [channel]="selectedChannel"
-          (close)="closeChannelInfoPopup()"
-        ></app-channel-info-popup>
-
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
 
       <!-- Kanal-Info -->
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div class="channelMembersIcons" (click)="showUserListPopup(currentChat)">
-          <ng-container *ngFor="let user of usersOfSelectedChannel | slice: 0: 3; let i = index; trackBy: trackByUserId">
+          <ng-container
+            *ngFor="let user of usersOfSelectedChannel | slice: 0: 3; let i = index; trackBy: trackByUserId">
             <img *ngIf="currentChat.members.length > 0" [src]="user.avatar" alt="user" />
           </ng-container>
           <div class="amountUsersIcon">{{ usersOfSelectedChannel.length }}</div>
@@ -96,7 +90,8 @@
             <!-- <img class="" src="" alt="" (click)=""/> -->
           </div>
           <div class="nm_content">
-            <span *ngIf="currentChat.createdBy == currentUserId" class="nm_text">Du hast diesen Channel heute erstellt. </span>
+            <span *ngIf="currentChat.createdBy == currentUserId" class="nm_text">Du hast diesen Channel heute erstellt.
+            </span>
             <span class="nm_text">Das ist der Anfang des Channels </span>
             <span class="nm_text_channelName"># {{ currentChat.name }}</span>
             <span class="nm_text">.</span>
@@ -112,17 +107,10 @@
         </div>
 
         <!-- Einzelne Nachricht -->
-        <app-message
-          [message]="message"
-          [userProfile]="userProfiles[message.senderId]"
-          [isCurrentUser]="message.senderId === currentUserId"
-          (messageClicked)="openThread($event)"
-          [isCurrentChatPrivate]="isCurrentChatPrivate"
-          [currentUserId]="currentUserId"
-          (senderId)="openProfilePopup($event)"
-          (imageClicked)="openOverlay($event)"
-          [messageIndex]="i"
-        ></app-message>
+        <app-message [message]="message" [userProfile]="userProfiles[message.senderId]"
+          [isCurrentUser]="message.senderId === currentUserId" (messageClicked)="openThread($event)"
+          [isCurrentChatPrivate]="isCurrentChatPrivate" [currentUserId]="currentUserId"
+          (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)" [messageIndex]="i"></app-message>
       </div>
 
       <!-- Keine Nachrichten Information -->
@@ -169,11 +157,8 @@
   <!-- Nachrichteneingabe für aktuellen Chat -->
   <div class="relative-container">
     <div class="messageBox">
-      <textarea
-        [(ngModel)]="newMessageText"
-        placeholder="Nachricht an {{ currentChat.name }}"
-        (keydown.enter)="sendMessage($event)"
-      ></textarea>
+      <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
+        (keydown.enter)="sendMessage($event)"></textarea>
       <div class="messageBoxBottom">
         <div class="iconsLeft">
           <div class="addIcon" (click)="openFileDialog()"></div>
@@ -190,27 +175,15 @@
       </div>
     </div>
     <!-- Emoji-Auswahl -->
-    <emoji-mart
-      *ngIf="showEmojiPicker"
-      set="twitter"
-      theme="light"
-      class="emoji-mart-message-box"
-      (emojiClick)="addEmoji($event)"
-    ></emoji-mart>
+    <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" class="emoji-mart-message-box"
+      (emojiClick)="addEmoji($event)"></emoji-mart>
   </div>
 </div>
 
 <!-- Profil-Card -->
-<app-profil
-  class="app-profile-card"
-  [onclickUser]="clickedUser!"
-  (closeProfileCard)="closeProfil()"
-  *ngIf="isProfileOpen"
-></app-profil>
+<app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
+  *ngIf="isProfileOpen"></app-profil>
 
 <!-- Bild-Overlay -->
-<app-image-overlay
-  *ngIf="overlayImageUrl"
-  [imageUrl]="overlayImageUrl"
-  (closeOverlay)="closeOverlay()"
-></app-image-overlay>
+<app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
+  (closeOverlay)="closeOverlay()"></app-image-overlay>
