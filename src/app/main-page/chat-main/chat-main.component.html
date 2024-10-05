@@ -81,7 +81,7 @@
     <!-- Nachrichtenanzeige -->
     <ng-container *ngIf="currentChat && !isLoading">
       <!-- If no Messages: -->
-      <div *ngIf="messages.length == 0">
+      <div *ngIf="messages.length == 0 && !isCurrentChatPrivate">
         <div class="no-messages">
           <div class="nm_header">
             <img class="nm_hastag" src="assets/img/chatChannel/tag.svg" alt="hastag">

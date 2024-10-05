@@ -36,7 +36,8 @@ import {
   map,
   Observable,
   of,
-  Subscription
+  Subscription,
+  switchMap
 } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -47,6 +48,7 @@ import {
   MatDialogModule,
 } from '@angular/material/dialog';
 import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-members.component';
+import { ChannelService } from '../../shared/services/channel.service';
 
 @Component({
   selector: 'app-chat-main',
@@ -122,7 +124,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     private firebaseStorageService: FirebaseStorageService,
     private firestore: Firestore,
     private sharedChannelService: SharedChannelService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private channelService: ChannelService,
   ) {
     registerLocaleData(localeDe);
   }
@@ -188,7 +191,17 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeToCurrentChat(): void {
-    const chatSub = this.chatService.currentChat$.subscribe(({ chat, isPrivate }) => {
+    const chatSub = this.chatService.currentChat$.pipe(
+      switchMap(({chat, isPrivate }) => {
+        if (chat && chat.id) {
+          return this.channelService.getChannel(chat.id, isPrivate).pipe(
+            map((updatedChat) => ({ chat: updatedChat, isPrivate }))
+          );
+        } else {
+          return of({ chat: null, isPrivate: false });
+        }
+      })
+    ).subscribe(({ chat, isPrivate }) => {
       this.currentChat = chat;
       this.isCurrentChatPrivate = isPrivate;
       this.selectedChat = !!chat;
