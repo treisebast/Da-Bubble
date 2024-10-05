@@ -21,6 +21,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../shared/models/channel.model';
 import { ChannelService } from '../../../shared/services/channel.service';
+import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-dialog-show-members',
@@ -42,7 +43,7 @@ import { ChannelService } from '../../../shared/services/channel.service';
   styleUrls: ['./dialog-show-members.component.scss'],
 })
 export class DialogShowMembersComponent implements OnInit {
-  isTesting = true; // Set this to true when testing without Firebase
+  isTesting = false; // Set this to true when testing without Firebase
 
   loading = false;
   isDialogOpen = false;
@@ -59,8 +60,11 @@ export class DialogShowMembersComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogShowMembersComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { members: User[]; channel: Channel },
     private userService: UserService,
-    private channelService: ChannelService
-  ) {}
+    private channelService: ChannelService,
+    private dialog: MatDialog
+  ) {
+    console.log('Dialog data:', data);
+  }
 
   ngOnInit(): void {
     this.subscribeToDialogEvents();
@@ -159,8 +163,28 @@ export class DialogShowMembersComponent implements OnInit {
 
     const usersToAdd = this.selectedUsers.map((user) => user.userId);
 
-    console.log('Adding users to channel', usersToAdd);
-    this.loading = false;
+    if (this.isTesting) {
+      console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
+      this.loading = false;
+      this.dialogRef.close();
+      this.showConfirmationDialog(
+        'Testingmode: Users successfully added to the channel.'
+      );
+      return;
+    }
+
+    try {
+      const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
+      channel.members = updatedMembers; // Update the local channel object
+      console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
+      await this.channelService.updateChannel(channel, { members: updatedMembers });
+    } catch (error) {
+      console.error('Error adding users to channel:', error);
+    } finally {
+      this.loading = false;
+      this.dialogRef.close(); // Close the dialog after adding users
+      this.showConfirmationDialog('Users successfully added to the channel.');
+    }
   }
 
   /**
@@ -168,5 +192,17 @@ export class DialogShowMembersComponent implements OnInit {
    */
   closeDialog() {
     this.dialogRef.close();
+  }
+
+  /**
+   * Shows a confirmation dialog with the given message.
+   * @private
+   * @param {string} message - The message to display in the confirmation dialog.
+   */
+  private showConfirmationDialog(message: string): void {
+    this.dialog.open(ConfirmationDialogComponent, {
+      data: { message: message },
+      hasBackdrop: false,
+    });
   }
 }

@@ -31,18 +31,12 @@ import { FirebaseStorageService } from '../../shared/services/firebase-storage.s
 import { Firestore, collection, doc } from '@angular/fire/firestore';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
 import {
-  catchError,
   firstValueFrom,
   forkJoin,
-  from,
   map,
-  mergeMap,
   Observable,
   of,
-  Subscription,
-  switchMap,
-  tap,
-  toArray,
+  Subscription
 } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -451,8 +445,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   showUserListPopup(currentChat: Channel): void {
+    console.log('showUserListPopup for Channel:', currentChat);
     const dialogRef = this.dialog.open(DialogShowMembersComponent, {
-      data: { members: this.usersOfSelectedChannel, currentChat },
+      data: { members: this.usersOfSelectedChannel, channel: currentChat },
       hasBackdrop: true,
       backdropClass: 'backdropVisible',
     });
