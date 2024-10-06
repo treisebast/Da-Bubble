@@ -1,0 +1,21 @@
+<div class="mention-dropdown">
+    <div class="mention-dropdown-content">
+        <ul>
+            <li #userItem *ngFor="let user of filteredUsers; let i = index" 
+                (click)="selectUser(user)"
+                [ngClass]="{'selected': selectedIndex === i}">
+              <img [src]="user.avatar" alt="{{ user.name }}" />
+              <!-- Statusindikator -->
+              <div
+                class="status-indicator"
+                [ngClass]="{
+                  'online': user.status === 'online',
+                  'away': user.status === 'away',
+                  'offline': user.status === 'offline'
+                }"
+              ></div>
+              <span>{{ user.name }}</span>
+            </li>
+        </ul>
+    </div>
+</div>

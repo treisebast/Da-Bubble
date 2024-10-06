@@ -158,7 +158,11 @@
   <div class="relative-container">
     <div class="messageBox">
       <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
-        (keydown.enter)="sendMessage($event)"></textarea>
+        (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
+      <!-- Einbinden der MentionDropdownComponent -->
+      <app-mention-dropdown *ngIf="showMentionDropdown" #mentionDropdown [users]="usersOfSelectedChannel"
+        [searchTerm]="mentionSearchTerm" (userSelected)="onUserSelected($event)">
+      </app-mention-dropdown>
       <div class="messageBoxBottom">
         <div class="iconsLeft">
           <div class="addIcon" (click)="openFileDialog()"></div>

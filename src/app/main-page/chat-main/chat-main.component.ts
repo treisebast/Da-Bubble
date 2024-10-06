@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   OnDestroy,
   OnInit,
   Output,
@@ -49,6 +50,7 @@ import {
 } from '@angular/material/dialog';
 import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-members.component';
 import { ChannelService } from '../../shared/services/channel.service';
+import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.component';
 
 @Component({
   selector: 'app-chat-main',
@@ -64,12 +66,17 @@ import { ChannelService } from '../../shared/services/channel.service';
     ImageOverlayComponent,
     PickerComponent,
     MatDialogModule,
-    MatDialogClose,
+    MatDialogClose, MentionDropdownComponent
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })
 export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  showMentionDropdown = false;
+  mentionSearchTerm = '';
+  mentionStartPosition = -1;
+
   isLoading: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
   showEmojiPicker = false;
@@ -113,6 +120,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chatContainer', { static: false })
   private chatContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
 
   private subscriptions = new Subscription();
 
@@ -759,5 +767,82 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   trackByMessageId(index: number, message: Message): string {
     return message.id ? message.id : index.toString();
+  }
+
+
+  onTextareaInput(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    const cursorPosition = textarea.selectionStart;
+    const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+    const atIndex = textBeforeCursor.lastIndexOf('@');
+
+    // Überprüfen, ob "@" nicht Teil einer E-Mail-Adresse ist
+    const isAtSymbol = atIndex >= 0 && (atIndex === 0 || /\s/.test(textBeforeCursor.charAt(atIndex - 1)));
+
+    if (isAtSymbol) {
+      this.mentionSearchTerm = textBeforeCursor.substring(atIndex + 1);
+      this.showMentionDropdown = true;
+      this.mentionStartPosition = atIndex;
+    } else {
+      this.showMentionDropdown = false;
+      this.mentionSearchTerm = '';
+    }
+  }
+
+  onUserSelected(user: User) {
+    // Einfügen des ausgewählten Benutzers in das Textfeld
+    const textarea = document.querySelector('.messageBox textarea') as HTMLTextAreaElement;
+    if (textarea) {
+      const cursorPosition = textarea.selectionStart;
+      const value = textarea.value;
+      const beforeMention = value.substring(0, this.mentionStartPosition);
+      const afterCursor = value.substring(cursorPosition);
+      const newValue = beforeMention + '@' + user.name + ' ' + afterCursor;
+
+      this.newMessageText = newValue;
+
+      // Cursorposition nach dem eingefügten Namen setzen
+      setTimeout(() => {
+        const newCursorPosition = (beforeMention + '@' + user.name + ' ').length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
+        textarea.focus();
+      }, 0);
+
+      this.showMentionDropdown = false;
+      this.mentionSearchTerm = '';
+    }
+  }
+
+  onTextareaKeydown(event: KeyboardEvent) {
+    if (this.showMentionDropdown && this.mentionDropdownComponent) {
+      if (event.key === 'Escape') {
+        this.showMentionDropdown = false;
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        this.mentionDropdownComponent.moveSelectionDown();
+        event.preventDefault();
+      } else if (event.key === 'ArrowUp') {
+        this.mentionDropdownComponent.moveSelectionUp();
+        event.preventDefault();
+      } else if (event.key === 'Enter') {
+        const selectedUser = this.mentionDropdownComponent.getSelectedUser();
+        if (selectedUser) {
+          this.onUserSelected(selectedUser);
+          event.preventDefault();
+        } else {
+          this.sendMessage(event);
+        }
+      }
+    } else if (event.key === 'Enter') {
+      this.sendMessage(event);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.mention-dropdown') && !target.closest('.messageBox textarea')) {
+      this.showMentionDropdown = false;
+    }
   }
 }
