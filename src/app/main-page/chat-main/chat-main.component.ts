@@ -51,6 +51,7 @@ import {
 import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-members.component';
 import { ChannelService } from '../../shared/services/channel.service';
 import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.component';
+import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.component';
 
 @Component({
   selector: 'app-chat-main',
@@ -66,7 +67,7 @@ import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.co
     ImageOverlayComponent,
     PickerComponent,
     MatDialogModule,
-    MatDialogClose, MentionDropdownComponent
+    MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent
   ],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
@@ -76,6 +77,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   showMentionDropdown = false;
   mentionSearchTerm = '';
   mentionStartPosition = -1;
+
+  showChannelDropdown = false;
+  channelSearchTerm = '';
+  channelMentionStartPosition = -1;
 
   isLoading: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
@@ -121,6 +126,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private chatContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
+  @ViewChild('channelDropdown') channelDropdownComponent?: ChannelDropdownComponent;
 
   private subscriptions = new Subscription();
 
@@ -200,7 +206,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subscribeToCurrentChat(): void {
     const chatSub = this.chatService.currentChat$.pipe(
-      switchMap(({chat, isPrivate }) => {
+      switchMap(({ chat, isPrivate }) => {
         if (chat && chat.id) {
           return this.channelService.getChannel(chat.id, isPrivate).pipe(
             map((updatedChat) => ({ chat: updatedChat, isPrivate }))
@@ -712,8 +718,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
     return match
       ? channels.filter((ch) =>
-          ch.name?.toLowerCase().includes(match[1].toLowerCase())
-        )
+        ch.name?.toLowerCase().includes(match[1].toLowerCase())
+      )
       : [];
   }
 
@@ -772,25 +778,37 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onTextareaInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
-    const cursorPosition = textarea.selectionStart;
+    const cursorPosition = textarea.selectionStart || 0;
     const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-    const atIndex = textBeforeCursor.lastIndexOf('@');
 
-    // Überprüfen, ob "@" nicht Teil einer E-Mail-Adresse ist
+    // Reset Dropdowns
+    this.showMentionDropdown = false;
+    this.mentionSearchTerm = '';
+    this.showChannelDropdown = false;
+    this.channelSearchTerm = '';
+
+    // Check for "@" Mention
+    const atIndex = textBeforeCursor.lastIndexOf('@');
     const isAtSymbol = atIndex >= 0 && (atIndex === 0 || /\s/.test(textBeforeCursor.charAt(atIndex - 1)));
 
-    if (isAtSymbol) {
+    // Check for "#" für Channels
+    const hashIndex = textBeforeCursor.lastIndexOf('#');
+    const isHashSymbol = hashIndex >= 0 && (hashIndex === 0 || /\s/.test(textBeforeCursor.charAt(hashIndex - 1)));
+
+    if (isAtSymbol && (!isHashSymbol || atIndex > hashIndex)) {
+      // If "@" is last used symbol
       this.mentionSearchTerm = textBeforeCursor.substring(atIndex + 1);
       this.showMentionDropdown = true;
       this.mentionStartPosition = atIndex;
-    } else {
-      this.showMentionDropdown = false;
-      this.mentionSearchTerm = '';
+    } else if (isHashSymbol) {
+      // If "#" is last used symbol
+      this.channelSearchTerm = textBeforeCursor.substring(hashIndex + 1);
+      this.showChannelDropdown = true;
+      this.channelMentionStartPosition = hashIndex;
     }
   }
 
   onUserSelected(user: User) {
-    // Einfügen des ausgewählten Benutzers in das Textfeld
     const textarea = document.querySelector('.messageBox textarea') as HTMLTextAreaElement;
     if (textarea) {
       const cursorPosition = textarea.selectionStart;
@@ -798,10 +816,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       const beforeMention = value.substring(0, this.mentionStartPosition);
       const afterCursor = value.substring(cursorPosition);
       const newValue = beforeMention + '@' + user.name + ' ' + afterCursor;
-
       this.newMessageText = newValue;
-
-      // Cursorposition nach dem eingefügten Namen setzen
       setTimeout(() => {
         const newCursorPosition = (beforeMention + '@' + user.name + ' ').length;
         textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
@@ -815,6 +830,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onTextareaKeydown(event: KeyboardEvent) {
     if (this.showMentionDropdown && this.mentionDropdownComponent) {
+      // for Mention-Dropdown
       if (event.key === 'Escape') {
         this.showMentionDropdown = false;
         event.preventDefault();
@@ -829,12 +845,31 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         if (selectedUser) {
           this.onUserSelected(selectedUser);
           event.preventDefault();
-        } else {
-          this.sendMessage(event);
         }
       }
-    } else if (event.key === 'Enter') {
-      this.sendMessage(event);
+    } else if (this.showChannelDropdown && this.channelDropdownComponent) {
+      // for Channel-Dropdown
+      if (event.key === 'Escape') {
+        this.showChannelDropdown = false;
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        this.channelDropdownComponent.moveSelectionDown();
+        event.preventDefault();
+      } else if (event.key === 'ArrowUp') {
+        this.channelDropdownComponent.moveSelectionUp();
+        event.preventDefault();
+      } else if (event.key === 'Enter') {
+        const selectedChannel = this.channelDropdownComponent.getSelectedChannel();
+        if (selectedChannel) {
+          this.onChannelSelected(selectedChannel);
+          event.preventDefault();
+        }
+      }
+    } else {
+      // No dropdown active
+      if (event.key === 'Enter') {
+        this.sendMessage(event);
+      }
     }
   }
 
@@ -844,5 +879,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!target.closest('.mention-dropdown') && !target.closest('.messageBox textarea')) {
       this.showMentionDropdown = false;
     }
+  }
+
+  onChannelSelected(channel: Channel) {
+    this.chatService.setCurrentChat(channel, false);
+    this.newMessageText = '';
+    this.showChannelDropdown = false;
+    this.channelSearchTerm = '';
   }
 }

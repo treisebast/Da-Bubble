@@ -1,1 +1,13 @@
-<p>channel-dropdown works!</p>
+<div class="channel-dropdown">
+    <div class="channel-dropdown-content">
+      <ul>
+        <li #channelItem *ngFor="let channel of filteredChannels; let i = index" 
+            (click)="selectChannel(channel)"
+            [ngClass]="{'selected': selectedIndex === i}">
+          <img src="../../../assets/img/chatChannel/tag.svg" alt="{{ channel.name }}" />
+          <span>{{ channel.name }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
