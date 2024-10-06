@@ -240,6 +240,14 @@ export class DialogAddChannelComponent {
     this.channelNameErrorMessage = '';
     this.showChannelNameErrorMessage = false;
 
+     // Validierung des Channel-Namens
+     this.validateChannelName();
+
+     // Überprüfen, ob eine Fehlermeldung vorliegt
+     if (this.channelNameErrorMessage) {
+       return; // Abbrechen, wenn der Name zu lang ist
+     }
+
     try {
       const duplicateChannel = await this.channelService.getChannelByName(
         this.channelName,
@@ -261,6 +269,17 @@ export class DialogAddChannelComponent {
       this.showChannelNameErrorMessage = true;
     }
   }
+
+    /**
+   * Validates the Channel name for max length.
+   */
+    validateChannelName(): void {
+      if (this.channelName.length > 17) {
+        this.channelNameErrorMessage = 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
+      } else {
+        this.channelNameErrorMessage = '';
+      }
+    }
 
   /**
    * Saves a channel to Firebase or locally if testing.

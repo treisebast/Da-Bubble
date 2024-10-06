@@ -13,14 +13,14 @@
 
       <h4>Channel-Name</h4>
       <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte"
-        class="addChannelInputs" />
+        class="addChannelInputs" (ngModelChange)="validateChannelName()"/>
         <div class="error-message" class="error-message">{{ channelNameErrorMessage }}</div>
       <h4>Beschreibung <span class="optional">(optional)</span></h4>
       <input class="addChannelInputs" [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button class="saveChannelBtn" [disabled]="loading || !channelName" (click)="createChannelAndGoToAddUsers()"
+      <button class="saveChannelBtn" [disabled]="loading || !channelName || channelName.length > 17" (click)="createChannelAndGoToAddUsers()"
         mat-flat-button>
         Erstellen
       </button>

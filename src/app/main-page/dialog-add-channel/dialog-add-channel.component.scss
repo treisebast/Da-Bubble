@@ -57,6 +57,13 @@ mat-label,
     background-color: var(--purple-two);
     border: var(--purple-one);
   }
+
+  &[disabled] {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    border: none;
+  }
 }
 
 p {
