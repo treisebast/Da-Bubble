@@ -434,7 +434,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async updateThreadInfoInMainChat() {
     if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
       const { chatId, id: messageId } = this.currentMessageToOpen;
-  
+
       await this.threadService.updateThreadInfo(
         chatId,
         messageId,
@@ -816,7 +816,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   // updates the reactions for the given message
   private async updateMessageReactions(message: Message): Promise<void> {
     const { chatId, id: messageId } = message;
-  
+
     if (
       this.currentMessageToOpen &&
       message.id === this.currentMessageToOpen.id
@@ -935,5 +935,23 @@ export class ThreadComponent implements OnInit, OnDestroy {
         event.preventDefault();
       }
     }
+  }
+
+  insertAtAndOpenMention() {
+    const textarea = this.messageTextarea.nativeElement;
+    const cursorPosition = textarea.selectionStart || 0;
+    const value = this.newMessageText;
+    const beforeCursor = value.substring(0, cursorPosition);
+    const afterCursor = value.substring(cursorPosition);
+    const newValue = `${beforeCursor}@${afterCursor}`;
+    this.newMessageText = newValue;
+
+    setTimeout(() => {
+      const newCursorPosition = cursorPosition + 1;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
+      textarea.focus();
+      const inputEvent = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    }, 0);
   }
 }

@@ -255,7 +255,7 @@
         <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
         <div class="border"></div>
         <div class="emoji" (click)="toggleMessageBoxEmojiPicker()"></div>
-        <div class="iconMarkUser"></div>
+        <div class="iconMarkUser" (click)="insertAtAndOpenMention()"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
     </div>
