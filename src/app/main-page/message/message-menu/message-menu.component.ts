@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Output, EventEmitter, Input, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Message } from '../../../shared/models/message.model';
 
 @Component({
   selector: 'app-message-menu',
@@ -11,12 +12,12 @@ import { Component, Output, EventEmitter, Input, HostListener, ViewChild, Elemen
 
 export class MessageMenuComponent {
   @Input() isCurrentUser: boolean = false;
-  @Output() edit = new EventEmitter<void>();
-  @Output() delete = new EventEmitter<void>();
+  @Input() message!: Message;
+  @Output() edit = new EventEmitter<Message>();
+  @Output() delete = new EventEmitter<Message>();
 
   menuOpen: boolean = false;
-
-  @ViewChild('menuOptions') menuOptionsRef!: ElementRef;
+  isMouseOverMenu: boolean = false;
 
   constructor(public menuElementRef: ElementRef) {}
 
@@ -30,13 +31,21 @@ export class MessageMenuComponent {
     this.menuOpen = false;
   }
 
+  onMouseEnterMenu() {
+    this.isMouseOverMenu = true;
+  }
+
+  onMouseLeaveMenu() {
+    this.isMouseOverMenu = false;
+  }
+
   onEdit() {
-    this.edit.emit();
+    this.edit.emit(this.message);
     this.menuOpen = false;
   }
 
   onDelete() {
-    this.delete.emit();
+    this.delete.emit(this.message);
     this.menuOpen = false;
   }
 

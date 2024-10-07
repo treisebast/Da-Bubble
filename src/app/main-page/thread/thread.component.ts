@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef, HostListener, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef, ChangeDetectorRef, HostListener, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
@@ -19,11 +19,12 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { Subject } from 'rxjs';
 import { convertToDate } from '../../shared/utils';
 import { MentionDropdownComponent } from '../chat-main/mention-dropdown/mention-dropdown.component';
+import { MessageMenuComponent } from '../message/message-menu/message-menu.component';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent, PickerModule, MentionDropdownComponent],
+  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent, PickerModule, MentionDropdownComponent, MessageMenuComponent],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss'],
 })
@@ -72,6 +73,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   @Output() closeThread = new EventEmitter<void>();
   @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
   @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChildren(MessageMenuComponent) messageMenuComponents!: QueryList<MessageMenuComponent>;
 
   private unsubscribe$ = new Subject<void>();
 
@@ -421,7 +423,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   checkAndUpdateThreadCount() {
     if (this.messages.length === 0 && this.currentMessageToOpen) {
       this.currentMessageToOpen.threadCount = 0;
-      this.currentMessageToOpen.lastReplyTimestamp = null; // Sicherstellen, dass es auf null gesetzt wird
+      this.currentMessageToOpen.lastReplyTimestamp = null;
     }
     this.updateThreadInfoInMainChat();
   }
@@ -666,10 +668,19 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMouseLeave(message: Message) {
+  onMouseLeave(event: MouseEvent, message: Message) {
     if (this.showEmojiPicker && this.selectedMessage === message) {
       this.showEmojiPicker = false;
       this.selectedMessage = null;
+    }
+    const relatedTarget = event.relatedTarget as HTMLElement;
+    const menuComponent = this.messageMenuComponents.find(menuComp => menuComp.message.id === message.id);
+
+    if (menuComponent && menuComponent.menuElementRef) {
+      const menuElement = menuComponent.menuElementRef.nativeElement;
+      if (!menuElement.contains(relatedTarget) && !menuComponent.isMouseOverMenu) {
+        menuComponent.closeMenu();
+      }
     }
   }
 

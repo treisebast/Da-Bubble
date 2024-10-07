@@ -19,7 +19,7 @@
   <!-- Original message, to which the thread belongs -->
   <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
     [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}"
-    (mouseleave)="onMouseLeave(currentMessageToOpen)">
+    (mouseleave)="onMouseLeave($event, currentMessageToOpen)">
     <img *ngIf="userProfiles[currentMessageToOpen.senderId]?.avatar"
       [src]="userProfiles[currentMessageToOpen.senderId].avatar" alt="{{ getUserName(currentMessageToOpen.senderId) }}"
       class="profile-img" />
@@ -72,12 +72,12 @@
         <div class="reaction" (click)="toggleEmojiPicker($event, currentMessageToOpen)"></div>
       </div>
 
-      <mat-menu #menu0="matMenu">
+      <!-- <mat-menu #menu0="matMenu">
         <ng-container *ngIf="currentMessageToOpen.senderId === currentUserId">
           <button mat-menu-item (click)="editMessage(currentMessageToOpen)">Nachricht bearbeiten</button>
           <button mat-menu-item (click)="deleteMessage(currentMessageToOpen)">Nachricht löschen</button>
         </ng-container>
-      </mat-menu>
+      </mat-menu> -->
 
       <!-- Reaction Bar for the original message -->
       <div class="reaction-button-bar">
@@ -119,7 +119,7 @@
 
     <div class="singelMessageContainer"
       [ngClass]="{'message-right': message.senderId !== currentUserId, 'message-left': message.senderId === currentUserId}"
-      (mouseleave)="onMouseLeave(message)">
+      (mouseleave)="onMouseLeave($event, message)">
 
       <img *ngIf="userProfiles[message.senderId]?.avatar" [src]="userProfiles[message.senderId].avatar"
         alt="{{ userProfiles[message.senderId].name }}" class="profile-img" />
@@ -184,7 +184,13 @@
             {{ lastTwoEmojis[1] }}
           </div>
           <div class="reaction" (click)="toggleEmojiPicker($event, message)"></div>
-          <div *ngIf="message.senderId === currentUserId" class="vertPoints" [matMenuTriggerFor]="menuTrigger">
+          <!-- Füge hier das MessageMenuComponent hinzu -->
+  <app-message-menu
+  [isCurrentUser]="message.senderId === currentUserId"
+  [message]="message"
+  (edit)="editMessage($event)"
+  (delete)="deleteMessage($event)">
+</app-message-menu>
           </div>
         </div>
 
@@ -209,12 +215,12 @@
           </div>
         </div>
 
-        <mat-menu #menuTrigger="matMenu">
+        <!-- <mat-menu #menuTrigger="matMenu">
           <ng-container *ngIf="message.senderId === currentUserId">
             <button mat-menu-item (click)="editMessage(message)">Nachricht bearbeiten</button>
             <button mat-menu-item (click)="deleteMessage(message)">Nachricht löschen</button>
           </ng-container>
-        </mat-menu>
+        </mat-menu> -->
 
       </div>
     </div>
