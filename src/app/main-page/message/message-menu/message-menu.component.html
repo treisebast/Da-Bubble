@@ -1,0 +1,14 @@
+<div *ngIf="isCurrentUser" class="message-menu">
+  <button class="menu-button" (click)="toggleMenu($event)">
+    <span class="vertPoints"></span>
+  </button>
+  <div
+    #menuOptions
+    class="menu-options"
+    *ngIf="menuOpen"
+    (click)="$event.stopPropagation()"
+  >
+    <button (click)="onEdit()">Bearbeiten</button>
+    <button (click)="onDelete()">Löschen</button>
+  </div>
+</div>

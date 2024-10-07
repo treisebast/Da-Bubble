@@ -1,7 +1,5 @@
-<div class="singelMessageContainer"
-[ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }"
->
-<!-- (mouseleave)="onMouseLeave()" TBI -->
+<div class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
+  <!-- (mouseleave)="onMouseLeave()" TBI -->
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
@@ -19,8 +17,11 @@
       </div>
       <div class="reaction" (click)="toggleEmojiPicker($event)"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
-      <div *ngIf="isCurrentUser" class="vertPoints" [matMenuTriggerFor]="menu">
-      </div>
+      <!-- <div *ngIf="isCurrentUser" class="vertPoints">
+      </div> -->
+      <!-- Füge hier die MessageMenuComponent ein -->
+      <app-message-menu [isCurrentUser]="isCurrentUser" (edit)="editMessage()" (delete)="deleteMessage()">
+      </app-message-menu>
     </div>
 
     <div class="message-content" [ngClass]="{ 'editing': isEditing }">
@@ -69,8 +70,8 @@
 
     <div #emojiPickerContainer>
       <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light"
-        class="emoji-mart-message {{ emojiMartPositionClass }}"
-        (emojiClick)="addEmoji($event)" (click)="$event.stopPropagation()">
+        class="emoji-mart-message {{ emojiMartPositionClass }}" (emojiClick)="addEmoji($event)"
+        (click)="$event.stopPropagation()">
       </emoji-mart>
     </div>
 
@@ -85,11 +86,4 @@
         Letzte Antwort {{ convertToDate(message.lastReplyTimestamp) | date: 'HH:mm' }}
       </span>
     </div>
-
-    <mat-menu #menu="matMenu">
-      <ng-container *ngIf="isCurrentUser">
-        <button mat-menu-item (click)="editMessage()">Nachricht bearbeiten</button>
-        <button mat-menu-item (click)="deleteMessage()">Nachricht löschen</button>
-      </ng-container>
-    </mat-menu>
   </div>

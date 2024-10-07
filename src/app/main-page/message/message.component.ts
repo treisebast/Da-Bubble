@@ -21,6 +21,7 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { UserService } from '../../shared/services/user.service';
+import { MessageMenuComponent } from './message-menu/message-menu.component';
 
 @Component({
   selector: 'app-message',
@@ -30,7 +31,7 @@ import { UserService } from '../../shared/services/user.service';
     MatMenuModule,
     FormsModule,
     PickerModule,
-    MatTooltipModule,
+    MatTooltipModule,MessageMenuComponent
   ],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
@@ -56,7 +57,10 @@ export class MessageComponent implements OnInit, OnChanges {
   lastTwoEmojis: string[] = [];
   usernames: { [emoji: string]: string[] } = {};
   showTooltip: string | null = null;
+
   @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
+  @ViewChild(MessageMenuComponent) messageMenuComponent!: MessageMenuComponent;
+
   constructor(
     private chatService: ChatService,
     private elementRef: ElementRef,
@@ -198,8 +202,6 @@ export class MessageComponent implements OnInit, OnChanges {
     if (this.showEmojiPicker) {
       const windowHeight = window.innerHeight;
       const isBelow = event.clientY > windowHeight / 2;
-      
-      // Determine the base class for positioning
       this.emojiMartPositionClass = isBelow ? 'open-above' : 'open-below';
       
       // Add left or right positioning based on whether it's the current user
@@ -207,11 +209,16 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
-  // onMouseLeave() {
-  //   if (this.showEmojiPicker) {
-  //     this.showEmojiPicker = false;
-  //   }
-  // }
+  onMouseLeave(event: MouseEvent) {
+    const relatedTarget = event.relatedTarget as HTMLElement;
+    if (
+      this.messageMenuComponent &&
+      this.messageMenuComponent.menuElementRef &&
+      !this.messageMenuComponent.menuElementRef.nativeElement.contains(relatedTarget)
+    ) {
+      this.messageMenuComponent.closeMenu();
+    }
+  }
 
   addEmoji(event: any) {
     const emoji = event.emoji.native;
