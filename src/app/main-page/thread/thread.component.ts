@@ -18,17 +18,12 @@ import { getMetadata, getStorage, ref } from 'firebase/storage';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { Subject } from 'rxjs';
 import { convertToDate } from '../../shared/utils';
+import { MentionDropdownComponent } from '../chat-main/mention-dropdown/mention-dropdown.component';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatMenuModule,
-    ImageOverlayComponent,
-    PickerModule,
-  ],
+  imports: [CommonModule, FormsModule, MatMenuModule, ImageOverlayComponent, PickerModule, MentionDropdownComponent],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss'],
 })
@@ -59,6 +54,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
   userProfiles: { [key: string]: User } = {};
   metadataMap: { [url: string]: { name: string; size: number } } = {};
 
+  showMentionDropdown = false;
+  mentionSearchTerm = '';
+  mentionStartPosition = -1;
+  usersOfSelectedChannel: User[] = [];
+
   showMessageBoxEmojiPicker = false;
   preventImmediateClose: boolean = true;
   errorTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -70,6 +70,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   @ViewChild('fileInput') fileInput!: ElementRef;
   @Output() closeThread = new EventEmitter<void>();
+  @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
+  @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
 
   private unsubscribe$ = new Subject<void>();
 
@@ -178,16 +180,19 @@ export class ThreadComponent implements OnInit, OnDestroy {
           console.error('Fehler beim Abrufen der aktuellen Threads:', error);
         },
       });
+
+    // Load user list from currentChat
+    if (this.currentChat && this.currentChat.members) {
+      this.userService.getUsers().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+        this.usersOfSelectedChannel = users.filter(user => this.currentChat!.members.includes(user.userId));
+      });
+    }
+
   }
 
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-    this.clearErrorMessage();
-    document.removeEventListener(
-      'click',
-      this.closeEmojiPickerOnOutsideClick.bind(this)
-    );
     this.clearErrorMessage();
   }
 
@@ -219,9 +224,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async uploadAttachment(): Promise<void> {
     if (this.selectedFile) {
       const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${
-        this.selectedFile.name
-      }`;
+      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${this.selectedFile.name
+        }`;
       const downloadUrl = await firstValueFrom(
         this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
       );
@@ -284,7 +288,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
     } else if (timestamp instanceof Date) {
       return timestamp;
     }
-    // Rückgabe des aktuellen Datums als Fallback
     return new Date();
   }
 
@@ -409,15 +412,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   async deleteMessage(message: Message) {
     if (this.canDeleteMessage(message)) {
-      try {
-        await this.deleteMessageAttachments(message);
-        await this.deleteMessageFromThread(message);
-        this.checkAndUpdateThreadCount();
-      } catch (error) {
-        console.error('Error deleting message:', error);
-      }
-    } else {
-      console.error("You cannot delete another user's message.");
+      await this.deleteMessageAttachments(message);
+      await this.deleteMessageFromThread(message);
+      this.checkAndUpdateThreadCount();
     }
   }
 
@@ -437,19 +434,13 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async updateThreadInfoInMainChat() {
     if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
       const { chatId, id: messageId } = this.currentMessageToOpen;
-
-      try {
-        await this.threadService.updateThreadInfo(
-          chatId,
-          messageId,
-          this.currentMessageToOpen.threadCount!,
-          this.currentMessageToOpen.lastReplyTimestamp ?? null // Sicherstellen, dass undefined zu null wird
-        );
-      } catch (error) {
-        console.error('Error updating thread information in main chat:', error);
-      }
-    } else {
-      console.error('messageId or chatId is undefined.');
+  
+      await this.threadService.updateThreadInfo(
+        chatId,
+        messageId,
+        this.currentMessageToOpen.threadCount!,
+        this.currentMessageToOpen.lastReplyTimestamp ?? null
+      );
     }
   }
 
@@ -684,11 +675,6 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   toggleMessageBoxEmojiPicker() {
     this.showMessageBoxEmojiPicker = !this.showMessageBoxEmojiPicker;
-    if (this.showMessageBoxEmojiPicker) {
-      setTimeout(() => {
-        this.preventImmediateClose = false;
-      }, 100);
-    }
   }
 
   addEmojiToMessageBox(event: any) {
@@ -704,37 +690,26 @@ export class ThreadComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeEmojiPickerOnOutsideClick(event: MouseEvent) {
-    const targetElement = event.target as HTMLElement;
-    const pickerElement = document.querySelector('.emoji-mart-message-box');
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+
+    if (this.showEmojiPicker && !target.closest('.emoji-mart-threadmessage')) {
+      this.showEmojiPicker = false;
+      this.selectedMessage = null;
+    }
+
     if (
-      !this.preventImmediateClose &&
       this.showMessageBoxEmojiPicker &&
-      pickerElement &&
-      !pickerElement.contains(targetElement)
+      !target.closest('.emoji-mart-thread-message-box') &&
+      !target.closest('.emoji')
     ) {
       this.showMessageBoxEmojiPicker = false;
     }
-    this.preventImmediateClose = true;
-  }
 
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      document.addEventListener(
-        'click',
-        this.closeEmojiPickerOnOutsideClick.bind(this)
-      );
-    }, 0);
-  }
-
-
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.showEmojiPicker) {
-      this.showEmojiPicker = false;
-      this.selectedMessage = null;
+    if (!target.closest('.mention-dropdown') && !target.closest('.messageBox textarea')) {
+      this.showMentionDropdown = false;
     }
   }
 
@@ -841,33 +816,23 @@ export class ThreadComponent implements OnInit, OnDestroy {
   // updates the reactions for the given message
   private async updateMessageReactions(message: Message): Promise<void> {
     const { chatId, id: messageId } = message;
+  
     if (
       this.currentMessageToOpen &&
       message.id === this.currentMessageToOpen.id
     ) {
-      try {
-        await this.threadService.updateOriginalMessageReactions(
-          chatId,
-          this.currentMessageToOpen.id!,
-          message.reactions || {}
-        );
-        console.log('Reactions for original message updated');
-      } catch (error) {
-        console.error('Error updating reactions for original message:', error);
-        // Optional: Benutzer informieren, dass das Aktualisieren fehlgeschlagen ist
-      }
+      await this.threadService.updateOriginalMessageReactions(
+        chatId,
+        this.currentMessageToOpen.id!,
+        message.reactions || {}
+      );
     } else {
-      try {
-        await this.threadService.updateThreadMessageReactions(
-          chatId,
-          this.threadService.currentMessageId,
-          message.id!,
-          message.reactions || {}
-        );
-        console.log('Reactions for thread message updated');
-      } catch (error) {
-        console.error('Error updating reactions for thread message:', error);
-      }
+      await this.threadService.updateThreadMessageReactions(
+        chatId,
+        this.threadService.currentMessageId,
+        message.id!,
+        message.reactions || {}
+      );
     }
   }
 
@@ -882,8 +847,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     } else {
@@ -891,8 +855,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       return `
         <span class="emoji">${emoji}</span>
         <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
+        <span class="reaction-text">${numUsers > 1 ? 'haben' : 'hat'
         } reagiert</span>
       `;
     }
@@ -908,5 +871,69 @@ export class ThreadComponent implements OnInit, OnDestroy {
 
   clearErrorMessage() {
     this.manageErrorMessage(null);
+  }
+
+  onTextareaInput(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    const cursorPosition = textarea.selectionStart || 0;
+    const textBeforeCursor = textarea.value.substring(0, cursorPosition);
+
+    this.showMentionDropdown = false;
+    this.mentionSearchTerm = '';
+
+    const atIndex = textBeforeCursor.lastIndexOf('@');
+    const isAtSymbol = atIndex >= 0 && (atIndex === 0 || /\s|\n/.test(textBeforeCursor.charAt(atIndex - 1)));
+
+    if (isAtSymbol) {
+      this.mentionSearchTerm = textBeforeCursor.substring(atIndex + 1);
+      this.showMentionDropdown = true;
+      this.mentionStartPosition = atIndex;
+    }
+  }
+
+  onUserSelected(user: User) {
+    const textarea = this.messageTextarea.nativeElement;
+    const cursorPosition = textarea.selectionStart || 0;
+    const value = textarea.value;
+    const beforeMention = value.substring(0, this.mentionStartPosition);
+    const afterCursor = value.substring(cursorPosition);
+    const newValue = `${beforeMention}@${user.name} ${afterCursor}`;
+    this.newMessageText = newValue;
+
+    setTimeout(() => {
+      const newCursorPosition = (beforeMention + '@' + user.name + ' ').length;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
+      textarea.focus();
+    }, 0);
+
+    this.showMentionDropdown = false;
+    this.mentionSearchTerm = '';
+  }
+
+
+  onTextareaKeydown(event: KeyboardEvent) {
+    if (this.showMentionDropdown && this.mentionDropdownComponent) {
+      if (event.key === 'Escape') {
+        this.showMentionDropdown = false;
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        this.mentionDropdownComponent.moveSelectionDown();
+        event.preventDefault();
+      } else if (event.key === 'ArrowUp') {
+        this.mentionDropdownComponent.moveSelectionUp();
+        event.preventDefault();
+      } else if (event.key === 'Enter') {
+        const selectedUser = this.mentionDropdownComponent.getSelectedUser();
+        if (selectedUser) {
+          this.onUserSelected(selectedUser);
+          event.preventDefault();
+        }
+      }
+    } else {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        this.sendMessage(event);
+        event.preventDefault();
+      }
+    }
   }
 }

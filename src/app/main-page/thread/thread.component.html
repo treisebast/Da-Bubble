@@ -87,10 +87,10 @@
 
           <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(currentMessageToOpen, emoji.key) }}
 
- <!-- Custom Tooltip -->
- <div *ngIf="showTooltipOriginalMessage === emoji.key" class="reaction-tooltip"
- [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
-</div>
+          <!-- Custom Tooltip -->
+          <div *ngIf="showTooltipOriginalMessage === emoji.key" class="reaction-tooltip"
+            [innerHTML]="getTooltipContent(currentMessageToOpen, emoji.key)">
+          </div>
         </div>
       </div>
 
@@ -196,8 +196,8 @@
 
         <div class="reaction-button-bar">
           <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-          (mouseenter)="showTooltip[getMessageKey(message, i)] = emoji.key"
-          (mouseleave)="showTooltip[getMessageKey(message, i)] = null"
+            (mouseenter)="showTooltip[getMessageKey(message, i)] = emoji.key"
+            (mouseleave)="showTooltip[getMessageKey(message, i)] = null"
             (click)="addOrRemoveReaction(message, emoji.key)">
 
             <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(message, emoji.key) }}
@@ -241,8 +241,14 @@
 
   <!-- Message Box mit Datei-Upload Funktion -->
   <div class="messageBox">
-    <textarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"
-      (keydown.enter)="sendMessage($event)"></textarea>
+    <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat?.name }}"
+      (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
+
+    <!-- Einbinden der MentionDropdownComponent -->
+    <app-mention-dropdown *ngIf="showMentionDropdown" #mentionDropdown [users]="usersOfSelectedChannel"
+      [searchTerm]="mentionSearchTerm" (userSelected)="onUserSelected($event)">
+    </app-mention-dropdown>
+
     <div class="messageBoxBottom">
       <div class="iconsLeft">
         <div class="addIcon" (click)="openFileDialog()"></div>
