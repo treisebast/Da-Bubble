@@ -127,6 +127,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
   @ViewChild('channelDropdown') channelDropdownComponent?: ChannelDropdownComponent;
+  @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
 
   private subscriptions = new Subscription();
 
@@ -886,5 +887,23 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.newMessageText = '';
     this.showChannelDropdown = false;
     this.channelSearchTerm = '';
+  }
+
+  insertAtAndOpenMention() {
+    const textarea = this.messageTextarea.nativeElement;
+    const cursorPosition = textarea.selectionStart || 0;
+    const value = this.newMessageText;
+    const beforeCursor = value.substring(0, cursorPosition);
+    const afterCursor = value.substring(cursorPosition);
+    const newValue = `${beforeCursor}@${afterCursor}`;
+    this.newMessageText = newValue;
+  
+    setTimeout(() => {
+      const newCursorPosition = cursorPosition + 1;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
+      textarea.focus();
+      const inputEvent = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    }, 0);
   }
 }
