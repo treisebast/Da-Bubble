@@ -40,7 +40,7 @@ export class ProfilComponent implements OnInit {
   onclickUserID: string = '';
 
   isEditing = false;
-  isEditingAvatar = false;
+  isChangingAvatar = false;
   profiltext: string = 'Profil';
   ownUser: Partial<User> = {};
   ownUserID: string = '';
@@ -98,6 +98,10 @@ export class ProfilComponent implements OnInit {
   }
 
   editingAvatar() {
-    this.isEditingAvatar = true;
+    this.isChangingAvatar = true;
+  }
+
+  setSelectedAvatar(event: boolean) {
+    this.isChangingAvatar = event.valueOf();
   }
 }

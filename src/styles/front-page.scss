@@ -31,7 +31,7 @@ mat-card-subtitle {
 }
 
 .login-card {
-  width: 90%;
+  // width: 90%;
   max-width: 500px;
   margin: auto;
   padding: 20px;
@@ -174,7 +174,6 @@ form {
 
 @media (min-width: 1200px) {
   .login-card {
-    padding: 40px;
     display: flex;
   }
 

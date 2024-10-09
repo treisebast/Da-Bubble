@@ -6,6 +6,8 @@ import {
   ChangeDetectorRef,
   OnInit,
   Input,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -45,6 +47,8 @@ import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/co
 })
 export class AvatarChoiceComponent implements OnInit {
   @Input() ownUser!: Partial<User>;
+  @Input() isChangingAvatar: boolean = false;
+  @Output() setSelectedAvatar = new EventEmitter<boolean>();
   selectedAvatar: string = '';
   avatars: string[] = [];
   userName: string = 'Max Mustermann';
@@ -99,7 +103,7 @@ export class AvatarChoiceComponent implements OnInit {
         firstValueFrom(this.storageService.getFileUrl(path))
       )
     );
-    this.selectedAvatar = this.avatars[0];
+    this.selectedAvatar = this.ownUser?.avatar || this.avatars[0];
     this.cdr.detectChanges();
   }
 
@@ -186,7 +190,11 @@ export class AvatarChoiceComponent implements OnInit {
         const avatarUrl = await this.getAvatarUrl(currentUser.uid);
         await this.updateUserAvatar(currentUser.uid, avatarUrl);
         this.showConfirmationDialog();
-        this.router.navigate(['/main-page']);
+        if (!this.isChangingAvatar) {
+          this.router.navigate(['/main-page']);
+        } else {
+          this.setSelectedAvatar.emit(false);
+        }
       } else {
         console.error('No authenticated user found');
       }

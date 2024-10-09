@@ -1,18 +1,25 @@
-/* Global fontstyle from Angular Material change to fonts Nunito */
-
-//import angular material prebuilt theme azure-blue
-
+/* Import Angular Material Prebuilt Theme (azure-blue) */
 @use "@angular/material" as mat;
 
-$open-sans-typography: mat.define-typography-config($font-family: '"Nunito", sans-serif'
-  );
+/* Define global typography configuration using Nunito */
+$nunito-typography: mat.define-typography-config(
+  $font-family: '"Nunito", sans-serif'
+);
 
-@include mat.typography-hierarchy($open-sans-typography);
+/* Apply the Nunito typography hierarchy */
+@include mat.typography-hierarchy($nunito-typography);
 
-$app-theme: mat.define-light-theme((typography: $open-sans-typography ));
+/* Define a light theme with the Nunito typography */
+$app-theme: mat.define-light-theme(
+  (
+    typography: $nunito-typography
+  )
+);
+
+/* Include Angular Material components with the defined theme */
 @include mat.all-component-themes($app-theme);
 
-/* Imports */
+/* Custom Font Imports */
 @import "./fonts.scss";
 @import "./styles/mixins.scss";
 @import "./styles/colors.scss";
@@ -20,17 +27,18 @@ $app-theme: mat.define-light-theme((typography: $open-sans-typography ));
 @import "@ctrl/ngx-emoji-mart/picker";
 @import "./styles/emoji-mart.scss";
 
+/* Fallback font-face definition (Raleway) */
 @font-face {
   font-family: "Raleway";
   src: none;
 }
 
+/* Global Styles */
+html,
 body {
-  font-family: "Arial", sans-serif; // Beispiel für eine alternative Schriftart
-}
-
-/* Global styles */
-* {
+  height: 100%;
+  font-size: 16px;
+  margin: 0;
   font-family:
     Nunito,
     system-ui,
@@ -44,55 +52,50 @@ body {
     "Open Sans",
     "Helvetica Neue",
     sans-serif;
+  background-color: var(--main-background, rgb(235, 239, 254));
   scroll-behavior: smooth;
   box-sizing: border-box;
-}
-
-*.unselectable {
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-html,
-body {
-  height: 100%;
-  font-size: 16px;
-}
-
-body {
-  background-color: var(--main-background, rgb(235, 239, 254));
-  width: 100%;
   min-height: 100vh;
-  margin: 0;
+  width: 100%;
+}
+
+/* Universal styles */
+* {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.unselectable {
+  user-select: none;
 }
 
 .hidden {
   display: none !important;
 }
 
+/* Flexbox utility classes */
 .jc-end {
-  justify-content: end !important;
+  justify-content: flex-end !important;
 }
 
 .jc-start {
-  justify-content: start !important;
+  justify-content: flex-start !important;
 }
 
 .align-start {
-  align-items: flex-start;
+  align-items: flex-start !important;
 }
 
 .align-end {
-  align-items: flex-end;
+  align-items: flex-end !important;
 }
 
+/* Full width class */
 .full-width {
   width: 100%;
 }
 
+/* Centered positioning */
 .centered {
   position: absolute;
   left: 50%;
@@ -100,27 +103,25 @@ body {
   transform: translate(-50%, -50%);
 }
 
-// scrollbar - width
+/* Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
-// Track
 ::-webkit-scrollbar-track {
   background: var(--light-purple);
 }
 
-// Handle
 ::-webkit-scrollbar-thumb {
   background: var(--purple-two);
   border-radius: 10px;
 }
 
-// Handle on hover
 ::-webkit-scrollbar-thumb:hover {
   background: var(--purple-one);
 }
 
+/* Overlay and backdrop visibility */
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
   display: none !important;
@@ -132,23 +133,12 @@ body {
   opacity: 1 !important;
 }
 
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-}
-
+/* Material-specific styles */
 .mat-mdc-menu-panel {
-  border-bottom-left-radius: 20px !important;
-  border-bottom-right-radius: 20px !important;
-  border-top-right-radius: 20px !important;
+  border-radius: 20px !important;
 }
 
-
+/* Modal background style */
 .modal-background {
   position: fixed;
   top: 0;
