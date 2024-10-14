@@ -37,7 +37,7 @@ import {
         'in',
         style({
           width: '20%',
-          minWidth: '300px',
+          minWidth: '348px',
           opacity: 1,
           margin: '8px',
           padding: '16px',

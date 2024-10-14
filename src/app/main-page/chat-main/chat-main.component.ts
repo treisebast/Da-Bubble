@@ -52,6 +52,8 @@ import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-me
 import { ChannelService } from '../../shared/services/channel.service';
 import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.component';
 import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NavigationService } from '../../shared/services/navigation-service.service';
 
 @Component({
   selector: 'app-chat-main',
@@ -97,7 +99,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUserId = '';
   currentUserName = '';
   clickedUser: User | null = null;
-  private profileSubscription: Subscription | null = null;
   clickedUserName: string = '';
   otherUser: User | null = null;
 
@@ -117,7 +118,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   publicChannels: Channel[] = [];
   filteredChannels: Channel[] = [];
   filteredPublicChannels: Channel[] = [];
-
   currentThreadData: any;
 
   @Output() openThreadEvent = new EventEmitter<void>();
@@ -130,6 +130,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
 
   private subscriptions = new Subscription();
+  private navigationSubscription: Subscription | null = null;
+  private profileSubscription: Subscription | null = null;
 
   constructor(
     private chatService: ChatService,
@@ -141,6 +143,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     private sharedChannelService: SharedChannelService,
     public dialog: MatDialog,
     private channelService: ChannelService,
+    private navigationService: NavigationService,
   ) {
     registerLocaleData(localeDe);
   }
@@ -167,6 +170,36 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(publicChannelsSub);
 
     this.setLoadingState(false);
+
+
+    // Abonnieren des selectedMessage$ Observables
+    this.navigationSubscription = this.navigationService.selectedMessage$.subscribe(
+      (message) => {
+        if (message) {
+          this.handleSelectedMessage(message);
+        }
+      }
+    );
+  }
+
+
+  private async handleSelectedMessage(message: Message) {
+    const chatId = message.chatId;
+    const isPrivate = message.isPrivateChat;
+
+    if (chatId) {
+      if (
+        this.currentChat?.id !== chatId ||
+        this.isCurrentChatPrivate !== isPrivate
+      ) {
+        await this.loadChatById(chatId, isPrivate);
+      }
+      if (message.id) {
+        this.scrollToMessage(message.id);
+      } else {
+        console.error('Message ID is undefined');
+      }
+    }
   }
 
   ngOnDestroy() {
@@ -179,6 +212,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       'click',
       this.closeEmojiPickerOnOutsideClick.bind(this)
     );
+
+
+    if (this.navigationSubscription) {
+      this.navigationSubscription.unsubscribe();
+    }
   }
 
   ngAfterViewInit() {
@@ -370,8 +408,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private buildNewMessage(): Message {
     return {
       content: this.newMessageText,
+      content_lowercase: this.newMessageText.toLowerCase(), // Fügen Sie dies hinzu
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
+      isPrivateChat: this.isCurrentChatPrivate,
       chatId: this.currentChat.id,
       attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };
@@ -670,9 +710,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   addAttachmentToMessage(downloadUrl: string) {
     const newMessage: Message = {
       content: this.newMessageText,
+      content_lowercase: this.newMessageText.toLowerCase(),
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
       chatId: this.currentChat.id,
+      isPrivateChat: this.isCurrentChatPrivate,
       attachments: [downloadUrl],
     };
 
@@ -897,7 +939,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const afterCursor = value.substring(cursorPosition);
     const newValue = `${beforeCursor}@${afterCursor}`;
     this.newMessageText = newValue;
-  
+
     setTimeout(() => {
       const newCursorPosition = cursorPosition + 1;
       textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
@@ -906,4 +948,50 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       textarea.dispatchEvent(inputEvent);
     }, 0);
   }
+
+
+  async loadChatById(chatId: string, isPrivate: boolean) {
+    // Laden Sie den Chat und setzen Sie ihn als aktuellen Chat
+    const chat = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));
+    this.currentChat = chat;
+    this.isCurrentChatPrivate = isPrivate;
+    this.chatService.setCurrentChat(chat, isPrivate);
+  }
+
+  scrollToMessage(messageId: string) {
+    setTimeout(() => {
+      const messageElement = document.getElementById(messageId);
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Optional: Nachricht hervorheben
+        messageElement.classList.add('highlight');
+        setTimeout(() => {
+          messageElement.classList.remove('highlight');
+        }, 3000);
+      } else {
+        // Falls das Element noch nicht verfügbar ist, warten und erneut versuchen
+        this.waitForMessageElement(messageId);
+      }
+    }, 500); // Warten Sie, bis die Nachrichten geladen sind
+  }
+
+  waitForMessageElement(messageId: string) {
+    const checkExist = setInterval(() => {
+      const messageElement = document.getElementById(messageId);
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        messageElement.classList.add('highlight');
+        setTimeout(() => {
+          messageElement.classList.remove('highlight');
+        }, 3000);
+        clearInterval(checkExist);
+      }
+    }, 100);
+    // Nach einer bestimmten Zeit aufhören zu suchen, um Endlosschleifen zu vermeiden
+    setTimeout(() => {
+      clearInterval(checkExist);
+    }, 5000);
+  }
+
+
 }

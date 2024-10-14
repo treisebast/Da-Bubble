@@ -1,4 +1,4 @@
-<div class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
+<div   id="{{ message.id }}" class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
   <!-- (mouseleave)="onMouseLeave()" TBI -->
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 

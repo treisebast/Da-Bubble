@@ -54,7 +54,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   userNames: { [key: string]: string } = {};
   userProfiles: { [key: string]: User } = {};
   metadataMap: { [url: string]: { name: string; size: number } } = {};
-
+  isCurrentChatPrivate: boolean = false;
   showMentionDropdown = false;
   mentionSearchTerm = '';
   mentionStartPosition = -1;
@@ -238,8 +238,10 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async addThreadMessage(): Promise<void> {
     const newMessage: Message = {
       content: this.newMessageText,
+      content_lowercase: this.newMessageText.toLowerCase(),
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
+      isPrivateChat: this.isCurrentChatPrivate,
       chatId: this.currentChat?.id ?? '',
       attachments: this.attachmentUrl ? [this.attachmentUrl] : [],
     };

@@ -122,11 +122,8 @@ export class ChatService {
   addMessage(message: Message): Promise<void> {
     const { chat, isPrivate } = this.currentChatSubject.getValue();
     if (chat && chat.id) {
-      return this.channelMessageService.addChannelMessage(
-        chat.id,
-        message,
-        isPrivate
-      );
+      // Nachricht zum spezifischen Chat hinzufügen
+      return this.channelMessageService.addChannelMessage(chat.id, message, isPrivate);
     } else {
       return Promise.reject('No current chat selected');
     }

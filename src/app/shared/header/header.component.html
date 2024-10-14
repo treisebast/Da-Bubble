@@ -3,8 +3,23 @@
     <div [routerLink]="['main']" (click)="logout()"><img src="./assets/img/logo.svg" alt="" class="logo" /></div>
 
     <div class="searchbar">
-      <input type="text" placeholder="Devspace durchsuchen" />
+      <input
+        type="text"
+        placeholder="Devspace durchsuchen"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+      />
       <mat-icon matSuffix>search</mat-icon>
+      <!-- Dropdown-Menü für Suchergebnisse -->
+      <div *ngIf="searchResults && searchResults.length > 0" class="search-results">
+        <ul>
+          <li *ngFor="let message of searchResults" (click)="goToMessage(message)">
+            <span class="message-sender">{{ getUserName(message.senderId) }}</span>
+            <span class="message-content">{{ message.content }}</span>
+            <!-- <span class="message-timestamp">{{ message.timestamp | date:'short' }}</span> -->
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="profile" mat-button cdkFocusInitial (click)="openMenu()">

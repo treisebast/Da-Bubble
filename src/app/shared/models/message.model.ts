@@ -3,6 +3,7 @@ import { Timestamp, FieldValue } from '@angular/fire/firestore';
 export interface Message {
   id?: string;
   content: string;
+  content_lowercase?: string;
   senderId: string;
   senderName?: string;
   timestamp: Timestamp | FieldValue;
@@ -18,4 +19,5 @@ export interface Message {
     }
   }
   reactions?: { [emoji: string]: string[] };
+  isPrivateChat: boolean; // Neues Feld
 }
