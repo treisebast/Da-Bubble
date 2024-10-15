@@ -61,12 +61,13 @@ table {
     height: 40px;
     display: flex;
     align-items: center;
+    width: 80%;
+    font-weight: 400;
+    font-size: 18px;
 
     img {
       margin-right: 15px;
     }
-    font-weight: 400;
-    font-size: 18px;
   }
 
   .addNewChannel {
