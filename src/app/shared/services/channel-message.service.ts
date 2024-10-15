@@ -79,6 +79,7 @@ export class ChannelMessageService {
     );
     await updateDoc(messageDocRef, {
       content: updatedContent,
+      content_lowercase: updatedContent.toLowerCase(),
       edited: true,
     });
   }

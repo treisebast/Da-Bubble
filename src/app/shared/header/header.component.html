@@ -3,24 +3,18 @@
     <div [routerLink]="['main']" (click)="logout()"><img src="./assets/img/logo.svg" alt="" class="logo" /></div>
 
     <div class="searchbar">
-      <input
-  type="text"
-  placeholder="Devspace durchsuchen"
-  [(ngModel)]="searchQuery"
-  (input)="onSearchInput()"
-  (keydown)="onSearchKeydown($event)"
-/>
+      <input #searchInput type="text" placeholder="Devspace durchsuchen" [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" />
       <mat-icon matSuffix>search</mat-icon>
       <!-- Dropdown-Menü für Suchergebnisse -->
       <div *ngIf="searchResults && searchResults.length > 0" class="search-results">
         <ul>
-          <li   #searchResultItem
-          *ngFor="let message of searchResults; let i = index"
-          (click)="goToMessage(message)"
-          [class.selected]="i === selectedSearchResultIndex">
+          <li #searchResultItem *ngFor="let message of searchResults; let i = index" (click)="goToMessage(message)"
+            [class.selected]="i === selectedSearchResultIndex">
             <span class="message-sender">
               <span class="black-text">von</span> {{ getUserName(message.senderId) }}
-              <span class="black-text"> an #<span class="message-sender">{{ getChannelName(message.chatId, message.isPrivateChat) }}</span>:<span class="pd-8"></span></span>
+              <span class="black-text"> an #<span class="message-sender">{{ getChannelName(message.chatId,
+                  message.isPrivateChat) }}</span>:<span class="pd-8"></span></span>
             </span>
             <span class="message-content">{{ message.content }}</span>
           </li>

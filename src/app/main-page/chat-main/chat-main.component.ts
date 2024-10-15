@@ -369,7 +369,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private buildNewMessage(): Message {
     return {
       content: this.newMessageText,
-      content_lowercase: this.newMessageText.toLowerCase(), // Fügen Sie dies hinzu
+      content_lowercase: this.newMessageText.toLowerCase(),
       senderId: this.currentUserId,
       timestamp: serverTimestamp(),
       isPrivateChat: this.isCurrentChatPrivate,

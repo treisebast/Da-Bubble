@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionGroup, collectionData, query, where, orderBy, limit, startAt, endAt } from '@angular/fire/firestore';
+import { Firestore, collectionGroup, collectionData, query, where, orderBy, limit, startAt, endAt, collectionChanges } from '@angular/fire/firestore';
 import { Message } from '../models/message.model';
-import { Observable, of } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +13,9 @@ export class SearchService {
     if (!searchQuery || searchQuery.trim() === '') {
       return of([]);
     }
-
+  
     const searchTerm = searchQuery.toLowerCase();
+  
     const messagesCollectionGroup = collectionGroup(this.firestore, 'messages');
     const messagesQuery = query(
       messagesCollectionGroup,
@@ -23,7 +24,13 @@ export class SearchService {
       endAt(searchTerm + '\uf8ff'),
       limit(10)
     );
-
-    return collectionData(messagesQuery, { idField: 'id' }) as Observable<Message[]>;
+  
+    return collectionChanges(messagesQuery).pipe(
+      map(actions => actions.map(a => {
+        const data = a.doc.data() as Message;
+        data.id = a.doc.id;
+        return data;
+      }))
+    );
   }
 }

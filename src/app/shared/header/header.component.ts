@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren } from '@angular/core';
+import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren, ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -40,7 +40,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private subs = new Subscription();
   @ViewChildren('searchResultItem') searchResultItems!: QueryList<ElementRef<HTMLLIElement>>;
-
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  
   constructor(private auth: AuthService,
     private channelService: ChannelService,
     private userService: UserService,
@@ -91,13 +92,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   // Search
-  onSearchInput() {
+  onSearchInput(event: Event) {
+    if (event.target !== this.searchInput.nativeElement) {
+      return;
+    }
     if (this.searchQuery.trim() === '') {
       this.searchResults = [];
       this.selectedSearchResultIndex = -1;
       return;
     }
-  
     this.subs.add(
       this.searchService.searchMessages(this.searchQuery).subscribe((results) => {
         this.searchResults = results;
@@ -106,14 +109,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       })
     );
   }
+
   getUserName(senderId: string): string {
     if (this.userNamesCache[senderId]) {
       return this.userNamesCache[senderId];
     } else {
       this.userNamesCache[senderId] = 'Lade...';
-      this.userService.getUserNameById(senderId).then((name) => {
-        this.userNamesCache[senderId] = name || 'Unbekannt';
+      const sub = this.userService.getUser(senderId).subscribe(user => {
+        this.userNamesCache[senderId] = user.name || 'Unbekannt';
       });
+      this.subs.add(sub);
       return this.userNamesCache[senderId];
     }
   }
@@ -137,34 +142,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return this.channelNamesCache[chatId];
     } else {
       this.channelNamesCache[chatId] = 'Lade...';
-  
-      const sub = this.channelService.getChannel(chatId, isPrivate).subscribe(
-        channel => {
-          if (channel) {
-            if (channel.name) {
-              this.channelNamesCache[chatId] = channel.name;
-            } else if (isPrivate && channel.members) {
-              const otherUserId = channel.members.find((id: string) => id !== this.currentUserId);
-              if (otherUserId) {
-                this.userService.getUserNameById(otherUserId).then(userName => {
-                  this.channelNamesCache[chatId] = userName || 'Unbekannt';
-                });
-              } else {
-                this.channelNamesCache[chatId] = 'Unbekannt';
-              }
+      const sub = this.channelService.getChannel(chatId, isPrivate).subscribe(channel => {
+        if (channel) {
+          if (channel.name) {
+            this.channelNamesCache[chatId] = channel.name;
+          } else if (isPrivate && channel.members) {
+            const otherUserId = channel.members.find((id: string) => id !== this.currentUserId);
+            if (otherUserId) {
+              this.userService.getUser(otherUserId).subscribe(user => {
+                this.channelNamesCache[chatId] = user.name || 'Unbekannt';
+              });
             } else {
               this.channelNamesCache[chatId] = 'Unbekannt';
             }
           } else {
             this.channelNamesCache[chatId] = 'Unbekannt';
           }
-        },
-        error => {
-          console.error('Fehler beim Laden des Kanals:', error);
+        } else {
           this.channelNamesCache[chatId] = 'Unbekannt';
         }
-      );
-  
+      });
       this.subs.add(sub);
       return this.channelNamesCache[chatId];
     }
