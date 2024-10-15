@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -17,11 +7,7 @@ import { Message } from '../../shared/models/message.model';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { AuthService } from '../../shared/services/auth.service';
-import {
-  Timestamp,
-  FieldValue,
-  serverTimestamp,
-} from '@angular/fire/firestore';
+import { Timestamp, FieldValue, serverTimestamp } from '@angular/fire/firestore';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MessageComponent } from '../message/message.component';
@@ -31,46 +17,21 @@ import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-po
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
-import {
-  firstValueFrom,
-  forkJoin,
-  map,
-  Observable,
-  of,
-  Subscription,
-  switchMap
-} from 'rxjs';
+import { firstValueFrom, forkJoin, map, Observable, of, Subscription, switchMap } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import {
-  MatDialog,
-  MatDialogClose,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MatDialog, MatDialogClose, MatDialogModule } from '@angular/material/dialog';
 import { DialogShowMembersComponent } from './dialog-show-members/dialog-show-members.component';
 import { ChannelService } from '../../shared/services/channel.service';
 import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.component';
 import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.component';
-import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../shared/services/navigation-service.service';
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    FormsModule,
-    MessageComponent,
-    MatProgressSpinnerModule,
-    ChannelInfoPopupComponent,
-    ProfilComponent,
-    ImageOverlayComponent,
-    PickerComponent,
-    MatDialogModule,
-    MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent
-  ],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent, ProfilComponent, ImageOverlayComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })
@@ -951,7 +912,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   async loadChatById(chatId: string, isPrivate: boolean) {
-    // Laden Sie den Chat und setzen Sie ihn als aktuellen Chat
     const chat = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));
     this.currentChat = chat;
     this.isCurrentChatPrivate = isPrivate;
@@ -963,16 +923,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       const messageElement = document.getElementById(messageId);
       if (messageElement) {
         messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Optional: Nachricht hervorheben
         messageElement.classList.add('highlight');
         setTimeout(() => {
           messageElement.classList.remove('highlight');
         }, 3000);
       } else {
-        // Falls das Element noch nicht verfügbar ist, warten und erneut versuchen
         this.waitForMessageElement(messageId);
       }
-    }, 500); // Warten Sie, bis die Nachrichten geladen sind
+    }, 500);
   }
 
   waitForMessageElement(messageId: string) {
@@ -987,11 +945,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         clearInterval(checkExist);
       }
     }, 100);
-    // Nach einer bestimmten Zeit aufhören zu suchen, um Endlosschleifen zu vermeiden
     setTimeout(() => {
       clearInterval(checkExist);
     }, 5000);
   }
-
-
 }

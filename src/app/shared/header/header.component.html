@@ -4,19 +4,25 @@
 
     <div class="searchbar">
       <input
-        type="text"
-        placeholder="Devspace durchsuchen"
-        [(ngModel)]="searchQuery"
-        (input)="onSearchInput()"
-      />
+  type="text"
+  placeholder="Devspace durchsuchen"
+  [(ngModel)]="searchQuery"
+  (input)="onSearchInput()"
+  (keydown)="onSearchKeydown($event)"
+/>
       <mat-icon matSuffix>search</mat-icon>
       <!-- Dropdown-Menü für Suchergebnisse -->
       <div *ngIf="searchResults && searchResults.length > 0" class="search-results">
         <ul>
-          <li *ngFor="let message of searchResults" (click)="goToMessage(message)">
-            <span class="message-sender">{{ getUserName(message.senderId) }}</span>
+          <li   #searchResultItem
+          *ngFor="let message of searchResults; let i = index"
+          (click)="goToMessage(message)"
+          [class.selected]="i === selectedSearchResultIndex">
+            <span class="message-sender">
+              <span class="black-text">von</span> {{ getUserName(message.senderId) }}
+              <span class="black-text"> an #<span class="message-sender">{{ getChannelName(message.chatId, message.isPrivateChat) }}</span>:<span class="pd-8"></span></span>
+            </span>
             <span class="message-content">{{ message.content }}</span>
-            <!-- <span class="message-timestamp">{{ message.timestamp | date:'short' }}</span> -->
           </li>
         </ul>
       </div>

@@ -239,7 +239,6 @@
 .message-left,
 .message-right {
   display: flex;
-  margin: 8px 0px 8px 8px;
 }
 
 .message-left .message-header {
@@ -251,12 +250,14 @@
   display: flex;
   flex-direction: row-reverse;
   align-items: flex-start;
+  padding: 20px 10px;
+  border-radius: 25px;
 
-  > .profile-img {
+  >.profile-img {
     left: 16px;
   }
 
-  > .reactionBar {
+  >.reactionBar {
     left: 16px;
   }
 }
@@ -265,12 +266,14 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  padding: 20px 10px;
+  border-radius: 25px;
 
-  > .profile-img {
+  >.profile-img {
     right: 16px;
   }
 
-  > .reactionBar {
+  >.reactionBar {
     right: 16px;
   }
 }
@@ -592,5 +595,5 @@
 
 
 .highlight {
-  background-color: yellow;
+  background-color: var(--main-background, rgb(235, 239, 254));
 }
