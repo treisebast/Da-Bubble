@@ -58,12 +58,13 @@ export class DialogShowMembersComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogShowMembersComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { members: User[]; channel: Channel },
+    @Inject(MAT_DIALOG_DATA) public data: { members: User[]; channel: Channel, popupState: 'listView' | 'addUsers' },
     private userService: UserService,
     private channelService: ChannelService,
     private dialog: MatDialog
   ) {
     console.log('Dialog data:', data);
+    this.dialogProgressState = data.popupState;
   }
 
   ngOnInit(): void {

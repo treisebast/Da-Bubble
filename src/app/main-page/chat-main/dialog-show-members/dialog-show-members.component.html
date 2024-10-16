@@ -39,7 +39,12 @@
   <ng-container class="addUserContent" *ngIf="dialogProgressState == 'addUsers'">
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <mat-dialog-content class="addUserContent">
-      <h2 mat-dialog-title>Leute hinzufügen</h2>
+
+      <div class="header">
+        <h2>Leute hinzufügen</h2>
+        <mat-icon mat-dialog-close>close</mat-icon>
+      </div>
+
       <div class="channelName">
         <span>#</span>
         {{data.channel.name}}
