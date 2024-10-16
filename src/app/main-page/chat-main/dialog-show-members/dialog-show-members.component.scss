@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-  border-radius: 30px 0px 30px 30px;
+  border-radius: 30px 0px 30px 30px!important;
   background: var(--White, #fff);
   box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
   position: absolute;
@@ -26,7 +26,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 20px;
 }
 
 
@@ -61,7 +60,7 @@ mat-dialog-content {
 
 .memberDiv {
   display: flex;
-  width: 261px;
+  width: 100%;
   padding: 4px 20px;
   align-items: center;
   gap: 15px;
@@ -117,9 +116,20 @@ mat-dialog-content {
   }
 }
 
-mat-dialog-actions {
-  padding: 0;
+mat-dialog-actions.showMembers_actions {
+  padding: 0 !important;
 }
+
+mat-dialog-actions.addUserContent_actions {
+  padding: 0 !important;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+mat-dialog-content {
+  width: 100%;
+}
+
 
 .addUserDiv {
   display: flex;
@@ -164,11 +174,11 @@ mat-form-field {
 }
 
 mat-dialog-content {
-  padding: 8px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
 }
 
 ::ng-deep .mat-mdc-dialog-surface.mdc-dialog__surface {
-  border-radius: 25px !important;
   overflow: visible !important;
 }
 
@@ -225,7 +235,7 @@ mat-dialog-content {
   outline-color: var(--purple-one);
   font-size: 18px;
   color: var(--black);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 
   &:hover,
   &:focus-within {
@@ -351,8 +361,39 @@ mat-icon {
   }
 }
 
+.showMemberContent {
+  padding: 0 !important;
+}
+
 .addUserContent {
   overflow: visible;
+  padding: 0 !important;
+
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: black;
+    padding: 0;
+    margin: 0;
+  }
+
+  .channelName {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 400;
+    color: #797EF3;
+    padding: 0 0 20px 0;
+    margin: 0;
+
+
+    span {
+      font-size: 24px;
+      font-weight: 700;
+      margin-right: 15px;
+    }
+  }
 }
 
 .addUsersBtn {

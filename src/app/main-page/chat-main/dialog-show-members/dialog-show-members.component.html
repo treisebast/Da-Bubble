@@ -1,5 +1,5 @@
 <div class="wrapper">
-  <ng-container *ngIf="dialogProgressState == 'listView'">
+  <ng-container class="showMemberContent" *ngIf="dialogProgressState == 'listView'">
     <div class="header">
       <span>Mitglieder</span>
       <mat-icon mat-dialog-close>close</mat-icon>
@@ -15,7 +15,7 @@
         <span>{{ member.name }}</span>
       </div>
     </mat-dialog-content>
-    <mat-dialog-actions>
+    <mat-dialog-actions class="showMembers_actions">
       <div class="addUserDiv" (click)="goToAddUsers()">
         <div class="addUserIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -36,10 +36,14 @@
     </mat-dialog-actions>
   </ng-container>
 
-  <ng-container *ngIf="dialogProgressState == 'addUsers'">
+  <ng-container class="addUserContent" *ngIf="dialogProgressState == 'addUsers'">
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-    <h2 mat-dialog-title>Leute hinzufügen</h2>
     <mat-dialog-content class="addUserContent">
+      <h2 mat-dialog-title>Leute hinzufügen</h2>
+      <div class="channelName">
+        <span>#</span>
+        {{data.channel.name}}
+      </div>
 
 
       <!-- Show search input and user list if choosing specific users -->
@@ -87,9 +91,9 @@
 
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions class="addUserContent_actions" align="end">
       <button class="addUsersBtn" [disabled]=" loading || (selectedUsers.length === 0)" (click)="addUsersToChannel(data.channel)">
-        Bestätigen
+        Hinzufügen
       </button>
     </mat-dialog-actions>
   </ng-container>
