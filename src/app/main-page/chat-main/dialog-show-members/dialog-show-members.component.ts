@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialog,
@@ -22,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../shared/models/channel.model';
 import { ChannelService } from '../../../shared/services/channel.service';
 import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog/confirmation-dialog.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dialog-show-members',
@@ -42,7 +43,7 @@ import { ConfirmationDialogComponent } from '../../../shared/confirmation-dialog
   templateUrl: './dialog-show-members.component.html',
   styleUrls: ['./dialog-show-members.component.scss'],
 })
-export class DialogShowMembersComponent implements OnInit {
+export class DialogShowMembersComponent implements OnInit, OnDestroy {
   isTesting = false; // Set this to true when testing without Firebase
 
   loading = false;
@@ -55,10 +56,16 @@ export class DialogShowMembersComponent implements OnInit {
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   announcer = inject(LiveAnnouncer);
+  private destroy$ = new Subject<void>();
 
   constructor(
     public dialogRef: MatDialogRef<DialogShowMembersComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { members: User[]; channel: Channel, popupState: 'listView' | 'addUsers' },
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      members: User[];
+      channel: Channel;
+      popupState: 'listView' | 'addUsers';
+    },
     private userService: UserService,
     private channelService: ChannelService,
     private dialog: MatDialog
@@ -72,7 +79,11 @@ export class DialogShowMembersComponent implements OnInit {
     this.loadUsers();
   }
 
-  // Close dialog and open profile popup
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   openProfile(user: User): void {
     this.dialogRef.close(user);
   }
@@ -81,13 +92,19 @@ export class DialogShowMembersComponent implements OnInit {
    * Subscribe to dialog events
    */
   private subscribeToDialogEvents() {
-    this.dialogRef.afterOpened().subscribe(() => {
-      this.isDialogOpen = true;
-    });
+    this.dialogRef
+      .afterOpened()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDialogOpen = true;
+      });
 
-    this.dialogRef.afterClosed().subscribe(() => {
-      this.isDialogOpen = false;
-    });
+    this.dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDialogOpen = false;
+      });
   }
 
   trackByUserId(index: number, user: User): string {
@@ -98,9 +115,12 @@ export class DialogShowMembersComponent implements OnInit {
    * Load users from the UserService and apply an initial filter
    */
   private loadUsers(): void {
-    this.userService.getUsers().subscribe((users) => {
-      this.loadedUsers = users;
-    });
+    this.userService
+      .getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((users) => {
+        this.loadedUsers = users;
+      });
   }
 
   /**
@@ -178,7 +198,9 @@ export class DialogShowMembersComponent implements OnInit {
       const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
       channel.members = updatedMembers; // Update the local channel object
       console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
-      await this.channelService.updateChannel(channel, { members: updatedMembers });
+      await this.channelService.updateChannel(channel, {
+        members: updatedMembers,
+      });
     } catch (error) {
       console.error('Error adding users to channel:', error);
     } finally {
