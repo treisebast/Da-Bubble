@@ -7,7 +7,7 @@ import { ChannelService } from '../../shared/services/channel.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
-import { Channel } from '../../shared/models/channel.model';
+import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { User, UserWithImageStatus } from '../../shared/models/user.model';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
 import {
@@ -278,7 +278,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
    * @param isSelfChat - A boolean indicating if the channel is for personal notes.
    * @returns A new Channel object with the specified properties.
    */
-  createNewChannel(user: UserWithImageStatus, isSelfChat: boolean): Channel {
+  private createNewChannel(user: UserWithImageStatus, isSelfChat: boolean): NewChannel {
     return {
       name: isSelfChat ? 'Personal Notes' : `${user.name}`,
       description: isSelfChat ? 'Your personal space' : '',
@@ -305,10 +305,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
    * @returns {Promise<void>} A promise that resolves when the channel is added and set.
    * @throws Will log an error message if there is an issue creating the private channel.
    */
-  async addAndSetChannel(newChannel: Channel) {
+  async addAndSetChannel(newChannel: NewChannel) {
     try {
       const docRef = await this.channelService.addChannel(newChannel);
-      const createdChannel = { ...newChannel, id: docRef.id };
+      const createdChannel: Channel = { ...newChannel, id: docRef.id };
       this.privateChannels.push(createdChannel);
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
@@ -329,13 +329,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
       panelClass: 'addChannelDialog',
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe((result: NewChannel | undefined) => {
       if (result) {
-        if (!result.isPrivate) {
-          this.publicChannels.push(result);
-        } else {
-          this.privateChannels.push(result);
-        }
+        // Hier verwenden wir addAndSetChannel, um den Kanal hinzuzufügen
+        this.addAndSetChannel(result);
       }
     });
   }

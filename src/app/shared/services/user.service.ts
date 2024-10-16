@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Firestore, doc, docData, collectionData, collection, setDoc, updateDoc, deleteDoc, getDoc, query, getDocs, where } from '@angular/fire/firestore';
-import { BehaviorSubject, catchError, forkJoin, from, map, Observable, of } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, forkJoin, from, map, Observable, of } from 'rxjs';
 import { User } from '../models/user.model';
+import { Channel } from '../models/channel.model';
 
 @Injectable({
   providedIn: 'root',
@@ -164,5 +165,29 @@ export class UserService {
    */
   private saveEmojisToLocalStorage(emojis: string[]) {
     localStorage.setItem(this.localStorageKey, JSON.stringify(emojis));
+  }
+
+  /**
+   * Holt alle Kanäle (öffentliche und private), zu denen der Benutzer gehört.
+   * @param userId - Die ID des Benutzers.
+   * @returns Observable eines Arrays von Kanälen.
+   */
+  getUserChannels(userId: string): Observable<Channel[]> {
+    const publicChannelsQuery = query(
+      collection(this.firestore, 'channels'),
+      where('members', 'array-contains', userId)
+    );
+
+    const privateChannelsQuery = query(
+      collection(this.firestore, 'directMessages'),
+      where('members', 'array-contains', userId)
+    );
+    
+    return combineLatest([
+      collectionData(publicChannelsQuery, { idField: 'id' }) as Observable<Channel[]>,
+      collectionData(privateChannelsQuery, { idField: 'id' }) as Observable<Channel[]>
+    ]).pipe(
+      map(([publicChannels, privateChannels]) => [...publicChannels, ...privateChannels])
+    );
   }
 }

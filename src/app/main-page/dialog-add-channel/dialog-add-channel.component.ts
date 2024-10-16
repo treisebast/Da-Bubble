@@ -2,19 +2,11 @@ import { CommonModule, JsonPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-  MatDialogModule,
-  MatDialog,
-} from '@angular/material/dialog';
+import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Channel } from '../../shared/models/channel.model';
+import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { ChannelService } from '../../shared/services/channel.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
@@ -240,13 +232,13 @@ export class DialogAddChannelComponent {
     this.channelNameErrorMessage = '';
     this.showChannelNameErrorMessage = false;
 
-     // Validierung des Channel-Namens
-     this.validateChannelName();
+    // Validierung des Channel-Namens
+    this.validateChannelName();
 
-     // Überprüfen, ob eine Fehlermeldung vorliegt
-     if (this.channelNameErrorMessage) {
-       return; // Abbrechen, wenn der Name zu lang ist
-     }
+    // Überprüfen, ob eine Fehlermeldung vorliegt
+    if (this.channelNameErrorMessage) {
+      return; // Abbrechen, wenn der Name zu lang ist
+    }
 
     try {
       const duplicateChannel = await this.channelService.getChannelByName(
@@ -260,7 +252,7 @@ export class DialogAddChannelComponent {
         return;
       }
 
-      const newChannel: Channel = this.createChannelObject();
+      const newChannel: NewChannel = this.createChannelObject();
       await this.saveChannelToFirebase(newChannel);
       this.dialogProgressState = 'addUsers';
     } catch (error) {
@@ -270,24 +262,24 @@ export class DialogAddChannelComponent {
     }
   }
 
-    /**
-   * Validates the Channel name for max length.
-   */
-    validateChannelName(): void {
-      if (this.channelName.length > 17) {
-        this.channelNameErrorMessage = 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
-      } else {
-        this.channelNameErrorMessage = '';
-      }
+  /**
+ * Validates the Channel name for max length.
+ */
+  validateChannelName(): void {
+    if (this.channelName.length > 17) {
+      this.channelNameErrorMessage = 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
+    } else {
+      this.channelNameErrorMessage = '';
     }
+  }
 
   /**
    * Saves a channel to Firebase or locally if testing.
    * @param newChannel - The new channel to be saved.
    */
-  async saveChannelToFirebase(newChannel: Channel) {
+  async saveChannelToFirebase(newChannel: NewChannel) {
     if (this.isTesting) {
-      this.channel = newChannel;
+      this.channel = { ...newChannel, id: '' };
       console.log('Testing mode: Channel created locally', newChannel);
       return;
     }
@@ -296,9 +288,9 @@ export class DialogAddChannelComponent {
 
     try {
       const channelDocRef = await this.channelService.addChannel(newChannel);
-      newChannel.id = channelDocRef.id;
-      this.channel = newChannel;
-      console.log('Channel added to Firebase:', newChannel);
+      const createdChannel: Channel = { ...newChannel, id: channelDocRef.id };
+      this.channel = createdChannel;
+      console.log('Channel added to Firebase:', createdChannel);
     } catch (error) {
       console.error('Error adding channel:', error);
     } finally {
@@ -310,15 +302,14 @@ export class DialogAddChannelComponent {
    * Create a Channel object
    * @returns Channel
    */
-  private createChannelObject(): Channel {
+  private createChannelObject(): NewChannel {
     return {
-      id: '',
       name: this.channelName,
       description: this.description,
       createdBy: this.currentUserId,
       createdAt: new Date(),
-      members: [this.currentUserId],
       updatedAt: new Date(),
+      members: [this.currentUserId],
       isPrivate: false,
     };
   }

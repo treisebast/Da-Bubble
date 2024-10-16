@@ -16,7 +16,7 @@ import {
   getDocs,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { Channel } from '../models/channel.model';
+import { Channel, NewChannel } from '../models/channel.model';
 
 @Injectable({
   providedIn: 'root',
@@ -55,12 +55,14 @@ export class ChannelService {
    * @param channel - The channel object.
    * @returns Promise that resolves to the document reference.
    */
-  async addChannel(channel: Channel): Promise<DocumentReference> {
+  async addChannel(channel: NewChannel): Promise<DocumentReference> {
     const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
     const collectionRef = collection(this.firestore, collectionPath);
     const docRef = doc(collectionRef);
-    channel.id = docRef.id;
-    await setDoc(docRef, channel);
+
+    // Setzen Sie die 'id' auf die generierte Dokument-ID
+    const channelWithId: Channel = { ...channel, id: docRef.id };
+    await setDoc(docRef, channelWithId);
     return docRef;
   }
 

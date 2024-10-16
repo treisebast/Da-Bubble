@@ -1,5 +1,5 @@
 export interface Channel {
-  id?: string;
+  id: string;
   name?: string;
   description?: string;
   createdBy: string;
@@ -8,3 +8,5 @@ export interface Channel {
   updatedAt: Date;
   isPrivate: boolean;
 }
+
+export type NewChannel = Omit<Channel, 'id'>;

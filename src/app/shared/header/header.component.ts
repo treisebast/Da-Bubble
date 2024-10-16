@@ -15,6 +15,7 @@ import { SearchService } from '../services/search.service';
 import { Message } from '../models/message.model';
 import { ChannelService } from '../services/channel.service';
 import { NavigationService } from '../services/navigation-service.service';
+import { Channel } from '../models/channel.model';
 
 @Component({
   selector: 'app-header',
@@ -37,7 +38,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userNamesCache: { [userId: string]: string } = {};
   channelNamesCache: { [chatId: string]: string } = {};
   selectedSearchResultIndex: number = -1;
-
+  accessibleChatIds: string[] = [];
+  
   private subs = new Subscription();
   @ViewChildren('searchResultItem') searchResultItems!: QueryList<ElementRef<HTMLLIElement>>;
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
@@ -53,13 +55,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const authSub = this.auth.getUser().subscribe((firebaseUser) => {
       if (firebaseUser?.uid) {
         this.currentUserId = firebaseUser.uid;
-        const userSub = this.userService
-          .getUser(firebaseUser.uid)
-          .subscribe((user) => {
-            if (user) {
-              this.currentUser = user;
-            }
-          });
+        const userSub = this.userService.getUser(firebaseUser.uid).subscribe((user) => {
+          if (user) {
+            this.currentUser = user;
+            // Abrufen der zugänglichen Chat-IDs
+            const channelsSub = this.userService.getUserChannels(this.currentUserId).subscribe((channels: Channel[]) => {
+              this.accessibleChatIds = channels.map(channel => channel.id);
+            });
+            this.subs.add(channelsSub);
+          }
+        });
         this.subs.add(userSub);
       }
     });
@@ -101,8 +106,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.selectedSearchResultIndex = -1;
       return;
     }
+    // Übergeben der zugänglichen Chat-IDs an die Suche
     this.subs.add(
-      this.searchService.searchMessages(this.searchQuery).subscribe((results) => {
+      this.searchService.searchMessages(this.searchQuery, this.accessibleChatIds).subscribe((results) => {
         this.searchResults = results;
         this.selectedSearchResultIndex = -1;
         console.log('Suchergebnisse:', results);
