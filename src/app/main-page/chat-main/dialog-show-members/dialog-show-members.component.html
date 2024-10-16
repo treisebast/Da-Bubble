@@ -75,9 +75,9 @@
                 (click)="selectUsers(user)" [ngClass]="{ 'selected': isSelected(user) }">
                 <img src="{{ user.avatar }}" alt="" />
                 <!-- Status icons -->
-                <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
-                <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
-                <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
+                <div *ngIf="user.status === 'online'" class="status-indicator_addUser online"></div>
+                <div *ngIf="user.status === 'away'" class="status-indicator_addUser away"></div>
+                <div *ngIf="user.status === 'offline'" class="status-indicator_addUser offline"></div>
                 <h2>{{ user.name }}</h2>
               </div>
             </div>
