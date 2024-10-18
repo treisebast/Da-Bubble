@@ -222,3 +222,20 @@ tr {
     background-color: var(--text-grey, rgba(104, 104, 104, 1));
   }
 }
+
+.active-chat {
+  background-color: var(--purple-two, rgb(121, 126, 243));
+  border-radius: 20px;
+  color: white;
+}
+
+.channel-tr,
+.message-tr {
+  cursor: pointer;
+}
+
+.channel-tr:hover,
+.message-tr:hover {
+  background-color: rgb(191, 193, 252);
+  color: white;
+}

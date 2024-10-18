@@ -10,13 +10,7 @@ import { UserService } from '../../shared/services/user.service';
 import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { User, UserWithImageStatus } from '../../shared/models/user.model';
 import { SharedChannelService } from '../../shared/services/shared-channel.service';
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -66,7 +60,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   privateChannels: Channel[] = [];
   workspaceUsers: UserWithImageStatus[] = [];
   currentUser!: UserWithImageStatus;
-
+  currentChat: { chat: Channel | null; isPrivate: boolean } = { chat: null, isPrivate: false };
   subs = new Subscription();
 
   constructor(
@@ -76,12 +70,19 @@ export class SideNavComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private sharedChannelService: SharedChannelService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadUserData();
     this.subscribeToChannels();
     this.subscribeToPrivateChats();
+
+    // Abonnieren Sie den aktuellen Chat
+    const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
+      this.currentChat = chatData;
+    });
+    this.subs.add(chatSub);
+
   }
 
   ngOnDestroy(): void {
@@ -265,9 +266,9 @@ export class SideNavComponent implements OnInit, OnDestroy {
     return this.privateChannels.find((channel) =>
       isSelfChat
         ? channel.members.length === 1 &&
-          channel.members.includes(this.currentUser.userId)
+        channel.members.includes(this.currentUser.userId)
         : channel.members.includes(this.currentUser.userId) &&
-          channel.members.includes(user.userId)
+        channel.members.includes(user.userId)
     );
   }
 
@@ -362,5 +363,21 @@ export class SideNavComponent implements OnInit, OnDestroy {
    */
   newMessage() {
     this.chatService.setSelectedChat(false);
+  }
+
+
+  isActiveChannel(channel: Channel): boolean {
+    return this.currentChat.isPrivate === false && this.currentChat.chat?.id === channel.id;
+  }
+
+
+  isActiveUser(user: UserWithImageStatus): boolean {
+    if (this.currentChat.isPrivate && this.currentChat.chat) {
+      return (
+        this.currentChat.chat.members.includes(user.userId) &&
+        this.currentChat.chat.members.includes(this.currentUser.userId)
+      );
+    }
+    return false;
   }
 }

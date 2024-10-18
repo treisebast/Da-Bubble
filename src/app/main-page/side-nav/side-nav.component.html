@@ -12,7 +12,8 @@
       <div class="channels ml40" [@dropDown]="menuChannelIsDropedDown ? 'expanded' : 'collapsed'"
         [ngStyle]="{'overflow-y': menuChannelIsDropedDown ? 'visible' : 'hidden'}">
         <tr class="channel-tr" *ngFor="let channel of publicChannels"
-          (click)="showChannel(channel, false); setSelectedMessage()">
+          (click)="showChannel(channel, false); setSelectedMessage()"
+          [ngClass]="{'active-chat': isActiveChannel(channel)}">
           <span class="channelName"></span>
           {{ channel.name }}
         </tr>
@@ -32,7 +33,8 @@
       <div [@dropDown]="directMessagesIsDropedDown ? 'expanded' : 'collapsed'" class="channels"
         [ngStyle]="{'overflow-y': directMessagesIsDropedDown ? 'visible' : 'hidden'}">
         <tr class="message-tr" *ngFor="let user of workspaceUsers; trackBy: trackByUserId"
-          (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()">
+          (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()"
+          [ngClass]="{'active-chat': isActiveUser(user)}">
 
           <!-- Avatar -->
           <ng-container>
