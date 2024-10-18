@@ -1,15 +1,4 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  Output,
-  EventEmitter,
-  HostListener,
-  ElementRef,
-  ViewChild,
-  SimpleChanges,
-  OnChanges,
-} from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, HostListener, ElementRef, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { Message } from '../../shared/models/message.model';
 import { CommonModule } from '@angular/common';
 import { FieldValue, Timestamp } from '@angular/fire/firestore';
@@ -27,13 +16,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 @Component({
   selector: 'app-message',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatMenuModule,
-    FormsModule,
-    PickerModule,
-    MatTooltipModule,MessageMenuComponent
-  ],
+  imports: [CommonModule, MatMenuModule, FormsModule, PickerModule, MatTooltipModule, MessageMenuComponent],
   templateUrl: './message.component.html',
   styleUrls: ['./message.component.scss'],
 })
@@ -68,13 +51,9 @@ export class MessageComponent implements OnInit, OnChanges {
     private userService: UserService,
     private storageService: FirebaseStorageService,
     private sanitizer: DomSanitizer
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // console.log(
-    //   `Message ${this.messageIndex + 1} Attachments:`,
-    //   this.message.attachments
-    // );
     this.userService.lastTwoEmojis$.subscribe((emojis) => {
       this.lastTwoEmojis = emojis;
     });
@@ -201,13 +180,11 @@ export class MessageComponent implements OnInit, OnChanges {
   toggleEmojiPicker(event: MouseEvent) {
     event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker;
-    
+
     if (this.showEmojiPicker) {
       const windowHeight = window.innerHeight;
       const isBelow = event.clientY > windowHeight / 2;
       this.emojiMartPositionClass = isBelow ? 'open-above' : 'open-below';
-      
-      // Add left or right positioning based on whether it's the current user
       this.emojiMartPositionClass += this.isCurrentUser ? ' position-left' : ' position-right';
     }
   }
@@ -225,9 +202,8 @@ export class MessageComponent implements OnInit, OnChanges {
 
   addEmoji(event: any) {
     const emoji = event.emoji.native;
-    const userId = this.currentUserId;
-
-    this.addReaction(this.message, emoji, userId);
+    this.addReaction(this.message, emoji, this.currentUserId);
+    this.userService.addEmoji(emoji);
     this.showEmojiPicker = false;
   }
 
@@ -248,7 +224,6 @@ export class MessageComponent implements OnInit, OnChanges {
       delete message.reactions[emoji];
     }
 
-    console.log('Updating message reactions:', message.reactions);
     this.chatService.updateMessageReactions(this.message).then(() => {
       this.loadReactionUsernames();
     });
@@ -256,9 +231,12 @@ export class MessageComponent implements OnInit, OnChanges {
 
   addOrRemoveReaction(emoji: string) {
     const userId = this.currentUserId;
+    let reactionAdded = false;
+
     if (!this.message.reactions) {
       this.message.reactions = {};
     }
+
     if (this.message.reactions[emoji]?.includes(userId)) {
       this.message.reactions[emoji] = this.message.reactions[emoji].filter(
         (id) => id !== userId
@@ -271,9 +249,14 @@ export class MessageComponent implements OnInit, OnChanges {
         this.message.reactions[emoji] = [];
       }
       this.message.reactions[emoji].push(userId);
+      reactionAdded = true;
     }
+
     this.chatService.updateMessageReactions(this.message).then(() => {
       this.loadReactionUsernames();
+      if (reactionAdded) {
+        this.userService.addEmoji(emoji);
+      }
     });
   }
 
@@ -292,18 +275,12 @@ export class MessageComponent implements OnInit, OnChanges {
         if (userIds && userIds.length > 0) {
           this.userService.getUsersOnce(userIds).subscribe({
             next: (users: User[]) => {
-              // Speichern der Benutzernamen
               this.usernames[emoji] = users.map(user => user?.name || 'Unknown');
-
-              // Speichern der Benutzerprofile
               users.forEach((user: User) => {
                 if (user && user.userId) {
                   this.userProfiles[user.userId] = user;
                 }
               });
-            },
-            error: (error: any) => {
-              console.error('Fehler beim Laden der Benutzerprofile:', error);
             },
           });
         }
@@ -311,106 +288,100 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
- /**
-   * Reaction-Tooltip mit dynamischem Text basierend auf den Reaktionen.
-   */
- getTooltipContent(emoji: string): SafeHtml {
-  const userIds: string[] = this.message.reactions?.[emoji] || [];
-  const hasCurrentUserReacted: boolean = userIds.includes(this.currentUserId);
+  /**
+    * Reaction-Tooltip mit dynamischem Text basierend auf den Reaktionen.
+    */
+  getTooltipContent(emoji: string): SafeHtml {
+    const userIds: string[] = this.message.reactions?.[emoji] || [];
+    const hasCurrentUserReacted: boolean = userIds.includes(this.currentUserId);
 
-  // Erstellen einer Liste von Benutzernamen, wobei der aktuelle Benutzer durch 'Du' ersetzt wird
-  const displayUsernames: string[] = userIds.map((userId: string): string => {
-    if (userId === this.currentUserId) {
-      return 'Du';
+    // Erstellen einer Liste von Benutzernamen, wobei der aktuelle Benutzer durch 'Du' ersetzt wird
+    const displayUsernames: string[] = userIds.map((userId: string): string => {
+      if (userId === this.currentUserId) {
+        return 'Du';
+      }
+      return this.userProfiles[userId]?.name || 'Unknown';
+    });
+
+    const numUsers: number = userIds.length;
+
+    let usernames: string;
+    let reactionText: string;
+
+    if (hasCurrentUserReacted) {
+      const otherUsernames = displayUsernames.filter(username => username !== 'Du');
+      usernames = this.getUsernamesWhenCurrentUserReacted(otherUsernames);
+      reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
+    } else {
+      usernames = this.getUsernamesWhenCurrentUserDidNotReact(displayUsernames);
+      reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
     }
-    return this.userProfiles[userId]?.name || 'Unknown';
-  });
 
-  const numUsers: number = userIds.length;
+    // Generieren des Tooltip-HTML-Inhalts
+    const tooltipHtml = this.generateTooltipHtml(emoji, usernames, reactionText);
 
-  let usernames: string;
-  let reactionText: string;
+    // Fallback, falls keine Bedingungen erfüllt sind (z.B. keine Reaktionen)
+    const fallbackHtml = this.generateTooltipHtml(
+      emoji,
+      'Keine Reaktionen',
+      'haben reagiert'
+    );
 
-  if (hasCurrentUserReacted) {
-    const otherUsers = userIds.filter(id => id !== this.currentUserId);
-    usernames = this.getUsernamesWhenCurrentUserReacted(otherUsers);
-    reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
-  } else {
-    usernames = this.getUsernamesWhenCurrentUserDidNotReact(displayUsernames);
-    reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
+    return tooltipHtml || this.sanitizer.bypassSecurityTrustHtml(fallbackHtml);
   }
 
-  // Generieren des Tooltip-HTML-Inhalts
-  const tooltipHtml = this.generateTooltipHtml(emoji, usernames, reactionText);
-
-  // Fallback, falls keine Bedingungen erfüllt sind (z.B. keine Reaktionen)
-  const fallbackHtml = this.generateTooltipHtml(
-    emoji,
-    'Keine Reaktionen',
-    'haben reagiert'
-  );
-
-  return tooltipHtml || this.sanitizer.bypassSecurityTrustHtml(fallbackHtml);
-}
-
-/**
- * Erstellt den HTML-Inhalt des Tooltips.
- */
-private generateTooltipHtml(emoji: string, usernames: string, reactionText: string): string {
-  return `
+  /**
+   * Erstellt den HTML-Inhalt des Tooltips.
+   */
+  private generateTooltipHtml(emoji: string, usernames: string, reactionText: string): string {
+    return `
     <span class="emoji">${emoji}</span>
     <span class="username">${usernames}</span>
     <span class="reaction-text">${reactionText}</span>
   `;
-}
-
-/**
- * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer reagiert hat.
- */
-private getUsernamesWhenCurrentUserReacted(otherUsers: string[]): string {
-  const numOtherUsers = otherUsers.length;
-
-  if (numOtherUsers === 0) {
-    // Scenario 1: Du bist der einzige Reaktor
-    return 'Du';
-  } else if (numOtherUsers === 1) {
-    // Scenario 2: Du und eine weitere Person haben reagiert
-    const otherUsername = otherUsers[0] || 'Unknown';
-    return `Du und ${otherUsername}`;
-  } else {
-    // Scenario 3: Du und mehrere weitere Personen haben reagiert
-    return `Du und ${numOtherUsers} weitere Personen`;
   }
-}
 
-/**
- * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer nicht reagiert hat.
- */
-private getUsernamesWhenCurrentUserDidNotReact(displayUsernames: string[]): string {
-  const numUsers = displayUsernames.length;
+  /**
+   * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer reagiert hat.
+   */
+  private getUsernamesWhenCurrentUserReacted(otherUsers: string[]): string {
+    const numOtherUsers = otherUsers.length;
 
-  if (numUsers === 1) {
-    // Nur eine Person hat reagiert
-    return displayUsernames[0];
-  } else if (numUsers === 2) {
-    // Zwei Personen haben reagiert
-    return `${displayUsernames[0]} und ${displayUsernames[1]}`;
-  } else {
-    // Mehr als zwei Personen haben reagiert
-    const displayedUsers = displayUsernames.slice(0, 2).join(', ');
-    const remainingUsers = numUsers - 2;
-    return `${displayedUsers} und ${remainingUsers} weitere Personen`;
+    if (numOtherUsers === 0) {
+      return 'Du';
+    } else if (numOtherUsers === 1) {
+      const otherUsername = otherUsers[0] || 'Unknown';
+      return `Du und ${otherUsername}`;
+    } else {
+      return `Du und ${numOtherUsers} weitere Personen`;
+    }
   }
-}
 
-/**
- * Bestimmt den Reaktionstext basierend auf der Anzahl der Benutzer.
- */
-private getReactionText(numUsers: number, isCurrentUserReacted: boolean): string {
-  if (isCurrentUserReacted && numUsers === 1) {
-    return 'hast reagiert';
-  } else {
-    return numUsers > 1 ? 'haben reagiert' : 'hat reagiert';
+  /**
+   * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer nicht reagiert hat.
+   */
+  private getUsernamesWhenCurrentUserDidNotReact(displayUsernames: string[]): string {
+    const numUsers = displayUsernames.length;
+
+    if (numUsers === 1) {
+      return displayUsernames[0];
+    } else if (numUsers === 2) {
+      return `${displayUsernames[0]} und ${displayUsernames[1]}`;
+    } else {
+      const displayedUsers = displayUsernames.slice(0, 2).join(', ');
+      const remainingUsers = numUsers - 2;
+      return `${displayedUsers} und ${remainingUsers} weitere Personen`;
+    }
   }
-}
+
+  /**
+   * Bestimmt den Reaktionstext basierend auf der Anzahl der Benutzer.
+   */
+  private getReactionText(numUsers: number, isCurrentUserReacted: boolean): string {
+    if (isCurrentUserReacted && numUsers === 1) {
+      return 'hast reagiert';
+    } else {
+      return numUsers > 1 ? 'haben reagiert' : 'hat reagiert';
+    }
+  }
 }
