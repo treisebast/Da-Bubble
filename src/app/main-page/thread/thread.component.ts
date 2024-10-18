@@ -484,7 +484,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
   }
 
   saveEdit(message: Message) {
-    if (this.editContent.trim() !== '') {
+    const hasAttachments = message.attachments && message.attachments.length > 0;
+    if (this.editContent.trim() !== '' || hasAttachments) {
       message.content = this.editContent;
       this.threadService
         .updateThread(

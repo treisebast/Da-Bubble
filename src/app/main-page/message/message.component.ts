@@ -128,7 +128,8 @@ export class MessageComponent implements OnInit, OnChanges {
   }
 
   saveEdit() {
-    if (this.editContent.trim() !== '') {
+    const hasAttachments = this.message.attachments && this.message.attachments.length > 0;
+    if (this.editContent.trim() !== '' || hasAttachments) {
       this.chatService.editMessage(this.message.id!, this.editContent);
     }
     this.isEditing = false;
