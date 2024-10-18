@@ -22,6 +22,7 @@ import { FirebaseStorageService } from '../../shared/services/firebase-storage.s
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { UserService } from '../../shared/services/user.service';
 import { MessageMenuComponent } from './message-menu/message-menu.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-message',
@@ -57,7 +58,7 @@ export class MessageComponent implements OnInit, OnChanges {
   lastTwoEmojis: string[] = [];
   usernames: { [emoji: string]: string[] } = {};
   showTooltip: string | null = null;
-
+  userProfiles: { [userId: string]: User } = {};
   @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
   @ViewChild(MessageMenuComponent) messageMenuComponent!: MessageMenuComponent;
 
@@ -65,7 +66,8 @@ export class MessageComponent implements OnInit, OnChanges {
     private chatService: ChatService,
     private elementRef: ElementRef,
     private userService: UserService,
-    private storageService: FirebaseStorageService
+    private storageService: FirebaseStorageService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -283,47 +285,132 @@ export class MessageComponent implements OnInit, OnChanges {
     return this.usernames[emoji] || [];
   }
 
-  loadReactionUsernames() {
+  loadReactionUsernames(): void {
     if (this.message.reactions) {
-      Object.keys(this.message.reactions).forEach((emoji) => {
-        const userIds = this.message.reactions?.[emoji];
-        if (userIds) {
-          Promise.all(
-            userIds.map((userId) => this.userService.getUserNameById(userId))
-          ).then((usernames) => {
-            this.usernames[emoji] = usernames.filter(
-              (name) => name !== null
-            ) as string[];
+      Object.keys(this.message.reactions).forEach((emoji: string) => {
+        const userIds: string[] | undefined = this.message.reactions?.[emoji];
+        if (userIds && userIds.length > 0) {
+          this.userService.getUsersOnce(userIds).subscribe({
+            next: (users: User[]) => {
+              // Speichern der Benutzernamen
+              this.usernames[emoji] = users.map(user => user?.name || 'Unknown');
+
+              // Speichern der Benutzerprofile
+              users.forEach((user: User) => {
+                if (user && user.userId) {
+                  this.userProfiles[user.userId] = user;
+                }
+              });
+            },
+            error: (error: any) => {
+              console.error('Fehler beim Laden der Benutzerprofile:', error);
+            },
           });
         }
       });
     }
   }
 
-  // Reaction-Tooltip
-  getTooltipContent(emoji: string): string {
-    const usernames = this.getReactionUsernames(emoji);
-    const numUsers = usernames.length;
+ /**
+   * Reaction-Tooltip mit dynamischem Text basierend auf den Reaktionen.
+   */
+ getTooltipContent(emoji: string): SafeHtml {
+  const userIds: string[] = this.message.reactions?.[emoji] || [];
+  const hasCurrentUserReacted: boolean = userIds.includes(this.currentUserId);
 
-    if (numUsers > 3) {
-      const displayedUsers = usernames.slice(0, 3).join(', ');
-      const remainingUsers = numUsers - 3;
-      return `
-        <span class="emoji">${emoji}</span>
-        <span class="username">${displayedUsers} und ${remainingUsers} weitere Personen</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
-        } reagiert</span>
-      `;
-    } else {
-      const displayedUsers = usernames.join(', ');
-      return `
-        <span class="emoji">${emoji}</span>
-        <span class="username">${displayedUsers}</span>
-        <span class="reaction-text">${
-          numUsers > 1 ? 'haben' : 'hat'
-        } reagiert</span>
-      `;
+  // Erstellen einer Liste von Benutzernamen, wobei der aktuelle Benutzer durch 'Du' ersetzt wird
+  const displayUsernames: string[] = userIds.map((userId: string): string => {
+    if (userId === this.currentUserId) {
+      return 'Du';
     }
+    return this.userProfiles[userId]?.name || 'Unknown';
+  });
+
+  const numUsers: number = userIds.length;
+
+  let usernames: string;
+  let reactionText: string;
+
+  if (hasCurrentUserReacted) {
+    const otherUsers = userIds.filter(id => id !== this.currentUserId);
+    usernames = this.getUsernamesWhenCurrentUserReacted(otherUsers);
+    reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
+  } else {
+    usernames = this.getUsernamesWhenCurrentUserDidNotReact(displayUsernames);
+    reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
   }
+
+  // Generieren des Tooltip-HTML-Inhalts
+  const tooltipHtml = this.generateTooltipHtml(emoji, usernames, reactionText);
+
+  // Fallback, falls keine Bedingungen erfüllt sind (z.B. keine Reaktionen)
+  const fallbackHtml = this.generateTooltipHtml(
+    emoji,
+    'Keine Reaktionen',
+    'haben reagiert'
+  );
+
+  return tooltipHtml || this.sanitizer.bypassSecurityTrustHtml(fallbackHtml);
+}
+
+/**
+ * Erstellt den HTML-Inhalt des Tooltips.
+ */
+private generateTooltipHtml(emoji: string, usernames: string, reactionText: string): string {
+  return `
+    <span class="emoji">${emoji}</span>
+    <span class="username">${usernames}</span>
+    <span class="reaction-text">${reactionText}</span>
+  `;
+}
+
+/**
+ * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer reagiert hat.
+ */
+private getUsernamesWhenCurrentUserReacted(otherUsers: string[]): string {
+  const numOtherUsers = otherUsers.length;
+
+  if (numOtherUsers === 0) {
+    // Scenario 1: Du bist der einzige Reaktor
+    return 'Du';
+  } else if (numOtherUsers === 1) {
+    // Scenario 2: Du und eine weitere Person haben reagiert
+    const otherUsername = otherUsers[0] || 'Unknown';
+    return `Du und ${otherUsername}`;
+  } else {
+    // Scenario 3: Du und mehrere weitere Personen haben reagiert
+    return `Du und ${numOtherUsers} weitere Personen`;
+  }
+}
+
+/**
+ * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer nicht reagiert hat.
+ */
+private getUsernamesWhenCurrentUserDidNotReact(displayUsernames: string[]): string {
+  const numUsers = displayUsernames.length;
+
+  if (numUsers === 1) {
+    // Nur eine Person hat reagiert
+    return displayUsernames[0];
+  } else if (numUsers === 2) {
+    // Zwei Personen haben reagiert
+    return `${displayUsernames[0]} und ${displayUsernames[1]}`;
+  } else {
+    // Mehr als zwei Personen haben reagiert
+    const displayedUsers = displayUsernames.slice(0, 2).join(', ');
+    const remainingUsers = numUsers - 2;
+    return `${displayedUsers} und ${remainingUsers} weitere Personen`;
+  }
+}
+
+/**
+ * Bestimmt den Reaktionstext basierend auf der Anzahl der Benutzer.
+ */
+private getReactionText(numUsers: number, isCurrentUserReacted: boolean): string {
+  if (isCurrentUserReacted && numUsers === 1) {
+    return 'hast reagiert';
+  } else {
+    return numUsers > 1 ? 'haben reagiert' : 'hat reagiert';
+  }
+}
 }
