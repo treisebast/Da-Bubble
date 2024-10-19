@@ -238,4 +238,5 @@ tr {
 .message-tr:hover {
   background-color: rgb(191, 193, 252);
   color: white;
+  transition: background-color 255ms ease-in-out, color 255ms ease-in-out;
 }
