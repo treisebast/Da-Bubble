@@ -18,7 +18,7 @@
         <div class="input-container" [ngClass]="{ 'invalid-border': email.invalid && (email.dirty || email.touched) }"
             required>
             <img src="/assets/img/front-page/mail.svg" alt="email icon">
-            <input type="email" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" formControlName="email"
+            <input type="email" formControlName="email"
                 placeholder="beispielname@email.com" autocomplete="email">
         </div>
         <span class="validMsg" [class.hidden]="!(email.invalid && email.touched) && !emailError">

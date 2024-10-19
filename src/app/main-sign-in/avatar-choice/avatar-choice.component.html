@@ -1,5 +1,4 @@
-<mat-card [ngClass]="!isChangingAvatar ? 'centered box-shadow' : ''" class="login-card"
-    [ngStyle]="isChangingAvatar ? {'box-shadow': 'none'} : {}">
+<mat-card class="login-card" [ngClass]="!isChangingAvatar ? 'centered ' : ''">
     <div class="arrow-back position-relative" *ngIf="!isChangingAvatar">
         <div routerLink="/signup" class="arrow-back-img"></div>
     </div>

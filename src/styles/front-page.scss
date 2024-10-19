@@ -31,8 +31,7 @@ mat-card-subtitle {
 }
 
 .login-card {
-  // width: 90%;
-  max-width: 500px;
+  width: 450px;
   margin: auto;
   padding: 20px;
   border-radius: 16px;
@@ -46,7 +45,7 @@ mat-card-subtitle {
   align-items: center;
   gap: 16px;
 
-  > button {
+  >button {
     font-size: 14px;
     font-weight: 700;
     line-height: 24.55px;
@@ -69,7 +68,7 @@ mat-card-subtitle {
     margin: 0 8px;
   }
 
-  > span {
+  >span {
     font-size: 14px;
   }
 }
@@ -88,7 +87,7 @@ mat-card-subtitle {
     border: 1px solid var(--purple-one);
   }
 
-  > input {
+  >input {
     width: 155px;
   }
 }
@@ -188,11 +187,11 @@ form {
 
   .input-container input,
   .forgot-password,
-  .or-divider > span,
-  .google-login > a,
-  .login-actions > button,
-  .checkbox > span,
-  .checkbox > span > a {
+  .or-divider>span,
+  .google-login>a,
+  .login-actions>button,
+  .checkbox>span,
+  .checkbox>span>a {
     font-size: 18px !important;
   }
 
@@ -207,15 +206,32 @@ form {
   overflow: hidden !important;
 }
 
+@media (max-width: 700px) {
+  .login-card {
+    width: 350px;
+  }
+}
+
 @media (max-width: 500px) {
+  .login-card {
+    width: 350px;
+    padding: 8px;
+  }
+
   .validMsg {
     font-size: 11px;
   }
 
   .arrow-back {
-    > img {
+    >img {
       width: 25px;
       cursor: pointer;
     }
+  }
+}
+
+@media (max-width: 400px) {
+  .login-card {
+    width: 300px;
   }
 }
