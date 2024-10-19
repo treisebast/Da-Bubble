@@ -215,7 +215,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
    * @param userId - The ID of the user whose image failed to load.
    */
   onImageError(userId: string) {
-    console.log(`Image failed to load for user: ${userId}`);
     const user = this.workspaceUsers.find((u) => u.userId === userId);
     if (user) {
       user.isImageLoaded = false;
