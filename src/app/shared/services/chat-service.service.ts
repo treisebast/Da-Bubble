@@ -65,7 +65,7 @@ export class ChatService {
    * @param {Channel} chat - The chat to set as current.
    * @param {boolean} isPrivate - Whether the chat is private.
    */
-  setCurrentChat(chat: Channel, isPrivate: boolean): void {
+  setCurrentChat(chat: Channel | null, isPrivate: boolean): void {
     this.currentChatSubject.next({ chat, isPrivate });
   }
 

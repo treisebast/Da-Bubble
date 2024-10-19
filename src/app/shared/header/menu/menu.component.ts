@@ -1,27 +1,15 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import {
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogTitle,
-} from '@angular/material/dialog';
+import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { RouterModule } from '@angular/router';
+import { ChatService } from '../../services/chat-service.service';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogActions,
-    MatDialogClose,
-    MatDialogContent,
-    MatDialogTitle,
-    MatButtonModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle, MatButtonModule, RouterModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
@@ -30,7 +18,7 @@ export class MenuComponent {
   @Output() openProfile = new EventEmitter<void>();
   isMenuOpen: boolean = true;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private chatService: ChatService) { }
 
   close() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -43,6 +31,7 @@ export class MenuComponent {
 
   logout() {
     this.close();
+    this.chatService.setCurrentChat(null, false);
     this.auth.signOut();
   }
 }
