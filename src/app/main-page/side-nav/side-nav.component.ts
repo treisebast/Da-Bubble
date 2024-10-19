@@ -219,6 +219,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
     const user = this.workspaceUsers.find((u) => u.userId === userId);
     if (user) {
       user.isImageLoaded = false;
+      user.avatar = 'assets/img/profile/fallback_user.png';
     }
   }
 

@@ -17,6 +17,7 @@ export class UserService {
     this.loadEmojisFromLocalStorage();
   }
 
+  
   /**
    * Gets all users from the Firestore collection.
    * @returns {Observable<User[]>} An observable array of users.
@@ -26,6 +27,7 @@ export class UserService {
       idField: 'userId',
     }) as Observable<User[]>;
   }
+
 
   /**
    * Gets a specific user by ID from the Firestore collection.
@@ -44,7 +46,7 @@ export class UserService {
    * @returns {Observable<User>} An observable of the user.
    */
   getUsersOnce(userIds: string[]): Observable<User[]> {
-    const chunkSize = 10; // Firestore erlaubt maximal 10 Elemente im 'in'-Operator
+    const chunkSize = 10;
     const chunks = [];
 
     for (let i = 0; i < userIds.length; i += chunkSize) {
@@ -62,7 +64,7 @@ export class UserService {
         ),
         catchError(error => {
           console.error('Fehler beim Laden der Benutzer mit getUsersOnce:', error);
-          return of([]); // Rückgabe eines leeren Arrays bei Fehler
+          return of([]);
         })
       );
     });

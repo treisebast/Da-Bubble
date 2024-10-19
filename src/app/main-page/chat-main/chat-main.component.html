@@ -41,7 +41,7 @@
       <!-- Profilbild oder Kanalname -->
       <div class="header-channel-name " (click)="onHeaderChannelNameClick($event)">
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
-          <img *ngIf="clickedUser" [src]="clickedUser.avatar" alt="" />
+          <img *ngIf="clickedUser" [src]="clickedUser.avatar" alt="profile image" (error)="clickedUser.avatar = 'assets/img/profile/fallback_user.png'" />
           <img *ngIf="clickedUser && clickedUser.status === 'online'" src="./assets/img/online.png" alt=""
             class="online" />
           <img *ngIf="clickedUser && clickedUser.status === 'offline'" src="./assets/img/offline.png" alt=""
@@ -116,7 +116,7 @@
       <!-- Keine Nachrichten Information -->
       <div [ngClass]="{'hidden': !isCurrentChatPrivate || messages.length > 0}" class="message-info">
         <div>
-          <img [src]="clickedUser?.avatar" alt="" />
+          <img [src]="clickedUser?.avatar || 'assets/img/profile/fallback_user.png'" alt="profile image" (error)="clickedUser && (clickedUser.avatar = 'assets/img/profile/fallback_user.png')" />
           <h2>
             {{ clickedUser?.name }}<span *ngIf="currentUserId == clickedUser?.userId">(Du)</span>
           </h2>

@@ -32,7 +32,7 @@ export class SignInComponent {
     private authService: AuthService,
     private userService: UserService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef // ChangeDetectorRef hinzufügen
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -77,7 +77,6 @@ export class SignInComponent {
     const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
     const photoURL = userDoc?.avatar || '';
     await firstValueFrom(this.authService.updateUserProfile(user, { photoURL }));
-    console.log('User profile updated with photoURL');
   }
 
 
@@ -124,8 +123,6 @@ export class SignInComponent {
         })
       )
     );
-
-    console.log('Sign-In Successful', credential);
     this.showConfirmationDialog();
   }
 
@@ -144,7 +141,7 @@ export class SignInComponent {
       setTimeout(() => {
         this.dialog.closeAll();
         this.router.navigate(['/main']);
-      }, 2000);
+      }, 1600);
     });
   }
 
@@ -167,8 +164,6 @@ export class SignInComponent {
         })
       )
     );
-
-    console.log('Guest Sign-In Successful', credential);
     this.showConfirmationDialog();
     this.router.navigate(['/main']);
   }
@@ -199,7 +194,9 @@ export class SignInComponent {
     event.preventDefault();
     const res = await firstValueFrom(this.authService.signInWithGoogle());
     const user = res.user;
-    await this.handleGoogleUser(user);
+    if (user) {
+      await this.handleGoogleUser(user);
+    }
     this.router.navigate(['/main']);
   }
 
@@ -211,9 +208,18 @@ export class SignInComponent {
    */
   private async handleGoogleUser(user: any) {
     const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
-
+  
     if (!userDoc) {
       await this.addNewGoogleUser(user);
+    } else {
+      await this.userService.updateUser({
+        userId: user.uid,
+        name: user.displayName || '',
+        email: user.email || '',
+        avatar: user.photoURL || 'assets/img/profile/fallback_user.png',
+        status: 'online',
+        lastSeen: new Date().toISOString(),
+      });
     }
   }
 
@@ -227,11 +233,10 @@ export class SignInComponent {
       userId: user.uid,
       name: user.displayName || '',
       email: user.email || '',
-      avatar: user.photoURL || '',
+      avatar: user.photoURL || 'assets/img/profile/fallback_user.png',
       status: 'online',
-      lastSeen: new Date(),
+      lastSeen: new Date().toISOString(),
     };
-
     await this.userService.addUser(newUser);
   }
 
