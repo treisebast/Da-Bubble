@@ -16,7 +16,6 @@ import localeDe from '@angular/common/locales/de';
 import { ChannelInfoPopupComponent } from '../channel-info-popup/channel-info-popup.component';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore';
-import { SharedChannelService } from '../../shared/services/shared-channel.service';
 import { firstValueFrom, forkJoin, map, Observable, of, Subscription, switchMap } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
@@ -102,7 +101,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     private threadService: ThreadService,
     private firebaseStorageService: FirebaseStorageService,
     private firestore: Firestore,
-    private sharedChannelService: SharedChannelService,
     public dialog: MatDialog,
     private channelService: ChannelService,
     private navigationService: NavigationService,
@@ -118,21 +116,18 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToMessages();
 
     // Abonnieren der privaten Kanäle
-    const privateChannelsSub =
-      this.sharedChannelService.privateChannels$.subscribe((channels) => {
-        this.privateChannels = channels;
-      });
+    const privateChannelsSub = this.channelService.getPrivateChannels().subscribe((channels) => {
+      this.privateChannels = channels;
+    });
     this.subscriptions.add(privateChannelsSub);
 
     // Abonnieren der öffentlichen Kanäle
-    const publicChannelsSub =
-      this.sharedChannelService.publicChannels$.subscribe((channels) => {
-        this.publicChannels = channels;
-      });
+    const publicChannelsSub = this.channelService.getPublicChannels().subscribe((channels) => {
+      this.publicChannels = channels;
+    });
     this.subscriptions.add(publicChannelsSub);
 
     this.setLoadingState(false);
-
 
     // Abonnieren des selectedMessage$ Observables
     this.navigationSubscription = this.navigationService.selectedMessage$.subscribe(
@@ -143,7 +138,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     );
   }
-
 
   private async handleSelectedMessage(message: Message) {
     const chatId = message.chatId;
@@ -178,7 +172,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       'click',
       this.closeEmojiPickerOnOutsideClick.bind(this)
     );
-
 
     if (this.navigationSubscription) {
       this.navigationSubscription.unsubscribe();
@@ -425,7 +418,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }, 300);
   }
-
 
   trackByUserId(index: number, user: User): string {
     return user.userId ? user.userId : index.toString();
@@ -734,8 +726,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
     return match
       ? channels.filter((ch) =>
-        ch.name?.toLowerCase().includes(match[1].toLowerCase())
-      )
+          ch.name?.toLowerCase().includes(match[1].toLowerCase())
+        )
       : [];
   }
 
@@ -790,7 +782,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   trackByMessageId(index: number, message: Message): string {
     return message.id ? message.id : index.toString();
   }
-
 
   onTextareaInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
@@ -921,7 +912,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       textarea.dispatchEvent(inputEvent);
     }, 0);
   }
-
 
   async loadChatById(chatId: string, isPrivate: boolean) {
     const chat = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));

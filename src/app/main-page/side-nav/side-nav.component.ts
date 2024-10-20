@@ -8,10 +8,10 @@ import { ChatService } from '../../shared/services/chat-service.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { Channel, NewChannel } from '../../shared/models/channel.model';
-import { User, UserWithImageStatus } from '../../shared/models/user.model';
-import { SharedChannelService } from '../../shared/services/shared-channel.service';
+import { UserWithImageStatus } from '../../shared/models/user.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Subscription } from 'rxjs';
+import { Subscription, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-side-nav',
@@ -68,13 +68,12 @@ export class SideNavComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private userService: UserService,
-    private sharedChannelService: SharedChannelService
+    private userService: UserService
   ) { }
 
   ngOnInit() {
     this.loadUserData();
-    this.subscribeToChannels();
+    this.loadChannels();
     this.subscribeToPrivateChats();
 
     // Abonnieren Sie den aktuellen Chat
@@ -82,7 +81,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
       this.currentChat = chatData;
     });
     this.subs.add(chatSub);
-
   }
 
   ngOnDestroy(): void {
@@ -90,33 +88,49 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads the current user data and initializes workspace users.
+   * Lädt die Daten des aktuellen Benutzers und initialisiert die Workspace-Benutzer.
    */
   private loadUserData() {
-    const channelSub = this.authService.getUser().subscribe((firebaseUser) => {
-      if (firebaseUser) {
-        this.userService.getUser(firebaseUser.uid).subscribe((user) => {
-          this.currentUser = { ...user, isImageLoaded: false };
-          this.loadPublicChannels();
-          this.loadPrivateChats();
-          this.showWorkspaceUsers();
-        });
+    const userSub = this.authService.getUser().pipe(
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          return this.userService.getUser(firebaseUser.uid);
+        } else {
+          return of(null);
+        }
+      })
+    ).subscribe(user => {
+      if (user) {
+        this.currentUser = { ...user, isImageLoaded: false };
+        this.showWorkspaceUsers();
       }
     });
-    this.subs.add(channelSub);
+    this.subs.add(userSub);
   }
 
   /**
-   * Subscribes to public and private channels.
+   * Lädt öffentliche und private Kanäle.
    */
-  private subscribeToChannels() {
-    this.sharedChannelService.privateChannels$.subscribe((channels) => {
-      this.privateChannels = channels;
+  private loadChannels() {
+    const publicChannelsSub = this.channelService.getChannels(false).subscribe({
+      next: (channels) => {
+        this.publicChannels = channels;
+      },
+      error: (err) => console.error('Fehler beim Laden der öffentlichen Kanäle:', err),
     });
+    this.subs.add(publicChannelsSub);
+
+    const privateChannelsSub = this.channelService.getChannels(true).subscribe({
+      next: (channels) => {
+        this.privateChannels = channels;
+      },
+      error: (err) => console.error('Fehler beim Laden der privaten Kanäle:', err),
+    });
+    this.subs.add(privateChannelsSub);
   }
 
   /**
-   * Subscribes to private chat creation events.
+   * Abonniert private Chat-Erstellungsereignisse.
    */
   private subscribeToPrivateChats() {
     const chatSub = this.chatService.createPrivateChat$.subscribe((user) => {
@@ -133,64 +147,29 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads public channels.
+   * Lädt die Liste der Benutzer aus dem UserService und aktualisiert die Workspace-Benutzer.
    */
-  private loadPublicChannels() {
-    this.channelService.getChannels(false).subscribe({
-      next: (channels) => {
-        this.publicChannels = channels;
-        this.sharedChannelService.setPublicChannels(this.publicChannels);
+  private showWorkspaceUsers() {
+    const usersSub = this.userService.getUsers().subscribe({
+      next: (users) => {
+        users.forEach((user) => {
+          const existingUserIndex = this.workspaceUsers.findIndex(u => u.userId === user.userId);
+          if (existingUserIndex !== -1) {
+            const existingUser = this.workspaceUsers[existingUserIndex];
+            this.workspaceUsers[existingUserIndex] = { ...existingUser, ...user };
+          } else {
+            this.workspaceUsers.push({ ...user, isImageLoaded: false });
+          }
+        });
+        this.moveCurrentUserToTop();
       },
-      error: (err) => console.error('Error loading public channels:', err),
+      error: (err) => console.error('Fehler beim Laden der Workspace-Benutzer:', err),
     });
+    this.subs.add(usersSub);
   }
 
   /**
-   * Loads private chats.
-   */
-  private loadPrivateChats() {
-    this.channelService.getChannels(true).subscribe({
-      next: (channels) => {
-        this.privateChannels = channels;
-        this.sharedChannelService.setPrivateChannels(this.privateChannels);
-      },
-      error: (err) => console.error('Error loading private channels:', err),
-    });
-  }
-
-
-/**
- * Fetches the list of users from the user service and updates the workspace users.
- * - If a user already exists in the workspace users list, it updates the user without overwriting the `isImageLoaded` property.
- * - If a user does not exist in the workspace users list, it adds the user with `isImageLoaded` set to `false`.
- * After updating the users, it moves the current user to the top of the list.
- */
-private showWorkspaceUsers() {
-  this.userService.getUsers().subscribe({
-    next: (users) => {
-      users.forEach((user) => {
-        const existingUserIndex = this.workspaceUsers.findIndex(u => u.userId === user.userId);
-        if (existingUserIndex !== -1) {
-          const existingUser = this.workspaceUsers[existingUserIndex];
-          this.workspaceUsers[existingUserIndex] = { ...existingUser, ...user };
-        } else {
-          this.workspaceUsers.push({ ...user, isImageLoaded: false });
-        }
-      });
-      this.moveCurrentUserToTop();
-    },
-    error: (err) => console.error('Error loading workspace users:', err),
-  });
-}
-
-  /**
-   * Moves the current user to the top of the `workspaceUsers` array.
-   *
-   * This method finds the index of the current user in the `workspaceUsers` array.
-   * If the user is found, it removes the user from their current position and
-   * inserts them at the beginning of the array.
-   *
-   * @private
+   * Verschiebt den aktuellen Benutzer an den Anfang des `workspaceUsers`-Arrays.
    */
   private moveCurrentUserToTop() {
     const currentUserIndex = this.workspaceUsers.findIndex(
@@ -203,13 +182,9 @@ private showWorkspaceUsers() {
   }
 
   /**
-   * Handles the event when an image is loaded for a user.
-   * Logs the user ID and updates the user's image load status.
-   *
-   * @param userId - The ID of the user whose image has been loaded.
+   * Behandelt das Ereignis, wenn ein Bild für einen Benutzer geladen wird.
    */
   onImageLoad(userId: string) {
-    // console.log(`Image loaded for user: ${userId}`);
     const user = this.workspaceUsers.find((u) => u.userId === userId);
     if (user) {
       user.isImageLoaded = true;
@@ -217,10 +192,7 @@ private showWorkspaceUsers() {
   }
 
   /**
-   * Handles the event when an image fails to load for a user.
-   * Logs the error and updates the user's image load status.
-   *
-   * @param userId - The ID of the user whose image failed to load.
+   * Behandelt das Ereignis, wenn ein Bild für einen Benutzer nicht geladen werden kann.
    */
   onImageError(userId: string) {
     const user = this.workspaceUsers.find((u) => u.userId === userId);
@@ -239,15 +211,7 @@ private showWorkspaceUsers() {
   }
 
   /**
-   * Finds or creates a private chat channel with the specified user.
-   *
-   * @param {UserWithImageStatus} user - The user to find or create a private chat channel with.
-   * @returns {Promise<void>} A promise that resolves when the operation is complete.
-   *
-   * @remarks
-   * - If the user is the current user, it will handle it as a self-chat.
-   * - If a private chat with the user already exists, it sets the current chat to that private chat.
-   * - If no private chat exists, it creates a new channel and sets it as the current chat.
+   * Findet oder erstellt einen privaten Chat-Kanal mit dem angegebenen Benutzer.
    */
   async findOrCreatePrivateChannelWithUser(user: UserWithImageStatus) {
     const isSelfChat = user.userId === this.currentUser.userId;
@@ -261,31 +225,23 @@ private showWorkspaceUsers() {
   }
 
   /**
-   * Finds an existing private channel based on the provided user and chat type.
-   *
-   * @param user - The user object containing image and status information.
-   * @param isSelfChat - A boolean indicating if the chat is a self-chat.
-   * @returns The found private channel or undefined if no matching channel is found.
+   * Findet einen vorhandenen privaten Kanal basierend auf dem bereitgestellten Benutzer und Chat-Typ.
    */
-  findExistingPrivateChannel(
+  private findExistingPrivateChannel(
     user: UserWithImageStatus,
     isSelfChat: boolean
   ): Channel | undefined {
     return this.privateChannels.find((channel) =>
       isSelfChat
         ? channel.members.length === 1 &&
-        channel.members.includes(this.currentUser.userId)
+          channel.members.includes(this.currentUser.userId)
         : channel.members.includes(this.currentUser.userId) &&
-        channel.members.includes(user.userId)
+          channel.members.includes(user.userId)
     );
   }
 
   /**
-   * Creates a new channel for a user.
-   *
-   * @param user - The user for whom the channel is being created, including their image status.
-   * @param isSelfChat - A boolean indicating if the channel is for personal notes.
-   * @returns A new Channel object with the specified properties.
+   * Erstellt einen neuen Kanal für einen Benutzer.
    */
   private createNewChannel(user: UserWithImageStatus, isSelfChat: boolean): NewChannel {
     return {
@@ -302,35 +258,22 @@ private showWorkspaceUsers() {
   }
 
   /**
-   * Adds a new channel and sets it as the current chat.
-   *
-   * This method performs the following steps:
-   * 1. Adds the new channel using the `channelService`.
-   * 2. Pushes the created channel to the `privateChannels` array.
-   * 3. Sets the created channel as the current chat using the `chatService`.
-   * 4. Displays the created channel.
-   *
-   * @param {Channel} newChannel - The new channel to be added.
-   * @returns {Promise<void>} A promise that resolves when the channel is added and set.
-   * @throws Will log an error message if there is an issue creating the private channel.
+   * Fügt einen neuen Kanal hinzu und setzt ihn als aktuellen Chat.
    */
   async addAndSetChannel(newChannel: NewChannel) {
     try {
       const docRef = await this.channelService.addChannel(newChannel);
       const createdChannel: Channel = { ...newChannel, id: docRef.id };
-      this.privateChannels.push(createdChannel);
+      // Wir fügen den Kanal nicht manuell zu privateChannels hinzu, da die Subscription dies automatisch übernimmt
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
     } catch (error) {
-      console.error('Error creating private channel:', error);
+      console.error('Fehler beim Erstellen des privaten Kanals:', error);
     }
   }
 
   /**
-   * Opens a dialog to add a new channel.
-   * After the dialog is closed, the new channel is added to either the public or private channels list based on its privacy setting.
-   *
-   * @returns {void}
+   * Öffnet einen Dialog zum Hinzufügen eines neuen Kanals.
    */
   addNewChannel() {
     const dialogRef = this.dialog.open(DialogAddChannelComponent, {
@@ -340,52 +283,38 @@ private showWorkspaceUsers() {
 
     dialogRef.afterClosed().subscribe((result: NewChannel | undefined) => {
       if (result) {
-        // Hier verwenden wir addAndSetChannel, um den Kanal hinzuzufügen
         this.addAndSetChannel(result);
       }
     });
   }
 
   /**
-   * Displays the specified channel in the chat interface.
-   *
-   * @param {Channel} channel - The channel to be displayed.
-   * @param {boolean} isPrivate - Indicates whether the channel is private.
-   * @returns {void}
+   * Zeigt den angegebenen Kanal in der Chat-Oberfläche an.
    */
   showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
   }
 
   /**
-   * Sets the selected message in the chat service.
-   * This method updates the chat service to mark a chat as selected.
+   * Setzt die ausgewählte Nachricht im Chat-Service.
    */
   setSelectedMessage() {
     this.chatService.setSelectedChat(true);
   }
 
   /**
-   * Resets the selected chat state to false, indicating that a new message is being created.
-   * This method interacts with the chat service to update the chat selection status.
+   * Setzt den ausgewählten Chat-Zustand auf false und signalisiert, dass eine neue Nachricht erstellt wird.
    */
   newMessage() {
     this.chatService.setSelectedChat(false);
   }
 
-
   isActiveChannel(channel: Channel): boolean {
     return this.currentChat.isPrivate === false && this.currentChat.chat?.id === channel.id;
   }
 
-
   /**
-   * Determines if the given user is an active participant in the current chat.
-   * @param user - The user to check, including their image status.
-   * @returns `true` if the user is an active participant in the current chat, `false` otherwise.
-   * The function checks if the current chat is private and has members.
-   * - If the chat has only one member, it verifies if the member is the current user and the given user is also the current user (self-chat).
-   * - If the chat has two members, it checks if both the current user and the given user are members of the chat, and ensures the given user is not the current user.
+   * Bestimmt, ob der gegebene Benutzer ein aktiver Teilnehmer im aktuellen Chat ist.
    */
   isActiveUser(user: UserWithImageStatus): boolean {
     if (this.currentChat.isPrivate && this.currentChat.chat) {

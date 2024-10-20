@@ -112,4 +112,16 @@ export class ChannelService {
       return null;
     }
   }
+
+  getPublicChannels(): Observable<Channel[]> {
+    const channelsRef = collection(this.firestore, 'channels');
+    const q = query(channelsRef, where('isPrivate', '==', false));
+    return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
+  }
+
+  getPrivateChannels(): Observable<Channel[]> {
+    const channelsRef = collection(this.firestore, 'channels');
+    const q = query(channelsRef, where('isPrivate', '==', true));
+    return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
+  }
 }
