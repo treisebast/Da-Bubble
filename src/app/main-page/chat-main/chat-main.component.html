@@ -158,9 +158,13 @@
   <!-- Nachrichteneingabe für aktuellen Chat -->
   <div class="relative-container">
     <div class="messageBox">
-      <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht an {{ currentChat.name }}"
-        (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
-
+      <textarea #messageTextarea
+      [(ngModel)]="newMessageText"
+      [placeholder]="currentUserId == clickedUser?.userId ? 'schreibe eine persönliche Notiz' : 'Nachricht an ' + clickedUserName + '...'"
+      (keydown)="onTextareaKeydown($event)"
+      (input)="onTextareaInput($event)">
+  </textarea>
+  currentUserId == clickedUser?.userId
       <!-- Einbinden der MentionDropdownComponent -->
       <app-mention-dropdown *ngIf="showMentionDropdown" #mentionDropdown [users]="usersOfSelectedChannel"
         [searchTerm]="mentionSearchTerm" (userSelected)="onUserSelected($event)">
