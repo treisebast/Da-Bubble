@@ -49,6 +49,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   showEmojiPicker = false;
   currentChat: any = null;
   selectedChat: boolean = false;
+  private usersOfSelectedChannelSubscription: Subscription | null = null;
   isCurrentChatPrivate: boolean = false;
   preventImmediateClose: boolean = true;
 
@@ -80,6 +81,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredChannels: Channel[] = [];
   filteredPublicChannels: Channel[] = [];
   currentThreadData: any;
+  private previousChatId: string | null = null;
 
   @Output() openThreadEvent = new EventEmitter<void>();
 
@@ -214,19 +216,22 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     ).subscribe(({ chat, isPrivate }) => {
-      this.currentChat = chat;
-      this.isCurrentChatPrivate = isPrivate;
-      this.selectedChat = !!chat;
+      if (chat?.id !== this.previousChatId) {
+        this.currentChat = chat;
+        this.isCurrentChatPrivate = isPrivate;
+        this.selectedChat = !!chat;
+        this.previousChatId = chat?.id || null;
 
-      if (!this.currentChat) {
-        return;
+        if (!this.currentChat) {
+          return;
+        }
+
+        this.getUsersOfSelectedChannel(this.currentChat);
+        this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
+
+        // Aufruf zum Laden des Benutzernamens
+        this.getUserNameById(this.currentChat);
       }
-
-      this.getUsersOfSelectedChannel(this.currentChat);
-      this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
-
-      // Aufruf zum Laden des Benutzernamens
-      this.getUserNameById(this.currentChat);
     });
     this.subscriptions.add(chatSub);
   }
@@ -280,13 +285,18 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUsersOfSelectedChannel(chat: Channel) {
+    if (this.usersOfSelectedChannelSubscription) {
+      this.usersOfSelectedChannelSubscription.unsubscribe();
+      this.usersOfSelectedChannelSubscription = null;
+    }
+
     if (chat && chat.members && chat.members.length > 0) {
-      const usersSub = this.userService.getUsers().subscribe((users) => {
+      this.usersOfSelectedChannelSubscription = this.userService.getUsers().subscribe((users) => {
         this.usersOfSelectedChannel = users.filter((user) =>
           chat.members.includes(user.userId)
         );
       });
-      this.subscriptions.add(usersSub);
+      this.subscriptions.add(this.usersOfSelectedChannelSubscription);
     }
   }
 
@@ -649,10 +659,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (currentChat && currentChat.members && currentChat.members.length > 1) {
       const otherUserId = this.getOtherUserOfMembers(currentChat.members);
       const userName = await this.userService.getUserNameById(otherUserId);
-      this.clickedUserName = userName || 'Unbekannter Benutzer'; // Fallback-Wert
+      this.clickedUserName = userName || 'Unbekannter Benutzer';
 
       this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User) => {
-        this.clickedUser = user;
+        if (this.currentChat && this.currentChat.members.includes(user.userId)) {
+          this.clickedUser = user;
+        }
       });
     } else {
       this.clickedUserName = `${this.currentUserName} (Du)`;
