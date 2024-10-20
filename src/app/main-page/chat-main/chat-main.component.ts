@@ -61,6 +61,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUserName = '';
   clickedUser: User | null = null;
   clickedUserName: string = '';
+  private clickedUserSubscription: Subscription | null = null;
   otherUser: User | null = null;
 
   messages$: Observable<Message[]> = new Observable<Message[]>();
@@ -168,6 +169,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.profileSubscription) {
       this.profileSubscription.unsubscribe();
       this.profileSubscription = null;
+    }
+    if (this.clickedUserSubscription) {
+      this.clickedUserSubscription.unsubscribe();
+      this.clickedUserSubscription = null;
     }
     document.removeEventListener(
       'click',
@@ -644,16 +649,23 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async getUserNameById(currentChat: any) {
+    if (this.clickedUserSubscription) {
+      this.clickedUserSubscription.unsubscribe();
+      this.clickedUserSubscription = null;
+    }
+
     if (currentChat && currentChat.members && currentChat.members.length > 1) {
       const otherUserId = this.getOtherUserOfMembers(currentChat.members);
       const userName = await this.userService.getUserNameById(otherUserId);
       this.clickedUserName = userName || 'Unbekannter Benutzer'; // Fallback-Wert
-      this.userService.getUser(otherUserId).subscribe((user: User) => {
+
+      this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User) => {
         this.clickedUser = user;
       });
     } else {
       this.clickedUserName = `${this.currentUserName} (Du)`;
-      this.userService.getUser(this.currentUserId).subscribe((user: User) => {
+
+      this.clickedUserSubscription = this.userService.getUser(this.currentUserId).subscribe((user: User) => {
         this.clickedUser = user;
       });
     }
