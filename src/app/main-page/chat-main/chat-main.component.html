@@ -16,7 +16,7 @@
 
   <!-- Nachrichteneingabefeld -->
   <div class="messageBox absolute-bottom">
-    <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht an 'RECIPIENTNAMEHERE'"
+    <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht eingeben..."
     (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
 
     <div class="messageBoxBottom">
