@@ -158,22 +158,30 @@ export class SideNavComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Shows workspace users.
-   * Puts the current user on top of the list.
-   */
-  private showWorkspaceUsers() {
-    this.userService.getUsers().subscribe({
-      next: (users) => {
-        this.workspaceUsers = users.map((user) => ({
-          ...user,
-          isImageLoaded: false,
-        }));
-        this.moveCurrentUserToTop();
-      },
-      error: (err) => console.error('Error loading workspace users:', err),
-    });
-  }
+
+/**
+ * Fetches the list of users from the user service and updates the workspace users.
+ * - If a user already exists in the workspace users list, it updates the user without overwriting the `isImageLoaded` property.
+ * - If a user does not exist in the workspace users list, it adds the user with `isImageLoaded` set to `false`.
+ * After updating the users, it moves the current user to the top of the list.
+ */
+private showWorkspaceUsers() {
+  this.userService.getUsers().subscribe({
+    next: (users) => {
+      users.forEach((user) => {
+        const existingUserIndex = this.workspaceUsers.findIndex(u => u.userId === user.userId);
+        if (existingUserIndex !== -1) {
+          const existingUser = this.workspaceUsers[existingUserIndex];
+          this.workspaceUsers[existingUserIndex] = { ...existingUser, ...user };
+        } else {
+          this.workspaceUsers.push({ ...user, isImageLoaded: false });
+        }
+      });
+      this.moveCurrentUserToTop();
+    },
+    error: (err) => console.error('Error loading workspace users:', err),
+  });
+}
 
   /**
    * Moves the current user to the top of the `workspaceUsers` array.
@@ -371,12 +379,26 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
 
+  /**
+   * Determines if the given user is an active participant in the current chat.
+   * @param user - The user to check, including their image status.
+   * @returns `true` if the user is an active participant in the current chat, `false` otherwise.
+   * The function checks if the current chat is private and has members.
+   * - If the chat has only one member, it verifies if the member is the current user and the given user is also the current user (self-chat).
+   * - If the chat has two members, it checks if both the current user and the given user are members of the chat, and ensures the given user is not the current user.
+   */
   isActiveUser(user: UserWithImageStatus): boolean {
     if (this.currentChat.isPrivate && this.currentChat.chat) {
-      return (
-        this.currentChat.chat.members.includes(user.userId) &&
-        this.currentChat.chat.members.includes(this.currentUser.userId)
-      );
+      const members = this.currentChat.chat.members;
+      if (members.length === 1) {
+        // Selbst-Chat
+        return members[0] === this.currentUser.userId && user.userId === this.currentUser.userId;
+      } else if (members.length === 2) {
+        // Privater Chat mit einem anderen Benutzer
+        const isCurrentUserInMembers = members.includes(this.currentUser.userId);
+        const isUserInMembers = members.includes(user.userId);
+        return isCurrentUserInMembers && isUserInMembers && user.userId !== this.currentUser.userId;
+      }
     }
     return false;
   }
