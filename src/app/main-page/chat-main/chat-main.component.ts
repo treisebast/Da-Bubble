@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit,Component,ElementRef,EventEmitter,HostListener,OnDestroy,OnInit,Output,ViewChild } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -30,12 +30,12 @@ import { NavigationService } from '../../shared/services/navigation-service.serv
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent, ProfilComponent, ImageOverlayComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent,
+    ProfilComponent, ImageOverlayComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })
 export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
-
   showMentionDropdown = false;
   mentionSearchTerm = '';
   mentionStartPosition = -1;
@@ -88,9 +88,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chatContainer', { static: false })
   private chatContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
-  @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
-  @ViewChild('channelDropdown') channelDropdownComponent?: ChannelDropdownComponent;
-  @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('mentionDropdown')
+  mentionDropdownComponent?: MentionDropdownComponent;
+  @ViewChild('channelDropdown')
+  channelDropdownComponent?: ChannelDropdownComponent;
+  @ViewChild('messageTextarea')
+  messageTextarea!: ElementRef<HTMLTextAreaElement>;
 
   private subscriptions = new Subscription();
   private navigationSubscription: Subscription | null = null;
@@ -105,7 +108,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     private firestore: Firestore,
     public dialog: MatDialog,
     private channelService: ChannelService,
-    private navigationService: NavigationService,
+    private navigationService: NavigationService
   ) {
     registerLocaleData(localeDe);
   }
@@ -118,27 +121,30 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToMessages();
 
     // Abonnieren der privaten Kanäle
-    const privateChannelsSub = this.channelService.getPrivateChannels().subscribe((channels) => {
-      this.privateChannels = channels;
-    });
+    const privateChannelsSub = this.channelService
+      .getPrivateChannels()
+      .subscribe((channels) => {
+        this.privateChannels = channels;
+      });
     this.subscriptions.add(privateChannelsSub);
 
     // Abonnieren der öffentlichen Kanäle
-    const publicChannelsSub = this.channelService.getPublicChannels().subscribe((channels) => {
-      this.publicChannels = channels;
-    });
+    const publicChannelsSub = this.channelService
+      .getPublicChannels()
+      .subscribe((channels) => {
+        this.publicChannels = channels;
+      });
     this.subscriptions.add(publicChannelsSub);
 
     this.setLoadingState(false);
 
     // Abonnieren des selectedMessage$ Observables
-    this.navigationSubscription = this.navigationService.selectedMessage$.subscribe(
-      (message) => {
+    this.navigationSubscription =
+      this.navigationService.selectedMessage$.subscribe((message) => {
         if (message) {
           this.handleSelectedMessage(message);
         }
-      }
-    );
+      });
   }
 
   private async handleSelectedMessage(message: Message) {
@@ -205,34 +211,35 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeToCurrentChat(): void {
-    const chatSub = this.chatService.currentChat$.pipe(
-      switchMap(({ chat, isPrivate }) => {
-        if (chat && chat.id) {
-          return this.channelService.getChannel(chat.id, isPrivate).pipe(
-            map((updatedChat) => ({ chat: updatedChat, isPrivate }))
-          );
-        } else {
-          return of({ chat: null, isPrivate: false });
+    const chatSub = this.chatService.currentChat$
+      .pipe(
+        switchMap(({ chat, isPrivate }) => {
+          if (chat && chat.id) {
+            return this.channelService
+              .getChannel(chat.id, isPrivate)
+              .pipe(map((updatedChat) => ({ chat: updatedChat, isPrivate })));
+          } else {
+            return of({ chat: null, isPrivate: false });
+          }
+        })
+      )
+      .subscribe(({ chat, isPrivate }) => {
+        if (chat?.id !== this.previousChatId) {
+          this.currentChat = chat;
+          this.isCurrentChatPrivate = isPrivate;
+          this.selectedChat = !!chat;
+          this.previousChatId = chat?.id || null;
+
+          if (!this.currentChat) {
+            return;
+          }
+
+          this.getUsersOfSelectedChannel(this.currentChat);
+          this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
+
+          this.getUserNameById(this.currentChat);
         }
-      })
-    ).subscribe(({ chat, isPrivate }) => {
-      if (chat?.id !== this.previousChatId) {
-        this.currentChat = chat;
-        this.isCurrentChatPrivate = isPrivate;
-        this.selectedChat = !!chat;
-        this.previousChatId = chat?.id || null;
-
-        if (!this.currentChat) {
-          return;
-        }
-
-        this.getUsersOfSelectedChannel(this.currentChat);
-        this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
-
-        // Aufruf zum Laden des Benutzernamens
-        this.getUserNameById(this.currentChat);
-      }
-    });
+      });
     this.subscriptions.add(chatSub);
   }
 
@@ -291,18 +298,24 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (chat && chat.members && chat.members.length > 0) {
-      this.usersOfSelectedChannelSubscription = this.userService.getUsers().subscribe((users) => {
-        this.usersOfSelectedChannel = users.filter((user) =>
-          chat.members.includes(user.userId)
-        );
-      });
+      this.usersOfSelectedChannelSubscription = this.userService
+        .getUsers()
+        .subscribe((users) => {
+          this.usersOfSelectedChannel = users.filter((user) =>
+            chat.members.includes(user.userId)
+          );
+        });
       this.subscriptions.add(this.usersOfSelectedChannelSubscription);
     }
   }
 
   private getOtherUserInPrivateChat(chat: Channel): User | null {
     if (chat && chat.members && chat.members.length > 1) {
-      return this.usersOfSelectedChannel.find(user => user.userId !== this.currentUserId) || null;
+      return (
+        this.usersOfSelectedChannel.find(
+          (user) => user.userId !== this.currentUserId
+        ) || null
+      );
     }
     return null;
   }
@@ -321,7 +334,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
             };
           },
           error: (error) => {
-            console.error(`Error loading user profile for userId ${userId}:`, error);
+            console.error(
+              `Error loading user profile for userId ${userId}:`,
+              error
+            );
           },
         });
         this.subscriptions.add(userSub);
@@ -433,10 +449,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     return user.userId ? user.userId : index.toString();
   }
 
-  isNewDay(
-    timestamp: Timestamp | FieldValue | undefined,
-    index: number
-  ): boolean {
+  isNewDay(timestamp: Timestamp | FieldValue | undefined, index: number): boolean {
     if (index === 0) return true;
 
     const prevMessage = this.messages[index - 1];
@@ -459,7 +472,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Event auslösen, um MainPageComponent zu benachrichtigen
     this.openThreadEvent.emit();
 
     this.threadService
@@ -490,7 +502,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   showUserListPopup(currentChat: Channel, popupState: 'listView' | 'addUsers'): void {
     console.log('showUserListPopup for Channel:', currentChat);
     const dialogRef = this.dialog.open(DialogShowMembersComponent, {
-      data: { members: this.usersOfSelectedChannel, channel: currentChat, popupState: popupState },
+      data: {
+        members: this.usersOfSelectedChannel,
+        channel: currentChat,
+        popupState: popupState,
+      },
       hasBackdrop: true,
       backdropClass: 'backdropVisible',
     });
@@ -514,7 +530,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Profil geöffnet für:', user);
         },
         error: (error) => {
-          console.error(`Fehler beim Laden des Profils für Benutzer ${userId}:`, error);
+          console.error(
+            `Fehler beim Laden des Profils für Benutzer ${userId}:`,
+            error
+          );
         },
       });
       this.isProfileOpen = true;
@@ -541,8 +560,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onHeaderChannelNameClick(event: Event) {
     event.stopPropagation();
-    if (this.isCurrentChatPrivate) {
-      this.openProfilePopup(this.clickedUser?.userId!);
+    if (this.isCurrentChatPrivate && this.clickedUser?.userId) {
+      this.openProfilePopup(this.clickedUser.userId);
     } else {
       this.openChannelInfoPopup();
     }
@@ -650,6 +669,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Retrieves the username of the other member in the current chat and subscribes to user updates.
+   * If the current chat has more than one member, it fetches the username of the other member.
+   * If the current chat has only one member, it sets the username to the current user's name.
+   *
+   * @param {any} currentChat - The current chat object containing chat members.
+   * @returns {Promise<void>} - A promise that resolves when the username is retrieved and subscription is set.
+   */
   async getUserNameById(currentChat: any) {
     if (this.clickedUserSubscription) {
       this.clickedUserSubscription.unsubscribe();
@@ -658,12 +685,20 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (currentChat && currentChat.members && currentChat.members.length > 1) {
       const otherUserId = this.getOtherUserOfMembers(currentChat.members);
+
+      if (!otherUserId) {
+        console.error('No other user found in chat members');
+        return;
+      }
+
       const userName = await this.userService.getUserNameById(otherUserId);
       this.clickedUserName = userName || 'Unbekannter Benutzer';
 
-      this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User) => {
-        if (this.currentChat && this.currentChat.members.includes(user.userId)) {
+      this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User | undefined) => {
+        if (user && this.currentChat && this.currentChat.members.includes(user.userId)) {
           this.clickedUser = user;
+        } else {
+          console.error(`User not found for userId ${otherUserId}`);
         }
       });
     } else {
@@ -675,13 +710,19 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getOtherUserOfMembers(currentChatMembers: string[]): string {
+  /**
+   * Retrieves the other user from the list of chat members, excluding the current user.
+   *
+   * @param {string[]} currentChatMembers - An array of user IDs representing the members of the current chat.
+   * @returns {string | null} - The user ID of the other member in the chat, or null if no other member is found.
+   */
+  getOtherUserOfMembers(currentChatMembers: string[]): string | null {
     for (const member of currentChatMembers) {
       if (member !== this.currentUserId) {
         return member;
       }
     }
-    return '';
+    return null;
   }
 
   addAttachmentToMessage(downloadUrl: string) {
@@ -808,11 +849,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Check for "@" Mention
     const atIndex = textBeforeCursor.lastIndexOf('@');
-    const isAtSymbol = atIndex >= 0 && (atIndex === 0 || /\s/.test(textBeforeCursor.charAt(atIndex - 1)));
+    const isAtSymbol =
+      atIndex >= 0 &&
+      (atIndex === 0 || /\s/.test(textBeforeCursor.charAt(atIndex - 1)));
 
     // Check for "#" für Channels
     const hashIndex = textBeforeCursor.lastIndexOf('#');
-    const isHashSymbol = hashIndex >= 0 && (hashIndex === 0 || /\s/.test(textBeforeCursor.charAt(hashIndex - 1)));
+    const isHashSymbol =
+      hashIndex >= 0 &&
+      (hashIndex === 0 || /\s/.test(textBeforeCursor.charAt(hashIndex - 1)));
 
     if (isAtSymbol && (!isHashSymbol || atIndex > hashIndex)) {
       // If "@" is last used symbol
@@ -828,7 +873,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onUserSelected(user: User) {
-    const textarea = document.querySelector('.messageBox textarea') as HTMLTextAreaElement;
+    const textarea = document.querySelector(
+      '.messageBox textarea'
+    ) as HTMLTextAreaElement;
     if (textarea) {
       const cursorPosition = textarea.selectionStart;
       const value = textarea.value;
@@ -837,7 +884,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       const newValue = beforeMention + '@' + user.name + ' ' + afterCursor;
       this.newMessageText = newValue;
       setTimeout(() => {
-        const newCursorPosition = (beforeMention + '@' + user.name + ' ').length;
+        const newCursorPosition = (beforeMention + '@' + user.name + ' ')
+          .length;
         textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
         textarea.focus();
       }, 0);
@@ -878,7 +926,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         this.channelDropdownComponent.moveSelectionUp();
         event.preventDefault();
       } else if (event.key === 'Enter') {
-        const selectedChannel = this.channelDropdownComponent.getSelectedChannel();
+        const selectedChannel =
+          this.channelDropdownComponent.getSelectedChannel();
         if (selectedChannel) {
           this.onChannelSelected(selectedChannel);
           event.preventDefault();
@@ -895,7 +944,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     const target = event.target as HTMLElement;
-    if (!target.closest('.mention-dropdown') && !target.closest('.messageBox textarea')) {
+    if (
+      !target.closest('.mention-dropdown') &&
+      !target.closest('.messageBox textarea')
+    ) {
       this.showMentionDropdown = false;
     }
   }
@@ -926,7 +978,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadChatById(chatId: string, isPrivate: boolean) {
-    const chat = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));
+    const chat = await firstValueFrom(
+      this.channelService.getChannel(chatId, isPrivate)
+    );
     this.currentChat = chat;
     this.isCurrentChatPrivate = isPrivate;
     this.chatService.setCurrentChat(chat, isPrivate);
