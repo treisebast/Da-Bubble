@@ -57,6 +57,8 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   announcer = inject(LiveAnnouncer);
   private destroy$ = new Subject<void>();
+  private channelMemberIds: Set<string> = new Set();
+
 
   constructor(
     public dialogRef: MatDialogRef<DialogShowMembersComponent>,
@@ -77,6 +79,8 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToDialogEvents();
     this.loadUsers();
+
+    this.channelMemberIds = new Set(this.data.channel.members);
   }
 
   ngOnDestroy(): void {
@@ -123,17 +127,42 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       });
   }
 
+  isAlreadyMember(user: User): boolean {
+    return this.channelMemberIds.has(user.userId);
+  }
+
+
   /**
-   * Filter users based on the search input
+   * Filters the list of users based on the search input and sorts them.
+   *
+   * The method trims and converts the search input to lowercase, then filters the loaded users
+   * whose names include the search term. The filtered users are then sorted such that members
+   * appear before non-members. If two users have the same membership status, they are sorted
+   * alphabetically by name.
+   *
+   * @returns {void}
    */
   filterUsers(): void {
     const searchTerm = this.searchInput.trim().toLowerCase();
-    this.filteredUsers = searchTerm
+
+    const filtered = searchTerm
       ? this.loadedUsers.filter((user) =>
           user.name.toLowerCase().includes(searchTerm)
         )
       : [];
+
+    this.filteredUsers = filtered.sort((a, b) => {
+      const aIsMember = this.isAlreadyMember(a) ? 1 : 0;
+      const bIsMember = this.isAlreadyMember(b) ? 1 : 0;
+
+      if (aIsMember === bIsMember) {
+        return a.name.localeCompare(b.name);
+      } else {
+        return aIsMember - bIsMember;
+      }
+    });
   }
+
 
   /**
    * Check or uncheck users in the selection list

@@ -76,14 +76,26 @@
           <div *ngIf="searchInput.trim()" class="hoveringUserList">
             <div *ngIf="filteredUsers.length > 0; else noUsersFound">
               <!-- User List -->
-              <div *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="userToClick"
-                (click)="selectUsers(user)" [ngClass]="{ 'selected': isSelected(user) }">
-                <img [src]="user.avatar || 'assets/img/profile/fallback_user.png'"  alt="" (error)="user.avatar = 'assets/img/profile/fallback_user.png'"/>
+              <div
+              *ngFor="let user of filteredUsers; trackBy: trackByUserId"
+              class="userToClick"
+              (click)="!isAlreadyMember(user) && selectUsers(user)"
+              [ngClass]="{
+                'selected': isSelected(user),
+                'disabled': isAlreadyMember(user)
+              }"
+              [title]="isAlreadyMember(user) ? 'Bereits Mitglied' : ''"
+            >
+                <img [src]="user.avatar || 'assets/img/profile/fallback_user.png'" alt=""
+                  (error)="user.avatar = 'assets/img/profile/fallback_user.png'" />
                 <!-- Status icons -->
                 <div *ngIf="user.status === 'online'" class="status-indicator_addUser online"></div>
                 <div *ngIf="user.status === 'away'" class="status-indicator_addUser away"></div>
                 <div *ngIf="user.status === 'offline'" class="status-indicator_addUser offline"></div>
-                <h2>{{ user.name }}</h2>
+                <h2>
+                  {{ user.name }}
+                  <span *ngIf="isAlreadyMember(user)" class="already-member-text">(Mitglied)</span>
+                </h2>
               </div>
             </div>
             <!-- No Users Found Message -->
@@ -97,7 +109,8 @@
     </mat-dialog-content>
 
     <mat-dialog-actions class="addUserContent_actions" align="end">
-      <button class="addUsersBtn" [disabled]=" loading || (selectedUsers.length === 0)" (click)="addUsersToChannel(data.channel)">
+      <button class="addUsersBtn" [disabled]=" loading || (selectedUsers.length === 0)"
+        (click)="addUsersToChannel(data.channel)">
         Hinzufügen
       </button>
     </mat-dialog-actions>
