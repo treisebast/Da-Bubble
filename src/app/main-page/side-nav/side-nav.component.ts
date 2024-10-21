@@ -10,8 +10,8 @@ import { UserService } from '../../shared/services/user.service';
 import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { UserWithImageStatus } from '../../shared/models/user.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Subscription, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, Subscription, combineLatest, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-side-nav',
@@ -72,11 +72,51 @@ export class SideNavComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.loadUserData();
-    this.loadChannels();
-    this.subscribeToPrivateChats();
+    const user$ = this.authService.getUser().pipe(
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          return this.userService.getUser(firebaseUser.uid).pipe(
+            map(user => {
+              this.currentUser = { ...user, isImageLoaded: false };
+              return this.currentUser;
+            })
+          );
+        } else {
+          return of(null);
+        }
+      })
+    );
 
-    // Abonnieren Sie den aktuellen Chat
+    const publicChannels$ = user$.pipe(
+      switchMap(user => {
+        if (user) {
+          return this.channelService.getChannelsForUser(user.userId, false);
+        } else {
+          return of([]);
+        }
+      })
+    );
+
+    const privateChannels$ = user$.pipe(
+      switchMap(user => {
+        if (user) {
+          return this.channelService.getChannelsForUser(user.userId, true);
+        } else {
+          return of([]);
+        }
+      })
+    );
+
+    // Kombiniere die Observables
+    const channelsSub = combineLatest([publicChannels$, privateChannels$]).subscribe(([publicChannels, privateChannels]) => {
+      this.publicChannels = publicChannels;
+      this.privateChannels = privateChannels;
+      this.showWorkspaceUsers();
+    });
+
+    this.subs.add(channelsSub);
+
+    // Abonniere den aktuellen Chat
     const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
       this.currentChat = chatData;
     });
@@ -90,29 +130,47 @@ export class SideNavComponent implements OnInit, OnDestroy {
   /**
    * Lädt die Daten des aktuellen Benutzers und initialisiert die Workspace-Benutzer.
    */
-  private loadUserData() {
-    const userSub = this.authService.getUser().pipe(
+  private loadUserData(): Observable<UserWithImageStatus | null> {
+    return this.authService.getUser().pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
-          return this.userService.getUser(firebaseUser.uid);
+          return this.userService.getUser(firebaseUser.uid).pipe(
+            map(user => {
+              this.currentUser = { ...user, isImageLoaded: false };
+              this.showWorkspaceUsers();
+              return this.currentUser;
+            })
+          );
         } else {
           return of(null);
         }
       })
-    ).subscribe(user => {
-      if (user) {
-        this.currentUser = { ...user, isImageLoaded: false };
-        this.showWorkspaceUsers();
-      }
-    });
-    this.subs.add(userSub);
+    );
   }
 
-  /**
-   * Lädt öffentliche und private Kanäle.
-   */
-  private loadChannels() {
-    const publicChannelsSub = this.channelService.getChannels(false).subscribe({
+  // /**
+  //  * Lädt öffentliche und private Kanäle.
+  //  */
+  // private loadChannels() {
+  //   const publicChannelsSub = this.channelService.getChannels(false).subscribe({
+  //     next: (channels) => {
+  //       this.publicChannels = channels;
+  //     },
+  //     error: (err) => console.error('Fehler beim Laden der öffentlichen Kanäle:', err),
+  //   });
+  //   this.subs.add(publicChannelsSub);
+
+  //   const privateChannelsSub = this.channelService.getChannels(true).subscribe({
+  //     next: (channels) => {
+  //       this.privateChannels = channels;
+  //     },
+  //     error: (err) => console.error('Fehler beim Laden der privaten Kanäle:', err),
+  //   });
+  //   this.subs.add(privateChannelsSub);
+  // }
+
+  private loadChannelsForCurrentUser() {
+    const publicChannelsSub = this.channelService.getChannelsForUser(this.currentUser.userId, false).subscribe({
       next: (channels) => {
         this.publicChannels = channels;
       },
@@ -120,7 +178,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
     });
     this.subs.add(publicChannelsSub);
 
-    const privateChannelsSub = this.channelService.getChannels(true).subscribe({
+    const privateChannelsSub = this.channelService.getChannelsForUser(this.currentUser.userId, true).subscribe({
       next: (channels) => {
         this.privateChannels = channels;
       },

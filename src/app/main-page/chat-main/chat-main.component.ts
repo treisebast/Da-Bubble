@@ -119,52 +119,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToCurrentChat();
     this.subscribeToLoadingState();
     this.subscribeToMessages();
-
-    // Abonnieren der privaten Kanäle
-    const privateChannelsSub = this.channelService
-      .getPrivateChannels()
-      .subscribe((channels) => {
-        this.privateChannels = channels;
-      });
-    this.subscriptions.add(privateChannelsSub);
-
-    // Abonnieren der öffentlichen Kanäle
-    const publicChannelsSub = this.channelService
-      .getPublicChannels()
-      .subscribe((channels) => {
-        this.publicChannels = channels;
-      });
-    this.subscriptions.add(publicChannelsSub);
-
+    this.subscribeToChannels();
+    this.subscribeToSelectedMessage();
     this.setLoadingState(false);
-
-    // Abonnieren des selectedMessage$ Observables
-    this.navigationSubscription =
-      this.navigationService.selectedMessage$.subscribe((message) => {
-        if (message) {
-          this.handleSelectedMessage(message);
-        }
-      });
   }
 
-  private async handleSelectedMessage(message: Message) {
-    const chatId = message.chatId;
-    const isPrivate = message.isPrivateChat;
-
-    if (chatId) {
-      if (
-        this.currentChat?.id !== chatId ||
-        this.isCurrentChatPrivate !== isPrivate
-      ) {
-        await this.loadChatById(chatId, isPrivate);
-      }
-      if (message.id) {
-        this.scrollToMessage(message.id);
-      } else {
-        console.error('Message ID is undefined');
-      }
-    }
-  }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
@@ -186,6 +145,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+
   ngAfterViewInit() {
     this.scrollToBottom();
     setTimeout(() => {
@@ -196,6 +156,56 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
+
+  private async handleSelectedMessage(message: Message) {
+    const chatId = message.chatId;
+    const isPrivate = message.isPrivateChat;
+
+    if (chatId) {
+      if (
+        this.currentChat?.id !== chatId ||
+        this.isCurrentChatPrivate !== isPrivate
+      ) {
+        await this.loadChatById(chatId, isPrivate);
+      }
+      if (message.id) {
+        this.scrollToMessage(message.id);
+      } else {
+        console.error('Message ID is undefined');
+      }
+    }
+  }
+
+
+  private subscribeToChannels(): void {
+    // Abonnieren der privaten Kanäle
+    const privateChannelsSub = this.channelService
+      .getPrivateChannels()
+      .subscribe((channels) => {
+        this.privateChannels = channels;
+      });
+    this.subscriptions.add(privateChannelsSub);
+
+    // Abonnieren der öffentlichen Kanäle
+    const publicChannelsSub = this.channelService
+      .getPublicChannels()
+      .subscribe((channels) => {
+        this.publicChannels = channels;
+      });
+    this.subscriptions.add(publicChannelsSub);
+  }
+
+
+  private subscribeToSelectedMessage(): void {
+    this.navigationSubscription = this.navigationService.selectedMessage$.subscribe((message) => {
+      if (message) {
+        this.handleSelectedMessage(message);
+      }
+    });
+    this.subscriptions.add(this.navigationSubscription);
+  }
+
+
   private initializeUser(): void {
     const authSub = this.authService.getUser().subscribe((user) => {
       if (user) {
@@ -205,16 +215,19 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(authSub);
   }
 
+
   private setUserDetails(user: any): void {
     this.currentUserId = user.uid;
     this.currentUserName = user.displayName || '';
   }
+  
 
   private subscribeToCurrentChat(): void {
     const chatSub = this.chatService.currentChat$
       .pipe(
         switchMap(({ chat, isPrivate }) => {
           if (chat && chat.id) {
+            // Abonniere das Kanalobjekt, um auf Änderungen zu reagieren
             return this.channelService
               .getChannel(chat.id, isPrivate)
               .pipe(map((updatedChat) => ({ chat: updatedChat, isPrivate })));
@@ -224,21 +237,19 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       )
       .subscribe(({ chat, isPrivate }) => {
-        if (chat?.id !== this.previousChatId) {
-          this.currentChat = chat;
-          this.isCurrentChatPrivate = isPrivate;
-          this.selectedChat = !!chat;
-          this.previousChatId = chat?.id || null;
+        this.currentChat = chat;
+        this.isCurrentChatPrivate = isPrivate;
+        this.selectedChat = !!chat;
+        this.previousChatId = chat?.id || null;
 
-          if (!this.currentChat) {
-            return;
-          }
-
-          this.getUsersOfSelectedChannel(this.currentChat);
-          this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
-
-          this.getUserNameById(this.currentChat);
+        if (!this.currentChat) {
+          return;
         }
+
+        this.getUsersOfSelectedChannel(this.currentChat);
+        this.otherUser = this.getOtherUserInPrivateChat(this.currentChat);
+
+        this.getUserNameById(this.currentChat);
       });
     this.subscriptions.add(chatSub);
   }
@@ -299,11 +310,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (chat && chat.members && chat.members.length > 0) {
       this.usersOfSelectedChannelSubscription = this.userService
-        .getUsers()
+        .getUsersByIds(chat.members)
         .subscribe((users) => {
-          this.usersOfSelectedChannel = users.filter((user) =>
-            chat.members.includes(user.userId)
-          );
+          this.usersOfSelectedChannel = users;
         });
       this.subscriptions.add(this.usersOfSelectedChannelSubscription);
     }

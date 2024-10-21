@@ -17,7 +17,7 @@ export class UserService {
     this.loadEmojisFromLocalStorage();
   }
 
-  
+
   /**
    * Gets all users from the Firestore collection.
    * @returns {Observable<User[]>} An observable array of users.
@@ -37,6 +37,15 @@ export class UserService {
   getUser(id: string): Observable<User> {
     const userDoc = doc(this.firestore, `users/${id}`);
     return docData(userDoc, { idField: 'userId' }) as Observable<User>;
+  }
+
+  getUsersByIds(userIds: string[]): Observable<User[]> {
+    if (!userIds || userIds.length === 0) {
+      return of([]);
+    }
+
+    const userObservables = userIds.map((userId) => this.getUser(userId));
+    return combineLatest(userObservables);
   }
 
 
@@ -184,7 +193,7 @@ export class UserService {
       collection(this.firestore, 'directMessages'),
       where('members', 'array-contains', userId)
     );
-    
+
     return combineLatest([
       collectionData(publicChannelsQuery, { idField: 'id' }) as Observable<Channel[]>,
       collectionData(privateChannelsQuery, { idField: 'id' }) as Observable<Channel[]>

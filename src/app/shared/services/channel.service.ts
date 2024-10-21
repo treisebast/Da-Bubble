@@ -38,6 +38,17 @@ export class ChannelService {
     >;
   }
 
+  getChannelsForUser(userId: string, isPrivate: boolean): Observable<Channel[]> {
+    const collectionPath = isPrivate ? 'directMessages' : 'channels';
+    const collectionRef = collection(this.firestore, collectionPath);
+    const channelsQuery = query(
+      collectionRef,
+      where('members', 'array-contains', userId),
+      orderBy('createdAt', 'asc')
+    );
+    return collectionData(channelsQuery, { idField: 'id' }) as Observable<Channel[]>;
+  }
+
   /**
    * Retrieves a single channel by ID (public or private).
    * @param id - The channel ID.
