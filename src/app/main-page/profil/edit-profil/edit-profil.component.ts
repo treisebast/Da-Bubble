@@ -1,12 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { User } from '../../../shared/models/user.model';
 import { UserService } from '../../../shared/services/user.service';
 
@@ -30,7 +24,18 @@ export class EditProfilComponent {
     ]),
   });
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
+
+  ngOnInit() {
+    this.patchForm();
+  }
+
+  private patchForm() {
+    this.editProfilForm.patchValue({
+      name: this.ownUser.name || '',
+      email: this.ownUser.email || '',
+    });
+  }
 
   get name(): AbstractControl {
     return this.editProfilForm.get('name')!;
