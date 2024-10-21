@@ -1,7 +1,10 @@
 <header>
   <div class="max-width">
-    <div [routerLink]="['main']" (click)="logout()"><img src="./assets/img/logo.svg" alt="" class="logo" /></div>
-
+    <div [routerLink]="['main']" (click)="logout()" class="logo-container"><img src="./assets/img/logo.svg" alt="Logo" class="logo" /></div>
+    <div class="mobile-logo-container">
+      <img src="./assets/img/icons/back.png" alt="back" class="back-nav-logo">
+      <img src="./media/serverNameDefault.png" alt="devspace" class="mobile-logo" />
+    </div>
     <div class="searchbar">
       <input #searchInput type="text" placeholder="Devspace durchsuchen" [(ngModel)]="searchQuery"
         (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" />
@@ -25,7 +28,8 @@
     <div class="profile" mat-button cdkFocusInitial (click)="openMenu()">
       <h2>{{ currentUser.name }}</h2>
       <div class="profil-img-div">
-        <img [src]="currentUser.avatar || 'assets/img/profile/fallback_user.png'" alt="profile image" class="profile-img" (error)="currentUser.avatar = 'assets/img/profile/fallback_user.png'" />
+        <img [src]="currentUser.avatar || 'assets/img/profile/fallback_user.png'" alt="profile image"
+          class="profile-img" (error)="currentUser.avatar = 'assets/img/profile/fallback_user.png'" />
         <!-- Status icons -->
         <div *ngIf="currentUser.status === 'online'" class="status-indicator online"></div>
         <div *ngIf="currentUser.status === 'away'" class="status-indicator away"></div>

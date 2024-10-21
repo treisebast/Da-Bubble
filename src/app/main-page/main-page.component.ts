@@ -71,11 +71,11 @@ export class MainPageComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    this.checkMobileView();
+    this.checkViewModes();
   }
 
   ngOnInit() {
-    this.checkMobileView();
+    this.checkViewModes();
 
     this.chatService.currentChat$.subscribe(({ chat }) => {
       if (this.previousChatId && chat?.id !== this.previousChatId) {
@@ -85,12 +85,33 @@ export class MainPageComponent implements OnInit {
     });
   }
 
-  checkMobileView() {
-    this.isMobileView = window.innerWidth <= 1000;
+  checkViewModes() {
+    const width = window.innerWidth;
+    this.isMobileView = width <= 1200;
+
+    if (width < 1200) {
+      if (this.showChannels) {
+        this.showChannels = false;
+        this.workspaceMenu = 'Workspace-Menü öffnen';
+      }
+    } else {
+      if (!this.showChannels) {
+        this.showChannels = true;
+        this.workspaceMenu = 'Workspace-Menü schließen';
+      }
+    }
+
     if (!this.isMobileView) {
       this.currentView = 'main';
     }
   }
+
+  // checkMobileView() {
+  //   this.isMobileView = window.innerWidth <= 1000;
+  //   if (!this.isMobileView) {
+  //     this.currentView = 'main';
+  //   }
+  // }
 
   openCloseChatChannel() {
     if (this.showChannels) {

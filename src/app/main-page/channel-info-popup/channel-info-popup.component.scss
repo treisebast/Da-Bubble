@@ -38,17 +38,15 @@
       font-weight: 700;
       cursor: pointer;
       color: var(--black);
-      width: 35px;
-      height: 35px;
+      width: 35px !important;
+      height: 35px !important;
       border-radius: 35px;
       background-image: url('../../../assets/img/chatChannel/close.svg');
-      background-size: 35px;
       background-repeat: no-repeat;
       background-position: center;
 
       &:hover {
         background-color: var(--light-purple);
-        background-size: 35px;
         background-image: url('../../../assets/img/chatChannel/close_hover.svg');
         ;
       }
@@ -227,4 +225,100 @@
   font-size: 14px;
   margin-left: 12px;
   margin-top: 8px;
+}
+
+@media(max-width: 850px) {
+  .channel-popup {
+    position: absolute;
+    top: 80px;
+    width: 450px;
+  }
+}
+
+@media(max-width: 550px) {
+  .channel-popup {
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 16px 12px;
+
+    .leave-button {
+      font-size: 14px;
+    }
+
+    .popup-body {
+      margin-top: 10px;
+
+      .channel-name,
+      .channel-info {
+        border-radius: 15px;
+        padding: 16px;
+        margin-bottom: 20px;
+
+        gap: 0px;
+        width: 100%;
+
+
+        .popup-headline {
+          width: 100%;
+        }
+
+        h3 {
+          font-weight: bold;
+          margin-bottom: 5px;
+          font-size: 14px;
+        }
+
+        p {
+          font-size: 14px;
+        }
+
+        .edit-input {
+          font-size: 14px;
+        }
+
+        .popup-text {
+          width: 100%;
+        }
+
+        .edit-button {
+          font-size: 16px;
+          font-weight: 500;
+
+          &:hover {
+            font-weight: 700;
+          }
+        }
+
+        .createdBy-info {
+          gap: 0;
+        }
+      }
+    }
+
+    .popup-header {
+      padding-bottom: 10px;
+      padding-left: 8px;
+      padding-right: 8px;
+
+      h2 {
+        font-size: 18px;
+      }
+
+      .close-button {
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 35px;
+        background-image: url('../../../assets/img/chatChannel/close.svg');
+        background-repeat: no-repeat;
+        background-position: center;
+
+        &:hover {
+          background-color: var(--light-purple);
+          background-image: url('../../../assets/img/chatChannel/close_hover.svg');
+          ;
+        }
+      }
+    }
+  }
 }

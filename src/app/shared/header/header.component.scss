@@ -15,6 +15,10 @@ header {
     align-items: center;
     height: 115px;
 
+    .logo-container {
+      display: flex;
+    }
+
     .logo {
       width: 200px;
       height: 70px;
@@ -22,6 +26,17 @@ header {
 
       &:hover {
         cursor: pointer;
+      }
+    }
+
+    .mobile-logo-container {
+      display: none;
+      align-items: center;
+      justify-content: start;
+
+      .back-nav-logo {
+        width: 25px;
+        height: 25px;
       }
     }
 
@@ -86,7 +101,7 @@ header {
       align-items: center;
       justify-content: space-between;
       position: relative;
-      
+
       input {
         border: none;
         outline: none;
@@ -186,22 +201,46 @@ header {
 @media (max-width: 500px) {
   header {
     height: 80px !important;
-  }
 
-  .logo {
-    height: 45px !important;
-  }
+    .max-width {
+      height: 87px !important;
+    }
 
-  .profil-img-div {
-    width: 45px !important;
-    height: 45px !important;
-  }
+    .logo-container {
+      display: none !important;
+    }
 
-  .profile {
-    height: 45px !important;
-
-    .profile-img {
+    .logo {
+      display: none;
       height: 45px !important;
+    }
+
+    .mobile-logo-container {
+      display: flex !important;
+      align-items: center;
+      justify-content: start;
+
+      .back-nav-logo {
+        width: 25px;
+        height: 25px;
+      }
+
+      .mobile-logo {
+        height: 45px !important;
+      }
+    }
+
+    .profil-img-div {
+      width: 45px !important;
+      height: 45px !important;
+    }
+
+    .profile {
+      height: 45px !important;
+
+      .profile-img {
+        height: 45px !important;
+      }
     }
   }
 }

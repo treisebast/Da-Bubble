@@ -70,6 +70,12 @@
   box-shadow: 0 -1px 4px 1px rgba(0, 0, 0, 0.2);
 }
 
+// @media(max-width:1200px ){
+//   app-chat-main {
+//     height: calc(100vh - 171px) !important;
+//   }
+// }
+
 @media (max-width: 1000px) {
   .full-page {
     flex-direction: column;
