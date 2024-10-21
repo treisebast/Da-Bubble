@@ -1,7 +1,7 @@
 <div class="modal-background" (click)="closeProfil()">
   <div class="max-width" [ngClass]="">
 
-    <app-avatar-choice class="profil-card" *ngIf="isChangingAvatar" [ownUser]="onclickUser"
+    <app-avatar-choice class="profil-card profil-card-ownUser visible" *ngIf="isChangingAvatar" [ownUser]="onclickUser"
       [isChangingAvatar]="isChangingAvatar" (setSelectedAvatar)="setSelectedAvatar($event)"
       (click)="$event.stopPropagation()"></app-avatar-choice>
 

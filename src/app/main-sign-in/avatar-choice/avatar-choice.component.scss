@@ -8,6 +8,7 @@
 .box-shadow {
     box-shadow: none;
     padding: 0px;
+    width: unset;
 }
 
 .avatar-big {
@@ -18,7 +19,7 @@
     gap: 16px;
     margin-top: 8px;
 
-    >img {
+    > img {
         object-fit: cover;
         border-radius: 50%;
         width: 80px;
@@ -47,7 +48,7 @@ p {
     align-items: center;
     margin-bottom: 16px;
 
-    >button {
+    > button {
         min-width: 125px !important;
     }
 }
@@ -59,7 +60,7 @@ p {
     align-items: center;
     gap: 16px;
 
-    >button {
+    > button {
         font-size: 14px;
         font-weight: 700;
         line-height: 24.55px;
@@ -73,7 +74,7 @@ p {
     justify-content: space-between;
     margin: 20px 0 20px;
 
-    >img {
+    > img {
         width: 55px;
         height: 55px;
         border-radius: 50%;
@@ -113,9 +114,8 @@ input[type="file"] {
 }
 
 @media (min-width: 1200px) {
-
-    .login-actions>button,
-    .alt-choice>button {
+    .login-actions > button,
+    .alt-choice > button {
         font-size: 18px;
     }
 
@@ -135,7 +135,7 @@ input[type="file"] {
     }
 
     .avatar-big {
-        >img {
+        > img {
             width: 100px;
             height: 100px;
         }
@@ -147,14 +147,12 @@ input[type="file"] {
         font-size: 28px;
     }
 
-
     .avatar-choices {
-        >img {
+        > img {
             width: 40px;
             height: 40px;
         }
     }
-
 
     p {
         font-size: 18px;
@@ -168,21 +166,21 @@ input[type="file"] {
     }
 
     .avatar-choices {
-        >img {
+        > img {
             width: 40px;
             height: 40px;
         }
     }
 
     .avatar-big {
-        >img {
+        > img {
             width: 90px;
             height: 90px;
         }
     }
 
     .alt-choice {
-        >button {
+        > button {
             min-width: 152px !important;
         }
     }
