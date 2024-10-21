@@ -196,6 +196,20 @@ mat-label {
   }
 }
 
+
+.userToClick.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  h2 {
+   color: grey;
+  }
+}
+
+.userToClick.disabled:hover {
+  background-color: transparent;
+}
+
+
 .selected {
   cursor: pointer;
   display: flex;

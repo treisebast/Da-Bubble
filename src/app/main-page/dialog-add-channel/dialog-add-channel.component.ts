@@ -55,6 +55,7 @@ export class DialogAddChannelComponent {
   channelNameErrorMessage: string = '';
   showChannelNameErrorMessage: boolean = false;
   private channelNameErrorTimeout: any;
+  channelMembers: Set<string> = new Set();
 
   dialogProgressState: 'addChannel' | 'addUsers' = 'addChannel';
   loadedUsers: User[] = [];
@@ -134,16 +135,35 @@ export class DialogAddChannelComponent {
     });
   }
 
+
   /**
-   * Filter users based on the search input
+   * Filters the list of users based on the search input and sorts them.
+   * The method trims and converts the search input to lowercase, then filters the `loadedUsers` array
+   * to include only users whose names contain the search term. If the search term is empty, it returns
+   * a copy of all users.
+   * After filtering, the users are sorted such that members (determined by `isAlreadyMember`) appear
+   * before non-members. Within each group (members and non-members), users are sorted alphabetically
+   * by name.
    */
   filterUsers(): void {
     const searchTerm = this.searchInput.trim().toLowerCase();
-    this.filteredUsers = searchTerm
+
+    const filtered = searchTerm
       ? this.loadedUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchTerm)
-      )
-      : [];
+          user.name.toLowerCase().includes(searchTerm)
+        )
+      : this.loadedUsers.slice(); // Kopie aller Benutzer
+
+    this.filteredUsers = filtered.sort((a, b) => {
+      const aIsMember = this.isAlreadyMember(a) ? 1 : 0;
+      const bIsMember = this.isAlreadyMember(b) ? 1 : 0;
+
+      if (aIsMember === bIsMember) {
+        return a.name.localeCompare(b.name);
+      } else {
+        return aIsMember - bIsMember;
+      }
+    });
   }
 
   /**
@@ -190,9 +210,18 @@ export class DialogAddChannelComponent {
     return this.selectedUsers.some((u) => u.userId === user.userId);
   }
 
+
   /**
-   * Add users to the channel and close the dialog
-   * @param channel - The channel to which users will be added
+   * Adds users to a channel based on the selected option.
+   *
+   * @param {Channel} channel - The target channel.
+   * @param {string} selectedRadio - The selected option ('allFromChannel' or specific users).
+   * @returns {Promise<void>} - Resolves when the operation is complete.
+   *
+   * @remarks
+   * - Filters out existing members.
+   * - Updates Firebase if not in testing mode.
+   * - Logs locally if in testing mode.
    */
   async addUsersToChannel(
     channel: Channel,
@@ -200,13 +229,15 @@ export class DialogAddChannelComponent {
   ): Promise<void> {
     this.loading = true;
 
-    const usersToAdd = (
+    const usersToAddIds = (
       selectedRadio === 'allFromChannel' ? this.loadedUsers : this.selectedUsers
-    ).map((user) => user.userId);
+    )
+      .filter(user => !this.isAlreadyMember(user))
+      .map(user => user.userId);
 
     try {
-      const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
-      channel.members = updatedMembers; // Update the local channel object
+      const updatedMembers = [...new Set([...channel.members, ...usersToAddIds])];
+      channel.members = updatedMembers;
 
       if (!this.isTesting) {
         // Only update Firebase if not in testing mode
@@ -221,7 +252,7 @@ export class DialogAddChannelComponent {
       console.error('Error adding users to channel:', error);
     } finally {
       this.loading = false;
-      this.closeDialog(); // Close the dialog after adding users
+      this.closeDialog();
     }
   }
 
@@ -280,6 +311,8 @@ export class DialogAddChannelComponent {
   async saveChannelToFirebase(newChannel: NewChannel) {
     if (this.isTesting) {
       this.channel = { ...newChannel, id: '' };
+      // Aktualisiere die channelMembers
+      this.channelMembers = new Set(newChannel.members);
       console.log('Testing mode: Channel created locally', newChannel);
       return;
     }
@@ -290,12 +323,18 @@ export class DialogAddChannelComponent {
       const channelDocRef = await this.channelService.addChannel(newChannel);
       const createdChannel: Channel = { ...newChannel, id: channelDocRef.id };
       this.channel = createdChannel;
+      // Aktualisiere die channelMembers
+      this.channelMembers = new Set(createdChannel.members);
       console.log('Channel added to Firebase:', createdChannel);
     } catch (error) {
       console.error('Error adding channel:', error);
     } finally {
       this.loading = false;
     }
+  }
+
+  isAlreadyMember(user: User): boolean {
+    return this.channelMembers.has(user.userId);
   }
 
   /**
