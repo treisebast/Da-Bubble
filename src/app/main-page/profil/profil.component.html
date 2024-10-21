@@ -1,11 +1,13 @@
 <div class="modal-background" (click)="closeProfil()">
-  <div class="max-width">
+  <div class="max-width" [ngClass]="">
 
     <app-avatar-choice class="profil-card" *ngIf="isChangingAvatar" [ownUser]="onclickUser"
       [isChangingAvatar]="isChangingAvatar" (setSelectedAvatar)="setSelectedAvatar($event)"
       (click)="$event.stopPropagation()"></app-avatar-choice>
 
-    <mat-card class="profil-card" (click)="$event.stopPropagation()" *ngIf="!isChangingAvatar">
+    <mat-card class="profil-card"
+      [ngClass]="onclickUserID === ownUserID ? 'profil-card-ownUser visible' : ' profil-card-foreignUser visible'"
+      (click)="$event.stopPropagation()" *ngIf="!isChangingAvatar">
       <div class="profil-card-container">
         <div class="profil-header">
           <mat-card-title>{{ profiltext }}</mat-card-title>
