@@ -38,12 +38,16 @@ export class MessageComponent implements OnInit, OnChanges {
   fileName: string = '';
   fileSize: number = 0;
   showEmojiPicker = false;
+  showMobileEmojis: boolean = false;
   lastTwoEmojis: string[] = [];
+  mobileEmojis: string[] = ['👍', '❤️', '😂', '😮'];
   usernames: { [emoji: string]: string[] } = {};
   showTooltip: string | null = null;
   userProfiles: { [userId: string]: User } = {};
   @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
   @ViewChild(MessageMenuComponent) messageMenuComponent!: MessageMenuComponent;
+  @ViewChild('mobileMartContainer') mobileMartContainerRef!: ElementRef;
+  @ViewChild('mobileMartButton') mobileMartButtonRef!: ElementRef;
 
   constructor(
     private chatService: ChatService,
@@ -54,6 +58,7 @@ export class MessageComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit(): void {
+
     this.userService.lastTwoEmojis$.subscribe((emojis) => {
       this.lastTwoEmojis = emojis;
     });
@@ -78,18 +83,30 @@ export class MessageComponent implements OnInit, OnChanges {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.showEmojiPicker) {
-      return;
+    if (this.showEmojiPicker) {
+      const emojiPickerElement = this.emojiPickerContainer?.nativeElement;
+      if (emojiPickerElement && !emojiPickerElement.contains(event.target)) {
+        this.showEmojiPicker = false;
+      }
     }
 
-    const emojiPickerElement = this.emojiPickerContainer?.nativeElement;
-    if (emojiPickerElement && !emojiPickerElement.contains(event.target)) {
-      this.showEmojiPicker = false;
+    if (this.showMobileEmojis) {
+      const mobileMartContainerElement = this.mobileMartContainerRef?.nativeElement;
+      const mobileMartButtonElement = this.mobileMartButtonRef?.nativeElement;
+
+      if (
+        mobileMartContainerElement &&
+        !mobileMartContainerElement.contains(event.target) &&
+        mobileMartButtonElement &&
+        !mobileMartButtonElement.contains(event.target)
+      ) {
+        this.showMobileEmojis = false;
+      }
     }
   }
 
   checkScreenWidth() {
-    this.screenSmall = window.innerWidth <= 500;
+    this.screenSmall = window.innerWidth <= 600;
   }
 
   convertToDate(timestamp: Timestamp | FieldValue | undefined): Date {
@@ -258,6 +275,14 @@ export class MessageComponent implements OnInit, OnChanges {
         this.userService.addEmoji(emoji);
       }
     });
+  }
+
+  toggleMobileEmojis() {
+    this.showMobileEmojis = !this.showMobileEmojis;
+  }
+
+  onMobileEmojiClick(emoji: string): void {
+    this.addOrRemoveReaction(emoji);
   }
 
   getReactionCount(emoji: string): number {

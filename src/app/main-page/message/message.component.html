@@ -1,5 +1,5 @@
-<div   id="{{ message.id }}" class="singelMessageContainer" [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
-  <!-- (mouseleave)="onMouseLeave()" TBI -->
+<div id="{{ message.id }}" class="singelMessageContainer"
+  [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
 
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
@@ -17,8 +17,6 @@
       </div>
       <div class="reaction" (click)="toggleEmojiPicker($event)"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
-      <!-- <div *ngIf="isCurrentUser" class="vertPoints">
-      </div> -->
       <!-- Füge hier die MessageMenuComponent ein -->
       <app-message-menu [isCurrentUser]="isCurrentUser" (edit)="editMessage()" (delete)="deleteMessage()">
       </app-message-menu>
@@ -55,17 +53,27 @@
     </div>
 
     <div class="reaction-button-bar">
-      <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
-        (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
-        (click)="addOrRemoveReaction(emoji.key)">
-
-        <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
-
-        <!-- Benutzerdefinierter Tooltip -->
-        <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
+      <div class="mobile-nav-menu">
+        <div class="mobile-mart" *ngIf="screenSmall" (click)="toggleMobileEmojis()" #mobileMartButton>
+          <div class="mobile-mart-container" *ngIf="showMobileEmojis" #mobileMartContainer>
+            <span *ngFor="let emoji of mobileEmojis" class="mobile-emoji" (click)="onMobileEmojiClick(emoji)">
+              {{ emoji }}
+            </span>
+          </div>
         </div>
+        <div class="mobile-thread-opener" (click)="onMessageClick()"></div>
       </div>
-      <div class="mart-button" (click)="toggleEmojiPicker($event)"></div>
+
+      <div class="web-nav-menu">
+        <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
+          (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
+          (click)="addOrRemoveReaction(emoji.key)">
+          <span class="emoji">{{ emoji.key }}</span> {{ getReactionCount(emoji.key) }}
+          <div *ngIf="showTooltip === emoji.key" class="reaction-tooltip" [innerHTML]="getTooltipContent(emoji.key)">
+          </div>
+        </div>
+        <div class="mart-button" (click)="toggleEmojiPicker($event)"></div>
+      </div>
     </div>
 
     <div #emojiPickerContainer>

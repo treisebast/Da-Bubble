@@ -18,12 +18,12 @@
 
   &:hover {
     &::before {
-      background-color: var(--main-background, rgb(235, 239, 254));
+      background-color: var(--main-background, rgb(235, 239, 254)) !important;
     }
+  }
 
-    .reactionBar {
-      display: flex;
-    }
+  .reactionBar {
+    display: flex;
   }
 
   .message-content {
@@ -44,6 +44,18 @@
   &.full-width {
     max-width: 75%;
   }
+}
+
+.mobile-nav-menu {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.web-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .message-wrapper .message-right {
@@ -513,6 +525,61 @@
       background-size: 20px;
     }
   }
+
+  .mobile-mart {
+    display: flex !important;
+    justify-content: space-around;
+    padding: 8px;
+    background-color: #f9f9f9;
+
+    .mobile-mart-container {
+      position: relative;
+      bottom: 40px;
+      left: 10px;
+      display: flex;
+      background-color: var(--white);
+      border: 1px solid var(--divider-purple);
+      height: 50px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-bottom-right-radius: 20px;
+      border-top-right-radius: 20px;
+      border-top-left-radius: 20px;
+      padding: 8px;
+      z-index: 1000;
+      user-select: none;
+
+      .mobile-emoji {
+        font-size: 24px;
+        cursor: pointer;
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
+
+  .mobile-thread-opener {
+    display: flex !important;
+  }
+
+  .mart-button {
+    display: none !important;
+  }
+
+  .reactionBar {
+    display: none !important;
+  }
+
+  .singelMessageContainer {
+    &:hover {
+      background-color: var(--main-background, rgb(235, 239, 254)) !important;
+    }
+  }
+
 }
 
 .attachments {
@@ -593,7 +660,38 @@
   }
 }
 
-
 .highlight {
   background-color: var(--main-background, rgb(235, 239, 254));
+}
+
+.mobile-mart {
+  display: none;
+  height: 35px;
+  width: 35px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  cursor: pointer;
+  background-color: var(--white);
+  border-radius: 50%;
+  background-image: url(../../../assets/img/chatChannel/add_reaction.svg);
+
+  &:hover {
+    background-image: url(../../../assets/img/chatChannel/add_reaction_hover.svg);
+  }
+}
+
+.mobile-thread-opener {
+  display: none;
+  height: 35px;
+  width: 35px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  cursor: pointer;
+  background-image: url(../../../assets/img/chatChannel/comment.svg);
+  background-color: var(--white);
+  border-radius: 50%;
+
+  &:hover {
+    background-image: url(../../../assets/img/chatChannel/comment_hover.svg);
+  }
 }
