@@ -14,6 +14,7 @@ import {
   setDoc,
   where,
   getDocs,
+  getDoc,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Channel, NewChannel } from '../models/channel.model';
@@ -22,7 +23,7 @@ import { Channel, NewChannel } from '../models/channel.model';
   providedIn: 'root',
 })
 export class ChannelService {
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore) { }
 
   /**
    * Retrieves all channels (public or private).
@@ -108,6 +109,17 @@ export class ChannelService {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
     return deleteDoc(channelDoc);
+  }
+
+  async removeUserFromChannel(channelId: string, userId: string, isPrivate: boolean): Promise<void> {
+    const collectionPath = isPrivate ? 'directMessages' : 'channels';
+    const channelDocRef = doc(this.firestore, `${collectionPath}/${channelId}`);
+    const channelSnapshot = await getDoc(channelDocRef);
+    if (channelSnapshot.exists()) {
+      const channelData = channelSnapshot.data() as Channel;
+      const updatedMembers = channelData.members.filter(memberId => memberId !== userId);
+      await updateDoc(channelDocRef, { members: updatedMembers });
+    }
   }
 
 

@@ -119,8 +119,8 @@ export class AuthService {
     return from(
       this.auth.currentUser
         ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
-            () => signOut(this.auth)
-          )
+          () => signOut(this.auth)
+        )
         : signOut(this.auth)
     );
   }
@@ -131,6 +131,15 @@ export class AuthService {
    */
   getUser(): Observable<FirebaseUser | null> {
     return authState(this.auth);
+  }
+
+
+  /**
+     * Returns the currently authenticated user.
+     * @returns The current Firebase user or null if no user is authenticated.
+     */
+  getCurrentUser(): FirebaseUser | null {
+    return this.auth.currentUser;
   }
 
   /**

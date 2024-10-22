@@ -4,6 +4,8 @@ import { ChannelService } from '../../shared/services/channel.service';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../shared/services/user.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { ChatService } from '../../shared/services/chat-service.service';
 
 @Component({
   selector: 'app-channel-info-popup',
@@ -21,8 +23,8 @@ export class ChannelInfoPopupComponent {
   editedDescription: string = '';
   createdByName: string = '';
   nameErrorMessage: string = '';
-  
-  constructor(private channelService: ChannelService, private userService: UserService,private elementRef: ElementRef) { }
+
+  constructor(private channelService: ChannelService, private userService: UserService, private elementRef: ElementRef, private chatService: ChatService, private authService: AuthService) { }
 
   ngOnInit() {
     if (this.channel) {
@@ -42,7 +44,7 @@ export class ChannelInfoPopupComponent {
     this.isEditingDescription = true;
   }
 
-async saveName() {
+  async saveName() {
     if (this.channel && this.editedName !== this.channel.name) {
       try {
         // Überprüfung auf Duplikate
@@ -68,7 +70,7 @@ async saveName() {
       this.isEditingName = false;
     }
   }
-  
+
   async saveDescription() {
     if (this.channel && this.editedDescription !== this.channel.description) {
       const updatedFields = { description: this.editedDescription };
@@ -76,6 +78,20 @@ async saveName() {
       this.channel.description = this.editedDescription;
     }
     this.isEditingDescription = false;
+  }
+
+  async leaveChannel() {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (this.channel && currentUser) {
+      try {
+        await this.channelService.removeUserFromChannel(this.channel.id, currentUser.uid, this.channel.isPrivate);
+        this.chatService.setCurrentChat(null, false);
+        this.close.emit();
+      } catch (error) {
+        console.error('Fehler beim Verlassen des Channels:', error);
+      }
+    }
   }
 
   @HostListener('document:click', ['$event'])
