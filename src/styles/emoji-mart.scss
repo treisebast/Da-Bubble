@@ -134,3 +134,19 @@
         top: 12px;
     }
 }
+
+
+@media(max-width:600px) {
+    .emoji-mart-message-box {
+        left: 8px;
+        bottom: 105%;
+
+        section {
+            width: 250px !important;
+        }
+    }
+
+    .emoji-mart .emoji-mart-scroll {
+        height: 100px;
+    }
+}

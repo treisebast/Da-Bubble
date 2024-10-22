@@ -20,10 +20,10 @@
     &::before {
       background-color: var(--main-background, rgb(235, 239, 254)) !important;
     }
-  }
 
-  .reactionBar {
-    display: flex;
+    &:hover .reactionBar {
+      display: flex;
+    }
   }
 
   .message-content {
