@@ -39,8 +39,9 @@ export class ProfilComponent implements OnInit {
   @Input() onclickUser: Partial<User> = {};
   onclickUserID: string = '';
 
-  isEditing = false;
   isChangingAvatar = false;
+  isEditingEmail = false;
+  isEditingName = false;
   profiltext: string = 'Profil';
   ownUser: Partial<User> = {};
   ownUserID: string = '';
@@ -79,14 +80,26 @@ export class ProfilComponent implements OnInit {
     this.closeProfileCard.emit();
   }
 
-  editProfil() {
-    this.isEditing = true;
-    console.log('editing profile...');
+  editProfil(text: string) {
     this.profiltext = 'Dein Profil bearbeiten';
+    console.log('editing profile...');
+    switch (text) {
+      case 'avatar':
+        this.isChangingAvatar = true;
+        break;
+      case 'name':
+        this.isEditingName = true;
+        break;
+      case 'email':
+        this.isEditingEmail = true;
+        break;
+    }
   }
 
   closeEditProfil(event: boolean) {
-    this.isEditing = event;
+    this.isEditingName = event;
+    this.isEditingEmail = event;
+    this.isChangingAvatar = event;
   }
 
   sendMessage(userId: string) {
@@ -95,10 +108,6 @@ export class ProfilComponent implements OnInit {
       this.subs.add(userSub);
       this.closeProfil();
     });
-  }
-
-  editingAvatar() {
-    this.isChangingAvatar = true;
   }
 
   setSelectedAvatar(event: boolean) {

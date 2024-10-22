@@ -30,7 +30,7 @@
   .profil-card-container {
     display: flex;
     flex-direction: column;
-    gap: 45px;
+    gap: 32px;
 
     @media (max-height: 700px) {
       gap: 30px;
@@ -164,49 +164,6 @@
       overflow: hidden;
       white-space: nowrap;
     }
-
-    .edit-icon-container {
-      display: none;
-      padding: 3px;
-      border-radius: 40px;
-      background: var(--light-purple, rgb(236, 238, 254));
-
-      .edit-icon {
-        width: 24px;
-        height: 24px;
-        background-image: url(./../../../assets/img/profilecard/edit.svg);
-        background-repeat: no-repeat;
-        background-position: center center;
-        transition: ease-in-out 150ms;
-
-        &:hover {
-          background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
-          cursor: pointer;
-        }
-      }
-
-      @media screen and (max-width: 600px) {
-        display: block;
-      }
-    }
-
-    .edit {
-      display: block;
-      color: var(--purple-three, rgb(83, 90, 241));
-      font-size: 18px;
-      font-weight: 600;
-      transition: ease-in-out 150ms;
-
-      &:hover {
-        cursor: pointer;
-        font-weight: 700;
-        transform-origin: left;
-      }
-
-      @media screen and (max-width: 600px) {
-        display: none;
-      }
-    }
   }
 
   .profil-status {
@@ -218,6 +175,49 @@
       font-size: 20px;
       margin: 0;
     }
+  }
+}
+
+.edit-icon-container {
+  display: none;
+  padding: 3px;
+  border-radius: 40px;
+  background: var(--light-purple, rgb(236, 238, 254));
+
+  .edit-icon {
+    width: 24px;
+    height: 24px;
+    background-image: url(./../../../assets/img/profilecard/edit.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    transition: ease-in-out 150ms;
+
+    &:hover {
+      background-image: url(./../../../assets/img/profilecard/edit_hover.svg);
+      cursor: pointer;
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    display: block;
+  }
+}
+
+.edit {
+  display: block;
+  color: var(--purple-three, rgb(83, 90, 241));
+  font-size: 18px;
+  font-weight: 600;
+  transition: ease-in-out 150ms;
+
+  &:hover {
+    cursor: pointer;
+    font-weight: 700;
+    transform-origin: left;
+  }
+
+  @media screen and (max-width: 600px) {
+    display: none;
   }
 }
 

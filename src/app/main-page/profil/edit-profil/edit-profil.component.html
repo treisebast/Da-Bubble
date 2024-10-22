@@ -1,5 +1,4 @@
-<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()">
-
+<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()" *ngIf="isEditingName">
   <!-- Name -->
   <div class=" flex-container">
     <div class="account-circle-icon"></div>
@@ -14,6 +13,29 @@
     Name muss mindestens 3 Zeichen lang sein.
   </span>
 
+  <div class=" flex-container">
+    <div class="account-circle-icon"></div>
+    <span class="h2text">Name wiederholen</span>
+  </div>
+  <div class="input-container" [ngClass]="{'invalid-border':
+        name.invalid && (name.dirty || name.touched)
+    }">
+    <input type="text" formControlName="name" autocomplete="name" [placeholder]="ownUser.name" />
+  </div>
+  <span class="validMsg" [class.hidden]="!(name.invalid && name.touched)">
+    Name stimmt nicht überein.
+  </span>
+
+  <!-- Save and Cancel -->
+  <div class="width-100">
+    <div class="button-container">
+      <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
+      <button class="btn btn-save" type="submit">Speichern</button>
+    </div>
+  </div>
+</form>
+
+<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()" *ngIf="isEditingEmail">
   <!-- Email -->
   <div class="flex-container email-container">
     <div class="email-icon"></div>
@@ -26,6 +48,19 @@
   </div>
   <span class="validMsg" [class.hidden]="!(email.invalid && email.touched)">
     Bitte geben Sie eine gültige E-Mail-Adresse ein.
+  </span>
+
+  <div class="flex-container email-container">
+    <div class="email-icon"></div>
+    <span class="h2text">E-Mail-Adresse wiederholen</span>
+  </div>
+  <div class="input-container" [ngClass]="{
+      'invalid-border': email.invalid && (email.dirty || email.touched)
+    }" required>
+    <input type="email" formControlName="email" [placeholder]="ownUser.email" />
+  </div>
+  <span class="validMsg" [class.hidden]="!(email.invalid && email.touched)">
+    E-Mail-Adresse stimmt nicht überein.
   </span>
 
   <!-- Save and Cancel -->

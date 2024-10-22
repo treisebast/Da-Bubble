@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { User } from '../../../shared/models/user.model';
 import { UserService } from '../../../shared/services/user.service';
 
@@ -13,6 +19,8 @@ import { UserService } from '../../../shared/services/user.service';
 })
 export class EditProfilComponent {
   @Input() ownUser: Partial<User> = {};
+  @Input() isEditingName: boolean = false;
+  @Input() isEditingEmail: boolean = false;
   @Output() closeEditProfil = new EventEmitter<boolean>();
 
   editProfilForm = new FormGroup({
@@ -24,12 +32,13 @@ export class EditProfilComponent {
     ]),
   });
 
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService) {}
 
   ngOnInit() {
     this.patchForm();
   }
 
+  //TODO: Add validation for email and repeat email, name and repeat name
   private patchForm() {
     this.editProfilForm.patchValue({
       name: this.ownUser.name || '',

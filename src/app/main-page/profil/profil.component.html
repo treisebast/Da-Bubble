@@ -14,19 +14,30 @@
           <div class="close-img" (click)="closeProfil()"></div>
         </div>
 
-        <div class="profil-img-container" (click)="isEditing ? editingAvatar() : null; $event.stopPropagation()">
-          <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser"
-            [ngClass]="isEditing ? 'hover-effect' : ''" />
+        <div *ngIf="!isEditingEmail && !isEditingName">
+          <div style=" display: flex; align-items: center ;justify-content: flex-end">
+            <div class="edit-icon-container">
+              <div class="edit-icon" (click)="editProfil('avatar'); $event.stopPropagation()"></div>
+            </div>
+            <span *ngIf="onclickUserID === ownUserID" class="edit"
+              (click)="editProfil('avatar'); $event.stopPropagation()">Avatar
+              bearbeiten</span>
+          </div>
+
+          <div class="profil-img-container">
+            <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser"
+              [ngClass]="isChangingAvatar ? 'hover-effect' : ''" />
+          </div>
         </div>
 
-        <ng-template [ngIf]="!isEditing && onclickUser">
+        <ng-template [ngIf]="!( isEditingEmail || isEditingName ) && onclickUser">
           <div class="profil-name-container">
             <div class="title-container">
               <mat-card-title>{{ onclickUser.name }}</mat-card-title>
               <div class="edit-icon-container">
-                <div class="edit-icon" (click)="editProfil()"></div>
+                <div class="edit-icon" (click)="editProfil('name')"></div>
               </div>
-              <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil()">Bearbeiten</span>
+              <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil('name')">Name bearbeiten</span>
             </div>
             <div class="profil-status">
               <div class="status-indicator"
@@ -39,10 +50,17 @@
             </div>
           </div>
 
-          <div class="mail-container">
+          <div class="mail-container" *ngIf="!isEditingEmail">
             <div class="mail-header">
               <img src="./../../../assets/img/profilecard/mail.svg" alt="Emailimage" />
-              <mat-card-subtitle>E-Mail-Adresse</mat-card-subtitle>
+              <div style=" display: flex; align-items: center; justify-content: space-between; width: 100%">
+                <mat-card-subtitle>E-Mail-Adresse</mat-card-subtitle>
+                <div class="edit-icon-container">
+                  <div class="edit-icon" (click)="editProfil('email')"></div>
+                </div>
+                <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil('email')">Email
+                  bearbeiten</span>
+              </div>
             </div>
             <mat-card-subtitle class="mail-address">
               <a [href]="'mailto:' + onclickUser.email">{{ onclickUser.email }}</a>
@@ -50,8 +68,9 @@
           </div>
         </ng-template>
 
-        <ng-template [ngIf]="isEditing && (onclickUserID === ownUserID)">
-          <app-edit-profil [ownUser]="onclickUser" (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
+        <ng-template [ngIf]="(isEditingName || isEditingEmail) && (onclickUserID === ownUserID)">
+          <app-edit-profil [ownUser]="onclickUser" [isEditingName]="isEditingName" [isEditingEmail]="isEditingEmail"
+            (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
         </ng-template>
 
         <ng-template [ngIf]="onclickUserID !== ownUserID">
