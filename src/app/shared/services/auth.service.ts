@@ -1,5 +1,5 @@
 // auth.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import {
   Auth,
   signInWithPopup,
@@ -14,7 +14,7 @@ import {
   updateProfile,
 } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
-import { doc, Firestore, setDoc } from '@angular/fire/firestore';
+import { doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -25,11 +25,47 @@ export class AuthService {
   private readonly AWAY_LIMIT = 25000;
   private readonly OFFLINE_LIMIT = 600000;
   private currentStatus: 'online' | 'away' | 'offline' = 'offline';
+  private statusListeners: Map<string, () => void> = new Map();
 
   constructor(private auth: Auth, private firestore: Firestore) {
     this.checkAndSetUserOnlineStatus();
     this.monitorUserActivity();
   }
+
+  /**
+   * Listens to real-time updates for the current user's status.
+   */
+  private listenToUserStatusUpdates(userId: string): void {
+    const userDocRef = doc(this.firestore, `users/${userId}`);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const status = data['status'] as 'online' | 'away' | 'offline';
+        // Optional: Emit an event or update a BehaviorSubject if Sie den Status im UI anzeigen möchten
+        console.log(`User ${userId} status updated to ${status}`);
+      }
+    }, (error) => {
+      console.error(`Error listening to status updates for user ${userId}:`, error);
+    });
+
+    // Listener speichern
+    this.statusListeners.set(userId, unsubscribe);
+  }
+
+    /**
+   * Removes the status listener for a specific user.
+   * @param userId - The user ID.
+   */
+    public removeUserStatusListener(userId: string): void {
+      const unsubscribe = this.statusListeners.get(userId);
+      if (unsubscribe) {
+        unsubscribe();
+        this.statusListeners.delete(userId);
+        if (isDevMode()) {
+          console.log(`[AuthService] Status Listener entfernt für Benutzer: ${userId}`);
+        }
+      }
+    }
 
   /**
    * Monitors user activity and updates the user's online status.
@@ -84,7 +120,7 @@ export class AuthService {
   }
 
   /**
-   * Signs in a user with email and password.
+   * Overrides the sign-in method to include status listener.
    * @param email - User's email address.
    * @param password - User's password.
    * @returns Observable of the sign-in result.
@@ -96,6 +132,7 @@ export class AuthService {
           this.setUserOnlineStatus(result.user.uid, 'online');
           this.monitorVisibility(result.user.uid);
           this.addUnloadEvent(result.user.uid);
+          this.listenToUserStatusUpdates(result.user.uid); // Listener hinzufügen
         }
         return result;
       })
@@ -103,23 +140,34 @@ export class AuthService {
   }
 
   /**
-   * Signs in a user with Google authentication.
+   * Overrides the sign-in with Google method to include status listener.
    * @returns Observable of the authentication result.
    */
   signInWithGoogle(): Observable<any> {
     const provider = new GoogleAuthProvider();
-    return from(signInWithPopup(this.auth, provider));
+    return from(signInWithPopup(this.auth, provider).then((result) => {
+      if (result.user) {
+        this.setUserOnlineStatus(result.user.uid, 'online');
+        this.monitorVisibility(result.user.uid);
+        this.addUnloadEvent(result.user.uid);
+        this.listenToUserStatusUpdates(result.user.uid); // Listener hinzufügen
+      }
+      return result;
+    }));
   }
 
   /**
-   * Signs out the current user and sets their status to 'offline'.
+   * Overrides the sign-out method to remove all status listeners.
    * @returns Observable of the sign-out result.
    */
   signOut(): Observable<any> {
     return from(
       this.auth.currentUser
         ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
-          () => signOut(this.auth)
+          () => {
+            this.removeUserStatusListener(this.auth.currentUser!.uid);
+            return signOut(this.auth);
+          }
         )
         : signOut(this.auth)
     );
@@ -232,6 +280,7 @@ export class AuthService {
         this.setUserOnlineStatus(user.uid, 'online');
         this.monitorVisibility(user.uid);
         this.addUnloadEvent(user.uid);
+        this.listenToUserStatusUpdates(user.uid); // Listener hinzufügen
       }
     });
   }

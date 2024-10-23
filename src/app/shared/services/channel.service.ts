@@ -1,5 +1,4 @@
-// channel.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import {
   Firestore,
   collectionData,
@@ -15,136 +14,391 @@ import {
   where,
   getDocs,
   getDoc,
+  onSnapshot,
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { Channel, NewChannel } from '../models/channel.model';
+import { CacheService } from './cache.service';
+import { Message } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChannelService {
-  constructor(private firestore: Firestore) { }
+  private channelListeners: Map<string, () => void> = new Map();
+
+  constructor(
+    private firestore: Firestore,
+    private cacheService: CacheService
+  ) {
+    // Initiale Listener für öffentliche und private Kanäle
+    this.listenToChannelUpdates();
+  }
 
   /**
-   * Retrieves all channels (public or private).
-   * @param isPrivate - Whether the channels are private.
-   * @returns Observable of an array of channels.
+   * Determines the collection path based on channel privacy.
+   * @param isChannelPrivate - Whether the channel is private.
+   * @returns The collection path as a string.
+   */
+  private getCollectionPath(isChannelPrivate: boolean): string {
+    return isChannelPrivate ? 'directMessages' : 'channels';
+  }
+
+  /**
+   * Listens to real-time updates for all channels and updates the cache accordingly.
+   */
+  private listenToChannelUpdates(): void {
+    // Listener für öffentliche Kanäle
+    const publicChannelsQuery = query(
+      collection(this.firestore, 'channels'),
+      where('isPrivate', '==', false),
+      orderBy('createdAt', 'asc')
+    );
+
+    const unsubscribePublic = onSnapshot(
+      publicChannelsQuery,
+      (snapshot) => {
+        const channels: Channel[] = snapshot.docs.map(
+          (docSnap) =>
+            ({
+              ...docSnap.data(),
+              id: docSnap.id,
+            } as Channel)
+        );
+        this.cacheService.set('channels-public', channels, 10 * 60 * 1000); // 10 Minuten TTL für öffentliche Kanäle
+      },
+      (error) => {
+        console.error('Error listening to public channel updates:', error);
+      }
+    );
+
+    this.channelListeners.set('channels-public', unsubscribePublic);
+
+    // Listener für private Kanäle
+    const privateChannelsQuery = query(
+      collection(this.firestore, 'directMessages'),
+      where('isPrivate', '==', true),
+      orderBy('createdAt', 'asc')
+    );
+
+    const unsubscribePrivate = onSnapshot(
+      privateChannelsQuery,
+      (snapshot) => {
+        const channels: Channel[] = snapshot.docs.map(
+          (docSnap) =>
+            ({
+              ...docSnap.data(),
+              id: docSnap.id,
+            } as Channel)
+        );
+        this.cacheService.set('channels-private', channels, 10 * 60 * 1000); // 10 Minuten TTL für private Kanäle
+      },
+      (error) => {
+        console.error('Error listening to private channel updates:', error);
+      }
+    );
+
+    this.channelListeners.set('channels-private', unsubscribePrivate);
+  }
+
+  /**
+   * Ruft die gespeicherten Listener ab und beendet sie.
+   */
+  public removeAllChannelListeners(): void {
+    this.channelListeners.forEach((unsubscribe, key) => {
+      unsubscribe();
+      this.channelListeners.delete(key);
+      if (isDevMode()) {
+        console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
+      }
+    });
+  }
+
+  /**
+   * Sets up a real-time listener for a specific channel's messages.
+   * @param channelId - The channel ID.
+   * @param isPrivate - Whether the channel is private.
+   */
+  public listenToChannelMessages(channelId: string, isPrivate: boolean): void {
+    const key = `channelMessages-${isPrivate}-${channelId}`;
+    if (this.channelListeners.has(key)) {
+      // Listener bereits vorhanden
+      return;
+    }
+
+    const collectionPath = this.getCollectionPath(isPrivate);
+    const messagesCollection = collection(
+      this.firestore,
+      `${collectionPath}/${channelId}/messages`
+    );
+    const messagesQuery = query(
+      messagesCollection,
+      orderBy('timestamp', 'asc')
+    );
+
+    const unsubscribe = onSnapshot(
+      messagesQuery,
+      (snapshot) => {
+        const messages: Message[] = snapshot.docs.map(
+          (docSnap) =>
+            ({
+              ...docSnap.data(),
+              id: docSnap.id,
+            } as Message)
+        );
+        this.cacheService.set(key, messages, 5 * 60 * 1000); // 5 Minuten TTL für Nachrichten
+      },
+      (error) => {
+        console.error(
+          `Error listening to messages for channel ${channelId}:`,
+          error
+        );
+      }
+    );
+
+    // Listener speichern
+    this.channelListeners.set(key, unsubscribe);
+  }
+
+  /**
+   * Removes the real-time listener for a specific channel's messages.
+   * @param channelId - The channel ID.
+   * @param isPrivate - Whether the channel is private.
+   */
+  public removeChannelMessagesListener(
+    channelId: string,
+    isPrivate: boolean
+  ): void {
+    const key = `channelMessages-${isPrivate}-${channelId}`;
+    const unsubscribe = this.channelListeners.get(key);
+    if (unsubscribe) {
+      unsubscribe();
+      this.channelListeners.delete(key);
+      if (isDevMode()) {
+        console.log(
+          `[ChannelService] Listener entfernt für Kanal: ${channelId}`
+        );
+      }
+    }
+  }
+
+  /**
+   * Retrieves all channels (public or private) with caching.
+   * @param isPrivate - Indicates if channels are private.
+   * @returns An Observable of Channel array.
    */
   getChannels(isPrivate: boolean): Observable<Channel[]> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
-    const collectionRef = collection(this.firestore, collectionPath);
-    const channelsQuery = query(collectionRef, orderBy('createdAt', 'asc'));
-    return collectionData(channelsQuery, { idField: 'id' }) as Observable<
-      Channel[]
-    >;
-  }
-
-  getChannelsForUser(userId: string, isPrivate: boolean): Observable<Channel[]> {
-    const collectionPath = isPrivate ? 'directMessages' : 'channels';
-    const collectionRef = collection(this.firestore, collectionPath);
-    const channelsQuery = query(
-      collectionRef,
-      where('members', 'array-contains', userId),
-      orderBy('createdAt', 'asc')
-    );
-    return collectionData(channelsQuery, { idField: 'id' }) as Observable<Channel[]>;
+    const key = `channels-${isPrivate}`;
+    return this.cacheService.wrap(key, () => {
+      const collectionRef = collection(this.firestore, collectionPath);
+      const channelsQuery = query(collectionRef, orderBy('createdAt', 'asc'));
+      return collectionData(channelsQuery, { idField: 'id' }) as Observable<
+        Channel[]
+      >;
+    });
   }
 
   /**
-   * Retrieves a single channel by ID (public or private).
+   * Retrieves channels for a specific user with caching.
+   * @param userId - The user ID.
+   * @param isPrivate - Indicates if channels are private.
+   * @returns An Observable of Channel array.
+   */
+  getChannelsForUser(
+    userId: string,
+    isPrivate: boolean
+  ): Observable<Channel[]> {
+    const collectionPath = isPrivate ? 'directMessages' : 'channels';
+    const key = `channels-for-user-${isPrivate}-${userId}`;
+    return this.cacheService.wrap(key, () => {
+      const collectionRef = collection(this.firestore, collectionPath);
+      const channelsQuery = query(
+        collectionRef,
+        where('members', 'array-contains', userId),
+        orderBy('createdAt', 'asc')
+      );
+      return collectionData(channelsQuery, { idField: 'id' }) as Observable<
+        Channel[]
+      >;
+    });
+  }
+
+  /**
+   * Retrieves a specific channel by ID with caching.
    * @param id - The channel ID.
-   * @param isPrivate - Whether the channel is private.
-   * @returns Observable of the channel.
+   * @param isPrivate - Indicates if the channel is private.
+   * @returns An Observable of Channel.
    */
   getChannel(id: string, isPrivate: boolean): Observable<Channel> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
-    const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
-    return docData(channelDoc, { idField: 'id' }) as Observable<Channel>;
+    const key = `channel-${isPrivate}-${id}`;
+    return this.cacheService.wrap(key, () => {
+      const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
+      return docData(channelDoc, { idField: 'id' }) as Observable<Channel>;
+    });
   }
 
   /**
-   * Adds a new channel (public or private).
-   * @param channel - The channel object.
-   * @returns Promise that resolves to the document reference.
+   * Retrieves a channel by its name with caching.
+   * @param name - The name of the channel.
+   * @param isPrivate - Indicates if the channel is private.
+   * @returns A promise resolving to the Channel or null if not found.
+   */
+  async getChannelByName(
+    name: string,
+    isPrivate: boolean
+  ): Promise<Channel | null> {
+    const collectionPath = isPrivate ? 'directMessages' : 'channels';
+    const key = `channel-by-name-${isPrivate}-${name}`;
+    const cached = this.cacheService.get<Channel | null>(key);
+    if (cached) {
+      return firstValueFrom(cached);
+    }
+
+    const collectionRef = collection(this.firestore, collectionPath);
+    const channelsQuery = query(collectionRef, where('name', '==', name));
+    const querySnapshot = await getDocs(channelsQuery);
+
+    if (!querySnapshot.empty) {
+      const channel = querySnapshot.docs[0].data() as Channel;
+      this.cacheService.set(key, channel, 10 * 60 * 1000); // 10 Minuten TTL für Kanäle
+      return channel;
+    } else {
+      this.cacheService.set(key, null, 10 * 60 * 1000); // 10 Minuten TTL für nicht gefundene Kanäle
+      return null;
+    }
+  }
+
+  /**
+   * Holt öffentliche Kanäle mit Caching.
+   */
+  getPublicChannels(): Observable<Channel[]> {
+    const key = 'channels-public';
+    return this.cacheService.wrap(key, () => {
+      const channelsRef = collection(this.firestore, 'channels');
+      const q = query(channelsRef, where('isPrivate', '==', false));
+      return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
+    });
+  }
+
+  /**
+   * Holt private Kanäle mit Caching.
+   */
+  getPrivateChannels(): Observable<Channel[]> {
+    const key = 'channels-private';
+    return this.cacheService.wrap(key, () => {
+      const channelsRef = collection(this.firestore, 'channels');
+      const q = query(channelsRef, where('isPrivate', '==', true));
+      return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
+    });
+  }
+
+  /**
+   * Adds a new channel and invalidates relevant caches.
+   * @param channel - The new channel to add.
+   * @returns A promise resolving to the DocumentReference.
    */
   async addChannel(channel: NewChannel): Promise<DocumentReference> {
     const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
     const collectionRef = collection(this.firestore, collectionPath);
     const docRef = doc(collectionRef);
 
-    // Setzen Sie die 'id' auf die generierte Dokument-ID
+    // Set the 'id' to the generated document ID
     const channelWithId: Channel = { ...channel, id: docRef.id };
     await setDoc(docRef, channelWithId);
+
+    // Invalidate relevant caches
+    const keyAllChannels = `channels-${channel.isPrivate}`;
+    this.cacheService.clear(keyAllChannels);
+
     return docRef;
   }
 
   /**
-   * Updates an existing channel.
-   * @param channel - The channel object.
+   * Updates an existing channel and invalidates relevant caches.
+   * @param channel - The channel to update.
    * @param updatedFields - The fields to update.
-   * @returns Promise that resolves when the channel is updated.
+   * @returns A promise resolving when the update is complete.
    */
   updateChannel(
     channel: Channel,
     updatedFields: Partial<Omit<Channel, 'id'>>
   ): Promise<void> {
     const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
-    const channelDocRef = doc(this.firestore, `${collectionPath}/${channel.id}`);
+    const channelDocRef = doc(
+      this.firestore,
+      `${collectionPath}/${channel.id}`
+    );
     return updateDoc(channelDocRef, {
       ...updatedFields,
       updatedAt: new Date(),
-    }).catch((error) => {
-      console.error('Fehler beim Aktualisieren des Channels:', error);
-      throw error;
-    });
+    })
+      .then(() => {
+        // Invalidate relevant caches
+        const key = `channel-${channel.isPrivate}-${channel.id}`;
+        const keyAllChannels = `channels-${channel.isPrivate}`;
+        this.cacheService.clear(key);
+        this.cacheService.clear(keyAllChannels);
+      })
+      .catch((error) => {
+        console.error('Error updating channel:', error);
+        throw error;
+      });
   }
 
   /**
-   * Deletes a channel by ID (public or private).
+   * Deletes a channel and invalidates relevant caches.
    * @param id - The channel ID.
-   * @param isPrivate - Whether the channel is private.
-   * @returns Promise that resolves when the channel is deleted.
+   * @param isPrivate - Indicates if the channel is private.
+   * @returns A promise resolving when the deletion is complete.
    */
   deleteChannel(id: string, isPrivate: boolean): Promise<void> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
-    return deleteDoc(channelDoc);
+    return deleteDoc(channelDoc).then(() => {
+      // Invalidate relevant caches
+      const key = `channel-${isPrivate}-${id}`;
+      const keyAllChannels = `channels-${isPrivate}`;
+      this.cacheService.clear(key);
+      this.cacheService.clear(keyAllChannels);
+    });
   }
 
-  async removeUserFromChannel(channelId: string, userId: string, isPrivate: boolean): Promise<void> {
+  /**
+   * Removes a user from a specific channel and updates the cache.
+   * @param channelId - The channel ID.
+   * @param userId - The user ID to remove.
+   * @param isPrivate - Indicates if the channel is private.
+   * @returns A promise resolving when the user is removed.
+   */
+  async removeUserFromChannel(
+    channelId: string,
+    userId: string,
+    isPrivate: boolean
+  ): Promise<void> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const channelDocRef = doc(this.firestore, `${collectionPath}/${channelId}`);
     const channelSnapshot = await getDoc(channelDocRef);
     if (channelSnapshot.exists()) {
       const channelData = channelSnapshot.data() as Channel;
-      const updatedMembers = channelData.members.filter(memberId => memberId !== userId);
+      const updatedMembers = channelData.members.filter(
+        (memberId) => memberId !== userId
+      );
       await updateDoc(channelDocRef, { members: updatedMembers });
     }
   }
 
-
-  async getChannelByName(name: string, isPrivate: boolean): Promise<Channel | null> {
-    const collectionPath = isPrivate ? 'directMessages' : 'channels';
-    const collectionRef = collection(this.firestore, collectionPath);
-    const channelsQuery = query(collectionRef, where('name', '==', name));
-    const querySnapshot = await getDocs(channelsQuery);
-
-    if (!querySnapshot.empty) {
-      return querySnapshot.docs[0].data() as Channel;
-    } else {
-      return null;
-    }
-  }
-
-  getPublicChannels(): Observable<Channel[]> {
-    const channelsRef = collection(this.firestore, 'channels');
-    const q = query(channelsRef, where('isPrivate', '==', false));
-    return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
-  }
-
-  getPrivateChannels(): Observable<Channel[]> {
-    const channelsRef = collection(this.firestore, 'channels');
-    const q = query(channelsRef, where('isPrivate', '==', true));
-    return collectionData(q, { idField: 'id' }) as Observable<Channel[]>;
+  /**
+   * Removes all channel listeners.
+   */
+  public removeAllListeners(): void {
+    this.channelListeners.forEach((unsubscribe, key) => {
+      unsubscribe();
+      this.channelListeners.delete(key);
+      if (isDevMode()) {
+        console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
+      }
+    });
   }
 }

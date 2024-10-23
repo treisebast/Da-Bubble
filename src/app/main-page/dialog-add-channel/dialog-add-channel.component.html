@@ -14,7 +14,7 @@
       <h4>Channel-Name</h4>
       <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte"
         class="addChannelInputs" (ngModelChange)="validateChannelName()"/>
-        <div class="error-message" class="error-message">{{ channelNameErrorMessage }}</div>
+        <div class="error-message">{{ channelNameErrorMessage }}</div>
       <h4>Beschreibung <span class="optional">(optional)</span></h4>
       <input class="addChannelInputs" [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
     </mat-dialog-content>
