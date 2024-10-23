@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DialogAddChannelComponent } from '../dialog-add-channel/dialog-add-channel.component';
@@ -62,6 +62,8 @@ export class SideNavComponent implements OnInit, OnDestroy {
   currentUser!: UserWithImageStatus;
   currentChat: { chat: Channel | null; isPrivate: boolean } = { chat: null, isPrivate: false };
   subs = new Subscription();
+
+  @Output() channelSelected = new EventEmitter<void>();
 
   constructor(
     private channelService: ChannelService,
@@ -351,6 +353,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
    */
   showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
+    this.channelSelected.emit();
   }
 
   /**

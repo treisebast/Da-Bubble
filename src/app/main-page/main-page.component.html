@@ -1,16 +1,29 @@
-<app-header></app-header>
+<app-header [currentView]="currentView" [isMobileView]="isMobileView"
+  (mobileLogoClicked)="switchTo('channels')"></app-header>
 
 <div class="full-page">
   <div class="max-width">
-    <app-side-nav [@slideInOut]="showChannels ? 'in' : 'out'"
-      *ngIf="!isMobileView || currentView === 'channels'"></app-side-nav>
+
+    <app-side-nav [@slideInOut]="!isMobileView ? (showChannels ? 'in' : 'out') : ''"
+      *ngIf="!isMobileView || currentView === 'channels'" [ngClass]="{'full-width': isMobileView}"
+      (channelSelected)="onChannelSelected()"></app-side-nav>
+
     <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}"
-      *ngIf="!isMobileView || currentView === 'main'" (openThreadEvent)="openThreadComponent()"></app-chat-main>
+      *ngIf="(!isMobileView && (currentView === 'main' || currentView === 'channels')) || (isMobileView && currentView === 'main')"
+      (openThreadEvent)="openThreadComponent()">
+    </app-chat-main>
+
     <app-thread *ngIf="showSecondary && (!isMobileView || currentView === 'secondary')"
-      (closeThread)="closeThreadComponent()"></app-thread>
+      [@slideInOutRight]="!isMobileView ? (showSecondary ? 'in' : 'out') : ''" [ngClass]="{'full-width': isMobileView}"
+      (closeThread)="closeThreadComponent()">
+    </app-thread>
+
+
     <button (click)="openCloseChatChannel()" class="workspaceMenuBtn" mat-raised-button>
       {{ workspaceMenu }}
     </button>
+
+
   </div>
 </div>
 <div class="mobile-buttons" *ngIf="isMobileView">

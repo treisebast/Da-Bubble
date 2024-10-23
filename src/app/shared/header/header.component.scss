@@ -17,12 +17,15 @@ header {
 
     .logo-container {
       display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-left: 16px;
     }
 
     .logo {
       width: 200px;
       height: 70px;
-      margin-left: 16px;
+      margin-left: 4px;
 
       &:hover {
         cursor: pointer;
@@ -174,6 +177,11 @@ header {
   padding-right: 8px;
 }
 
+.back-nav-logo {
+  width: 25px;
+  height: 25px;
+}
+
 @media (max-width: 1200px) {
   .searchbar {
     width: 40% !important;
@@ -204,10 +212,7 @@ header {
 
     .max-width {
       height: 87px !important;
-    }
-
-    .logo-container {
-      display: none !important;
+      padding: 8px;
     }
 
     .logo {
@@ -215,24 +220,10 @@ header {
       height: 45px !important;
     }
 
-    .mobile-logo-container {
-      display: flex !important;
-      align-items: center;
-      justify-content: start;
-
-      .back-nav-logo {
-        width: 25px;
-        height: 25px;
-      }
-
-      .mobile-logo {
-        height: 45px !important;
-      }
-    }
-
     .profil-img-div {
       width: 45px !important;
       height: 45px !important;
+      margin-right: 4px !important;
     }
 
     .profile {

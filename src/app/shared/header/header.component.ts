@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -43,7 +43,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
   @ViewChildren('searchResultItem') searchResultItems!: QueryList<ElementRef<HTMLLIElement>>;
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-  
+  @Input() isMobileView: boolean = false;
+  @Input() currentView: 'channels' | 'main' | 'secondary' = 'channels';
+  @Output() mobileLogoClicked = new EventEmitter<void>();
+
   constructor(private auth: AuthService,
     private channelService: ChannelService,
     private userService: UserService,
@@ -58,7 +61,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
         const userSub = this.userService.getUser(firebaseUser.uid).subscribe((user) => {
           if (user) {
             this.currentUser = user;
-            // Abrufen der zugänglichen Chat-IDs
             const channelsSub = this.userService.getUserChannels(this.currentUserId).subscribe((channels: Channel[]) => {
               this.accessibleChatIds = channels.map(channel => channel.id);
             });
@@ -73,6 +75,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subs.unsubscribe();
+  }
+
+  onMobileLogoClick() {
+    if (this.isMobileView && this.currentView !== 'channels') {
+      this.mobileLogoClicked.emit();
+    }
   }
 
   logout() {

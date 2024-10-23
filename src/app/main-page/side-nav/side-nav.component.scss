@@ -240,3 +240,12 @@ tr {
   color: white;
   transition: background-color 255ms ease-in-out, color 255ms ease-in-out;
 }
+
+
+@media(max-width:600px) {
+  .channels {
+    tr {
+      font-size: 15px;
+    }
+  }
+}

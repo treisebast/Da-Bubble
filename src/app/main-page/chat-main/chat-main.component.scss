@@ -586,6 +586,23 @@
     }
   }
 
+  .message-info {
+    div {
+      >img {
+        width: 50px;
+      }
+
+      h2 {
+        font-size: 18px;
+        padding-left: 12px;
+      }
+    }
+
+    span {
+      font-size: 14px;
+    }
+  }
+
   .chat-container {
     padding: 16px 8px;
     max-height: calc(100% - 225px);
@@ -596,8 +613,8 @@
   }
 
   .header-title {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
 
     .header-channel-info {
       padding-right: 0px;
@@ -605,6 +622,7 @@
 
     .header-channel-name {
       padding: 4px;
+      width: 550px;
     }
   }
 

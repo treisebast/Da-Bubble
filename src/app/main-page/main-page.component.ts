@@ -8,13 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from '../shared/header/header.component';
 import { ChatService } from '../shared/services/chat-service.service';
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { slideInOut, slideInOutRight } from './main-page.animations';
 
 @Component({
   selector: 'app-main-page',
@@ -31,34 +25,7 @@ import {
   ],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],
-  animations: [
-    trigger('slideInOut', [
-      state(
-        'in',
-        style({
-          width: '20%',
-          minWidth: '348px',
-          opacity: 1,
-          margin: '8px',
-          padding: '16px',
-          transform: 'translateX(0)',
-        })
-      ),
-      state(
-        'out',
-        style({
-          width: '0%',
-          minWidth: '0px',
-          opacity: 0,
-          margin: '0px',
-          padding: '0px',
-          transform: 'translateX(-100%)',
-        })
-      ),
-      transition('in => out', animate('150ms ease-in-out')),
-      transition('out => in', animate('150ms ease-in-out')),
-    ]),
-  ],
+  animations: [slideInOut, slideInOutRight],
 })
 export class MainPageComponent implements OnInit {
   showChannels: boolean = true;
@@ -77,6 +44,12 @@ export class MainPageComponent implements OnInit {
   ngOnInit() {
     this.checkViewModes();
 
+    if (this.isMobileView) {
+      this.currentView = 'channels';
+    } else {
+      this.currentView = 'main';
+    }
+
     this.chatService.currentChat$.subscribe(({ chat }) => {
       if (this.previousChatId && chat?.id !== this.previousChatId) {
         this.closeThreadComponent();
@@ -87,53 +60,61 @@ export class MainPageComponent implements OnInit {
 
   checkViewModes() {
     const width = window.innerWidth;
-    this.isMobileView = width <= 1200;
+    this.isMobileView = width <= 1079;
 
-    if (width < 1200) {
+    if (width < 1079) {
       if (this.showChannels) {
         this.showChannels = false;
         this.workspaceMenu = 'Workspace-Menü öffnen';
       }
+      this.currentView = 'channels';
     } else {
       if (!this.showChannels) {
         this.showChannels = true;
         this.workspaceMenu = 'Workspace-Menü schließen';
       }
-    }
-
-    if (!this.isMobileView) {
       this.currentView = 'main';
     }
   }
 
-  // checkMobileView() {
-  //   this.isMobileView = window.innerWidth <= 1000;
-  //   if (!this.isMobileView) {
-  //     this.currentView = 'main';
-  //   }
-  // }
+  onChannelSelected() {
+    if (this.isMobileView) {
+      this.currentView = 'main';
+    }
+  }
 
   openCloseChatChannel() {
-    if (this.showChannels) {
-      this.workspaceMenu = 'Workspace-Menü öffnen';
+    if (this.isMobileView) {
+      this.currentView = 'channels';
     } else {
-      this.workspaceMenu = 'Workspace-Menü schließen';
+      this.showChannels = !this.showChannels;
+      this.workspaceMenu = this.showChannels ? 'Workspace-Menü schließen' : 'Workspace-Menü öffnen';
     }
-    this.showChannels = !this.showChannels;
   }
 
   closeThreadComponent() {
     console.log('Closing thread component');
     this.showSecondary = false;
+    if (this.isMobileView) {
+      this.currentView = 'main';
+    }
   }
 
   openThreadComponent() {
     console.log('Opening thread component');
     this.showSecondary = true;
+    if (this.isMobileView) {
+      this.currentView = 'secondary';
+    }
   }
 
   switchTo(view: 'channels' | 'main' | 'secondary') {
     console.log('Switching to view:', view);
     this.currentView = view;
+
+    if (!this.isMobileView) {
+      this.showChannels = view === 'channels' || view === 'main';
+      this.showSecondary = view === 'secondary';
+    }
   }
 }
