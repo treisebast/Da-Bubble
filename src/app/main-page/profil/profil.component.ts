@@ -105,9 +105,9 @@ export class ProfilComponent implements OnInit {
   sendMessage(userId: string) {
     const userSub = this.userService.getUser(userId).subscribe((user: User) => {
       this.chat.startPrivateChat(user);
-      this.subs.add(userSub);
       this.closeProfil();
     });
+    this.subs.add(userSub);
   }
 
   setSelectedAvatar(event: boolean) {

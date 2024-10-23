@@ -28,7 +28,6 @@ export class CacheService {
     this.startCleanupTask();
   }
 
-
   private startCleanupTask(): void {
     setInterval(() => {
       const now = Date.now();
@@ -53,21 +52,35 @@ export class CacheService {
       try {
         const entryStr = localStorage.getItem(key);
         if (entryStr) {
-          const entry: CacheEntry<any> = JSON.parse(entryStr);
-          if (Date.now() < entry.expiry) {
-            this.cache.set(key, entry);
-            if (isDevMode()) {
-              console.log(`[CacheService] Loaded key from localStorage: ${key}`);
+          const isJson = entryStr.startsWith('{') || entryStr.startsWith('[');
+          if (isJson) {
+            const entry: CacheEntry<any> = JSON.parse(entryStr);
+            if (Date.now() < entry.expiry) {
+              this.cache.set(key, entry);
+              if (isDevMode()) {
+                console.log(
+                  `[CacheService] Loaded key from localStorage: ${key}`
+                );
+              }
+            } else {
+              localStorage.removeItem(key);
+              if (isDevMode()) {
+                console.log(
+                  `[CacheService] Removed expired key from localStorage: ${key}`
+                );
+              }
             }
           } else {
-            localStorage.removeItem(key);
             if (isDevMode()) {
-              console.log(`[CacheService] Removed expired key from localStorage: ${key}`);
+              console.log(`[CacheService] Skipping non-JSON key: ${key}`);
             }
           }
         }
       } catch (error) {
-        console.error(`Error loading cache key "${key}" from localStorage:`, error);
+        console.error(
+          `Error loading cache key "${key}" from localStorage:`,
+          error
+        );
         localStorage.removeItem(key);
       }
     });
@@ -124,7 +137,7 @@ export class CacheService {
         data,
         expiry,
         subject: new BehaviorSubject<T>(data),
-        ttl: effectiveTtl
+        ttl: effectiveTtl,
       };
       this.cache.set(key, entry);
     } else {
