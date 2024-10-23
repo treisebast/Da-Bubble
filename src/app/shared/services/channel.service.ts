@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable, isDevMode, OnDestroy } from '@angular/core';
 import {
   Firestore,
   collectionData,
@@ -16,7 +16,7 @@ import {
   getDoc,
   onSnapshot,
 } from '@angular/fire/firestore';
-import { firstValueFrom, Observable, of } from 'rxjs';
+import { firstValueFrom, Observable, of, Subject } from 'rxjs';
 import { Channel, NewChannel } from '../models/channel.model';
 import { CacheService } from './cache.service';
 import { Message } from '../models/message.model';
@@ -24,15 +24,18 @@ import { Message } from '../models/message.model';
 @Injectable({
   providedIn: 'root',
 })
-export class ChannelService {
+export class ChannelService implements OnDestroy {
   private channelListeners: Map<string, () => void> = new Map();
+  private destroy$ = new Subject<void>();
 
-  constructor(
-    private firestore: Firestore,
-    private cacheService: CacheService
-  ) {
-    // Initiale Listener für öffentliche und private Kanäle
+  constructor(private firestore: Firestore, private cacheService: CacheService) {
     this.listenToChannelUpdates();
+  }
+
+  ngOnDestroy(): void {
+    this.removeAllChannelListeners();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -47,56 +50,36 @@ export class ChannelService {
   /**
    * Listens to real-time updates for all channels and updates the cache accordingly.
    */
-  private listenToChannelUpdates(): void {
-    // Listener für öffentliche Kanäle
+  public listenToChannelUpdates(): void {
+    // Öffentliche Kanäle
     const publicChannelsQuery = query(
       collection(this.firestore, 'channels'),
       where('isPrivate', '==', false),
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribePublic = onSnapshot(
-      publicChannelsQuery,
-      (snapshot) => {
-        const channels: Channel[] = snapshot.docs.map(
-          (docSnap) =>
-            ({
-              ...docSnap.data(),
-              id: docSnap.id,
-            } as Channel)
-        );
-        this.cacheService.set('channels-public', channels, 10 * 60 * 1000); // 10 Minuten TTL für öffentliche Kanäle
-      },
-      (error) => {
-        console.error('Error listening to public channel updates:', error);
-      }
-    );
+    const unsubscribePublic = onSnapshot(publicChannelsQuery, (snapshot) => {
+      const channels: Channel[] = snapshot.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id } as Channel));
+      this.cacheService.set('channels-public', channels, 10 * 60 * 1000); // 10 Minuten TTL
+    }, (error) => {
+      console.error('Error listening to public channel updates:', error);
+    });
 
     this.channelListeners.set('channels-public', unsubscribePublic);
 
-    // Listener für private Kanäle
+    // Private Kanäle
     const privateChannelsQuery = query(
       collection(this.firestore, 'directMessages'),
       where('isPrivate', '==', true),
       orderBy('createdAt', 'asc')
     );
 
-    const unsubscribePrivate = onSnapshot(
-      privateChannelsQuery,
-      (snapshot) => {
-        const channels: Channel[] = snapshot.docs.map(
-          (docSnap) =>
-            ({
-              ...docSnap.data(),
-              id: docSnap.id,
-            } as Channel)
-        );
-        this.cacheService.set('channels-private', channels, 10 * 60 * 1000); // 10 Minuten TTL für private Kanäle
-      },
-      (error) => {
-        console.error('Error listening to private channel updates:', error);
-      }
-    );
+    const unsubscribePrivate = onSnapshot(privateChannelsQuery, (snapshot) => {
+      const channels: Channel[] = snapshot.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id } as Channel));
+      this.cacheService.set('channels-private', channels, 10 * 60 * 1000); // 10 Minuten TTL
+    }, (error) => {
+      console.error('Error listening to private channel updates:', error);
+    });
 
     this.channelListeners.set('channels-private', unsubscribePrivate);
   }
@@ -104,7 +87,7 @@ export class ChannelService {
   /**
    * Ruft die gespeicherten Listener ab und beendet sie.
    */
-  public removeAllChannelListeners(): void {
+  removeAllChannelListeners(): void {
     this.channelListeners.forEach((unsubscribe, key) => {
       unsubscribe();
       this.channelListeners.delete(key);

@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable, isDevMode, OnDestroy } from '@angular/core';
 import {
   Firestore,
   doc,
@@ -23,6 +23,8 @@ import {
   map,
   Observable,
   of,
+  Subject,
+  takeUntil,
 } from 'rxjs';
 import { User } from '../models/user.model';
 import { Channel } from '../models/channel.model';
@@ -31,53 +33,61 @@ import { CacheService } from './cache.service';
 @Injectable({
   providedIn: 'root',
 })
-export class UserService {
+export class UserService implements OnDestroy {
   private usersCollection = collection(this.firestore, 'users');
   private lastTwoEmojisSubject = new BehaviorSubject<string[]>([]);
   lastTwoEmojis$ = this.lastTwoEmojisSubject.asObservable();
   private localStorageKey = 'lastTwoEmojis';
   private userListeners: Map<string, () => void> = new Map();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private firestore: Firestore,
     private cacheService: CacheService
   ) {
     this.loadEmojisFromLocalStorage();
-    this.listenToUserUpdates();
+  }
+
+  ngOnDestroy(): void {
+    this.removeAllUserListeners();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
    * Listens to real-time updates für alle Benutzer und aktualisiert den Cache entsprechend.
    */
-  private listenToUserUpdates(): void {
-    const q = query(this.usersCollection);
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const users: User[] = snapshot.docs.map(
-          (docSnap) =>
-            ({
-              ...docSnap.data(),
-              userId: docSnap.id,
-            } as User)
-        );
-        this.cacheService.set('users-all', users, 10 * 60 * 1000); // 10 Minuten TTL für Benutzerliste
-        if (isDevMode()) {
-          console.log(`[UserService] users-all updated in cache with ${users.length} users.`);
+  listenToUserUpdates(userId: string): void {
+    if (!this.userListeners.has(userId)) {
+      const userDoc = doc(this.firestore, `users/${userId}`);
+      const unsubscribe = onSnapshot(userDoc, (docSnap) => {
+        if (docSnap.exists()) {
+          const userData = docSnap.data() as User;
+          this.cacheService.set(`user-${userId}`, userData, 0); // Echtzeit-Daten, keine TTL
         }
-      },
-      (error) => {
-        console.error('Error listening to user updates:', error);
-      }
-    );
+      }, (error) => {
+        console.error(`Error listening to user ${userId} updates:`, error);
+      });
 
-    this.userListeners.set('all-users', unsubscribe);
+      this.userListeners.set(userId, unsubscribe);
+    }
+  }
+
+  removeUserListener(userId: string): void {
+    const unsubscribe = this.userListeners.get(userId);
+    if (unsubscribe) {
+      unsubscribe();
+      this.userListeners.delete(userId);
+      if (isDevMode()) {
+        console.log(`[UserService] Listener entfernt für Benutzer: ${userId}`);
+      }
+    }
   }
 
   /**
    * Ruft die gespeicherten Listener ab und beendet sie.
    */
-  public removeAllUserListeners(): void {
+  removeAllUserListeners(): void {
     this.userListeners.forEach((unsubscribe, key) => {
       unsubscribe();
       this.userListeners.delete(key);
@@ -135,21 +145,6 @@ export class UserService {
     });
   }
 
-  /**
-   * Removes the listener for a specific user.
-   * @param id - The user ID.
-   */
-  public removeUserListener(id: string): void {
-    const key = `user-${id}`;
-    const unsubscribe = this.userListeners.get(key);
-    if (unsubscribe) {
-      unsubscribe();
-      this.userListeners.delete(key);
-      if (isDevMode()) {
-        console.log(`[UserService] Listener entfernt für Benutzer: ${id}`);
-      }
-    }
-  }
 
   /**
    * Retrieves users by a list of IDs with caching.

@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import {
   BehaviorSubject,
   firstValueFrom,
   Observable,
   of,
   shareReplay,
+  Subject,
   switchMap,
 } from 'rxjs';
 import { Channel } from '../models/channel.model';
@@ -17,7 +18,7 @@ import { CacheService } from './cache.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ChatService {
+export class ChatService implements OnDestroy{
   private currentChatSubject = new BehaviorSubject<{ chat: Channel | null; isPrivate: boolean }>({ chat: null, isPrivate: false });
   public currentChat$ = this.currentChatSubject.asObservable();
 
@@ -46,12 +47,18 @@ export class ChatService {
 
   private isChannelSource = new BehaviorSubject<boolean>(false);
   isChannel$ = this.isChannelSource.asObservable();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private channelMessageService: ChannelMessageService,
     private storageService: FirebaseStorageService,
     private cacheService: CacheService
   ) {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   /**
    * Sets the current chat and its privacy status.

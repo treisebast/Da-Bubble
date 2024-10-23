@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable, isDevMode, OnDestroy } from '@angular/core';
 import {
   Firestore,
   collectionData,
@@ -11,50 +11,52 @@ import {
   orderBy,
   onSnapshot,
 } from '@angular/fire/firestore';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { Message } from '../models/message.model';
 import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ChannelMessageService {
-  private messageSubscriptions: Map<string, Subscription> = new Map();
+export class ChannelMessageService implements OnDestroy{
   private messageListeners: Map<string, () => void> = new Map();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private firestore: Firestore,
     private cacheService: CacheService
   ) {}
 
+  ngOnDestroy(): void {
+    this.removeAllMessageListeners();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   /**
    * Sets up a real-time listener for a specific channel's messages.
    * @param channelId - The channel ID.
    * @param isPrivate - Whether the channel is private.
    */
-  public listenToMessages(channelId: string, isPrivate: boolean): void {
+  listenToMessages(channelId: string, isPrivate: boolean): void {
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    if (this.messageListeners.has(key)) {
-      // Listener bereits vorhanden
-      return;
+    if (!this.messageListeners.has(key)) {
+      const collectionPath = this.getCollectionPath(isPrivate);
+      const messagesCollection = collection(this.firestore, `${collectionPath}/${channelId}/messages`);
+      const messagesQuery = query(messagesCollection, orderBy('timestamp', 'asc'));
+
+      const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+        const messages: Message[] = snapshot.docs.map(docSnap => ({
+          ...docSnap.data(),
+          id: docSnap.id,
+        } as Message));
+        this.cacheService.set(key, messages, 5 * 60 * 1000); // 5 Minuten TTL
+      }, (error) => {
+        console.error(`Error listening to messages for channel ${channelId}:`, error);
+      });
+
+      this.messageListeners.set(key, unsubscribe);
     }
-
-    const collectionPath = this.getCollectionPath(isPrivate);
-    const messagesCollection = collection(this.firestore, `${collectionPath}/${channelId}/messages`);
-    const messagesQuery = query(messagesCollection, orderBy('timestamp', 'asc'));
-
-    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-      const messages: Message[] = snapshot.docs.map(docSnap => ({
-        ...docSnap.data(),
-        id: docSnap.id,
-      } as Message));
-      this.cacheService.set(key, messages, 5 * 60 * 1000); // 5 Minuten TTL für Nachrichten
-    }, (error) => {
-      console.error(`Error listening to messages for channel ${channelId}:`, error);
-    });
-
-    // Listener speichern
-    this.messageListeners.set(key, unsubscribe);
   }
 
   /**
@@ -62,7 +64,7 @@ export class ChannelMessageService {
    * @param channelId - The channel ID.
    * @param isPrivate - Whether the channel is private.
    */
-  public removeMessagesListener(channelId: string, isPrivate: boolean): void {
+  removeMessagesListener(channelId: string, isPrivate: boolean): void {
     const key = `channelMessages-${isPrivate}-${channelId}`;
     const unsubscribe = this.messageListeners.get(key);
     if (unsubscribe) {
@@ -72,6 +74,16 @@ export class ChannelMessageService {
         console.log(`[ChannelMessageService] Listener entfernt für Schlüssel: ${key}`);
       }
     }
+  }
+
+  removeAllMessageListeners(): void {
+    this.messageListeners.forEach((unsubscribe, key) => {
+      unsubscribe();
+      this.messageListeners.delete(key);
+      if (isDevMode()) {
+        console.log(`[ChannelMessageService] Listener entfernt für Schlüssel: ${key}`);
+      }
+    });
   }
 
   /**
@@ -215,16 +227,4 @@ export class ChannelMessageService {
     return isChannelPrivate ? 'directMessages' : 'channels';
   }
 
-    /**
-   * Removes all message listeners.
-   */
-    public removeAllMessageListeners(): void {
-      this.messageListeners.forEach((unsubscribe, key) => {
-        unsubscribe();
-        this.messageListeners.delete(key);
-        if (isDevMode()) {
-          console.log(`[ChannelMessageService] Listener entfernt für Schlüssel: ${key}`);
-        }
-      });
-    }
 }
