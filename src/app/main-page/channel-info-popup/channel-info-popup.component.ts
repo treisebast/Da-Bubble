@@ -44,31 +44,55 @@ export class ChannelInfoPopupComponent {
     this.isEditingDescription = true;
   }
 
-  async saveName() {
-    if (this.channel && this.editedName !== this.channel.name) {
-      try {
-        // Überprüfung auf Duplikate
-        const duplicateChannel = await this.channelService.getChannelByName(
-          this.editedName,
-          this.channel.isPrivate
-        );
-
-        if (duplicateChannel && duplicateChannel.id !== this.channel.id) {
-          this.nameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
-          return;
-        }
-
-        const updatedFields = { name: this.editedName };
-        await this.channelService.updateChannel(this.channel, updatedFields);
-        this.channel.name = this.editedName;
-        this.isEditingName = false;
-        this.nameErrorMessage = '';
-      } catch (error) {
-        this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuchen Sie es erneut.';
-      }
-    } else {
+  async saveName(): Promise<void> {
+    if (!this.channel) {
       this.isEditingName = false;
+      return;
     }
+  
+    if (this.editedName === this.channel.name) {
+      this.isEditingName = false;
+      return;
+    }
+  
+    const validationError = this.validateName(this.editedName);
+    if (validationError) {
+      this.nameErrorMessage = validationError;
+      return;
+    }
+  
+    try {
+      const isDuplicate = await this.isDuplicateChannelName(this.editedName);
+      if (isDuplicate) {
+        this.nameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
+        return;
+      }
+  
+      await this.updateChannelName();
+    } catch (error) {
+      console.error('Fehler beim Speichern des Namens:', error);
+      this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuchen Sie es erneut.';
+    }
+  }
+  
+  private validateName(name: string): string | null {
+    if (name.length > 17) {
+      return 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
+    }
+    return null;
+  }
+  
+  private async isDuplicateChannelName(name: string): Promise<boolean> {
+    const duplicateChannel = await this.channelService.getChannelByName(name, this.channel!.isPrivate);
+    return !!duplicateChannel && duplicateChannel.id !== this.channel!.id;
+  }
+  
+  private async updateChannelName(): Promise<void> {
+    const updatedFields = { name: this.editedName };
+    await this.channelService.updateChannel(this.channel!, updatedFields);
+    this.channel!.name = this.editedName;
+    this.isEditingName = false;
+    this.nameErrorMessage = '';
   }
 
   async saveDescription() {
