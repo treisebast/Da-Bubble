@@ -17,14 +17,31 @@ interface CacheEntry<T> {
 })
 export class CacheService {
   private cache = new Map<string, CacheEntry<any>>();
-  private ttl = 5 * 60 * 1000; // 5 Minuten
   private defaultTtl = 5 * 60 * 1000; // 5 Minuten
+  private cleanupInterval = 60 * 1000; // 1 Minute
 
   constructor() {
     if (isDevMode()) {
       (window as any).cacheService = this;
     }
     this.loadCacheFromLocalStorage();
+    this.startCleanupTask();
+  }
+
+
+  private startCleanupTask(): void {
+    setInterval(() => {
+      const now = Date.now();
+      this.cache.forEach((entry, key) => {
+        if (now > entry.expiry) {
+          this.cache.delete(key);
+          localStorage.removeItem(key);
+          if (isDevMode()) {
+            console.log(`[CacheService] Auto-removed expired key: ${key}`);
+          }
+        }
+      });
+    }, this.cleanupInterval);
   }
 
   /**
