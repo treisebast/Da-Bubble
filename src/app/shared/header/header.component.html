@@ -8,7 +8,7 @@
         class="back-nav-logo" />
       <img src="./assets/img/logo.svg" alt="Logo" class="logo" />
     </div>
-    <div class="searchbar">
+    <div #searchbarDiv class="searchbar">
       <input #searchInput type="text" placeholder="Devspace durchsuchen" [(ngModel)]="searchQuery"
         (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" />
       <mat-icon matSuffix>search</mat-icon>

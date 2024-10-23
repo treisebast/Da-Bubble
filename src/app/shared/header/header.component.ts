@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, QueryList, ElementRef, ViewChildren, ViewChild, Output, EventEmitter, Input, HostListener } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -39,10 +39,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   channelNamesCache: { [chatId: string]: string } = {};
   selectedSearchResultIndex: number = -1;
   accessibleChatIds: string[] = [];
-  
+
   private subs = new Subscription();
   @ViewChildren('searchResultItem') searchResultItems!: QueryList<ElementRef<HTMLLIElement>>;
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchbarDiv') searchbarDiv!: ElementRef;
   @Input() isMobileView: boolean = false;
   @Input() currentView: 'channels' | 'main' | 'secondary' = 'channels';
   @Output() mobileLogoClicked = new EventEmitter<void>();
@@ -114,7 +115,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.selectedSearchResultIndex = -1;
       return;
     }
-    // Übergeben der zugänglichen Chat-IDs an die Suche
     this.subs.add(
       this.searchService.searchMessages(this.searchQuery, this.accessibleChatIds).subscribe((results) => {
         this.searchResults = results;
@@ -122,6 +122,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
         console.log('Suchergebnisse:', results);
       })
     );
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const targetElement = event.target as HTMLElement;
+    if (this.searchbarDiv && !this.searchbarDiv.nativeElement.contains(targetElement)) {
+      this.searchResults = [];
+      this.selectedSearchResultIndex = -1;
+    }
   }
 
   getUserName(senderId: string): string {
@@ -203,23 +212,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private hasSearchResults(): boolean {
     return this.searchResults && this.searchResults.length > 0;
   }
-  
+
   private handleArrowDown() {
     this.incrementSelectedIndex();
     this.scrollToSelectedItem();
   }
-  
+
   private handleArrowUp() {
     this.decrementSelectedIndex();
     this.scrollToSelectedItem();
   }
-  
+
   private handleEnter() {
     if (this.isSelectedIndexValid()) {
       this.goToMessage(this.searchResults[this.selectedSearchResultIndex]);
     }
   }
-  
+
   private incrementSelectedIndex() {
     if (this.selectedSearchResultIndex < this.searchResults.length - 1) {
       this.selectedSearchResultIndex++;
@@ -227,7 +236,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.selectedSearchResultIndex = 0;
     }
   }
-  
+
   private decrementSelectedIndex() {
     if (this.selectedSearchResultIndex > 0) {
       this.selectedSearchResultIndex--;
@@ -235,14 +244,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.selectedSearchResultIndex = this.searchResults.length - 1;
     }
   }
-  
+
   private isSelectedIndexValid(): boolean {
     return (
       this.selectedSearchResultIndex >= 0 &&
       this.selectedSearchResultIndex < this.searchResults.length
     );
   }
-  
+
   private scrollToSelectedItem() {
     setTimeout(() => {
       const selectedItem = this.getSelectedSearchResultItem();
@@ -255,7 +264,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   private getSelectedSearchResultItem(): ElementRef<HTMLLIElement> | null {
     if (this.searchResultItems && this.selectedSearchResultIndex !== -1) {
       const itemsArray = this.searchResultItems.toArray();
