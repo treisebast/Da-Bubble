@@ -37,6 +37,7 @@ export class UserService implements OnDestroy {
   private usersCollection = collection(this.firestore, 'users');
   private lastTwoEmojisSubject = new BehaviorSubject<string[]>([]);
   lastTwoEmojis$ = this.lastTwoEmojisSubject.asObservable();
+  private localStorageKey = 'lastTwoEmojis';
   private userListeners: Map<string, () => void> = new Map();
   private destroy$ = new Subject<void>();
 
@@ -54,8 +55,7 @@ export class UserService implements OnDestroy {
   }
 
   /**
-   * Listens to real-time updates for a specific user and updates the cache.
-   * @param userId - The ID of the user.
+   * Listens to real-time updates for all users and updates the cache accordingly.
    */
   listenToUserUpdates(userId: string): void {
     if (!this.userListeners.has(userId)) {
@@ -63,7 +63,7 @@ export class UserService implements OnDestroy {
       const unsubscribe = onSnapshot(userDoc, (docSnap) => {
         if (docSnap.exists()) {
           const userData = docSnap.data() as User;
-          this.cacheService.set(`user-${userId}`, userData); // Echtzeit-Daten, keine TTL
+          this.cacheService.set(`user-${userId}`, userData); // Echtzeitdaten, keine TTL
         }
       }, (error) => {
         console.error(`Error listening to user ${userId} updates:`, error);
@@ -73,31 +73,21 @@ export class UserService implements OnDestroy {
     }
   }
 
-  /**
-   * Removes a user listener.
-   * @param userId - The ID of the user.
-   */
   removeUserListener(userId: string): void {
     const unsubscribe = this.userListeners.get(userId);
     if (unsubscribe) {
       unsubscribe();
       this.userListeners.delete(userId);
-      if (isDevMode()) {
-        console.log(`[UserService] Listener removed for user: ${userId}`);
-      }
     }
   }
 
   /**
-   * Removes all user listeners.
+   * Ruft die gespeicherten Listener ab und beendet sie.
    */
   removeAllUserListeners(): void {
     this.userListeners.forEach((unsubscribe, key) => {
       unsubscribe();
       this.userListeners.delete(key);
-      if (isDevMode()) {
-        console.log(`[UserService] Listener removed for key: ${key}`);
-      }
     });
   }
 
@@ -121,8 +111,7 @@ export class UserService implements OnDestroy {
    */
   getUser(id: string): Observable<User> {
     const key = `user-${id}`;
-    // Überprüfen, ob bereits ein Listener für diesen Benutzer existiert
-    if (!this.userListeners.has(id)) {
+    if (!this.userListeners.has(key)) {
       const userDoc = doc(this.firestore, `users/${id}`);
       const unsubscribe = onSnapshot(
         userDoc,
@@ -130,7 +119,7 @@ export class UserService implements OnDestroy {
           if (docSnap.exists()) {
             const userData = docSnap.data() as User;
             userData.userId = docSnap.id;
-            this.cacheService.set(key, userData); // Keine TTL für Echtzeit-Daten
+            this.cacheService.set(key, userData); // Echtzeitdaten, keine TTL
           }
         },
         (error) => {
@@ -138,7 +127,7 @@ export class UserService implements OnDestroy {
         }
       );
 
-      this.userListeners.set(id, unsubscribe);
+      this.userListeners.set(key, unsubscribe);
     }
 
     return this.cacheService.wrap(key, () => {
@@ -163,9 +152,9 @@ export class UserService implements OnDestroy {
   }
 
   /**
-   * Retrieves users once based on a list of IDs.
-   * @param userIds - The list of user IDs.
-   * @returns Observable of User array.
+   * Gets a specific user by ID from the Firestore collection.
+   * @param {string} id - The ID of the user.
+   * @returns {Observable<User>} An observable of the user.
    */
   getUsersOnce(userIds: string[]): Observable<User[]> {
     const chunkSize = 10;
@@ -189,14 +178,7 @@ export class UserService implements OnDestroy {
                 userId: docSnap.id,
               } as User)
           )
-        ),
-        catchError((error) => {
-          console.error(
-            'Error loading users with getUsersOnce:',
-            error
-          );
-          return of([]);
-        })
+        )
       );
     });
 
@@ -205,8 +187,8 @@ export class UserService implements OnDestroy {
 
   /**
    * Adds a new user to the Firestore collection.
-   * @param user - The user to add.
-   * @returns A promise that resolves when the user is added.
+   * @param {User} user - The user to add.
+   * @returns {Promise<void>} A promise that resolves when the user is added.
    */
   addUser(user: User): Promise<void> {
     const userDoc = doc(this.firestore, `users/${user.userId}`);
@@ -215,8 +197,8 @@ export class UserService implements OnDestroy {
 
   /**
    * Updates an existing user in the Firestore collection.
-   * @param user - The user to update.
-   * @returns A promise that resolves when the user is updated.
+   * @param {User} user - The user to update.
+   * @returns {Promise<void>} A promise that resolves when the user is updated.
    */
   updateUser(user: User): Promise<void> {
     const userDoc = doc(this.firestore, `users/${user.userId}`);
@@ -225,8 +207,8 @@ export class UserService implements OnDestroy {
 
   /**
    * Deletes a user from the Firestore collection by ID.
-   * @param id - The ID of the user.
-   * @returns A promise that resolves when the user is deleted.
+   * @param {string} id - The ID of the user.
+   * @returns {Promise<void>} A promise that resolves when the user is deleted.
    */
   deleteUser(id: string): Promise<void> {
     const userDoc = doc(this.firestore, `users/${id}`);
@@ -234,9 +216,9 @@ export class UserService implements OnDestroy {
   }
 
   /**
-   * Fetches the name of the user by a specific user ID from Firestore.
-   * @param userId - The ID of the user to fetch.
-   * @returns A promise resolving to the user's name.
+   * Fetches the name of the user by a specific user ID from the Firestore.
+   * @param userId The ID of the user to fetch.
+   * @returns A promise that resolves to the user's name.
    */
   async getUserNameById(userId: string): Promise<string | null> {
     const userRef = doc(this.firestore, `users/${userId}`);
@@ -282,7 +264,7 @@ export class UserService implements OnDestroy {
    * Loads the last two emojis from local storage.
    */
   private loadEmojisFromLocalStorage(): void {
-    const savedEmojis = localStorage.getItem('lastTwoEmojis');
+    const savedEmojis = localStorage.getItem(this.localStorageKey);
     if (savedEmojis) {
       this.lastTwoEmojisSubject.next(JSON.parse(savedEmojis));
     }
@@ -293,7 +275,7 @@ export class UserService implements OnDestroy {
    * @param emojis - Array of emojis.
    */
   private saveEmojisToLocalStorage(emojis: string[]): void {
-    localStorage.setItem('lastTwoEmojis', JSON.stringify(emojis));
+    localStorage.setItem(this.localStorageKey, JSON.stringify(emojis));
   }
 
   /**

@@ -50,8 +50,7 @@ export class ChannelMessageService implements OnDestroy{
           ...docSnap.data(),
           id: docSnap.id,
         } as Message));
-        this.cacheService.set(key, messages, 5 * 60 * 1000); // 5 Minuten TTL
-        console.log(`[ChannelMessageService] Cache updated for channel: ${channelId}`);
+        this.cacheService.set(key, messages); // Cache ohne TTL für Echtzeit-Daten
       }, (error) => {
         console.error(`Error listening to messages for channel ${channelId}:`, error);
       });
@@ -72,7 +71,7 @@ export class ChannelMessageService implements OnDestroy{
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] Listener removed for channel: ${channelId}`);
+        console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
       }
     }
   }
@@ -82,7 +81,7 @@ export class ChannelMessageService implements OnDestroy{
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] All listeners removed`);
+        console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
       }
     });
   }
@@ -111,7 +110,7 @@ export class ChannelMessageService implements OnDestroy{
 
 
   /**
-   * Adds a new message to the specified channel and updates the cache.
+   * Adds a new message to the specified channel and invalidates the cache.
    * @param channelId - The channel ID.
    * @param message - The message to add.
    * @param isPrivate - Whether the channel is private.
@@ -129,16 +128,12 @@ export class ChannelMessageService implements OnDestroy{
     );
     await addDoc(messagesCollection, message);
 
-    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
-    const updatedMessages = [...cachedMessages, message];
-    this.cacheService.set(key, updatedMessages);
-    console.log(`[ChannelMessageService] Message added to cache for channel: ${channelId}`);
+    this.cacheService.clear(key); // Cache invalidieren, um aktualisierte Nachrichten zu laden
   }
 
   /**
-   * Edits an existing message in a channel and updates the cache.
+   * Edits an existing message in a channel and invalidates the cache.
    * @param channelId - The channel ID.
    * @param messageId - The message ID.
    * @param updatedContent - The new content.
@@ -162,18 +157,12 @@ export class ChannelMessageService implements OnDestroy{
       edited: true,
     });
 
-    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
-    const updatedMessages = cachedMessages.map((msg: Message) =>
-      msg.id === messageId ? { ...msg, content: updatedContent, edited: true } : msg
-    );
-    this.cacheService.set(key, updatedMessages);
-    console.log(`[ChannelMessageService] Message edited in cache for channel: ${channelId}`);
+    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**
-   * Deletes a specific message from a channel and updates the cache.
+   * Deletes a specific message from a channel and invalidates the cache.
    * @param channelId - The channel ID.
    * @param messageId - The message ID.
    * @param isPrivate - Whether the channel is private.
@@ -191,12 +180,8 @@ export class ChannelMessageService implements OnDestroy{
     );
     await deleteDoc(messageDocRef);
 
-    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
-    const updatedMessages = cachedMessages.filter((msg: Message) => msg.id !== messageId);
-    this.cacheService.set(key, updatedMessages);
-    console.log(`[ChannelMessageService] Message deleted from cache for channel: ${channelId}`);
+    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**
@@ -225,9 +210,8 @@ export class ChannelMessageService implements OnDestroy{
       await updateDoc(messageDocRef, { reactions: {} });
     }
 
-    // Invalidate the cache for the channel's messages
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key);
+    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**

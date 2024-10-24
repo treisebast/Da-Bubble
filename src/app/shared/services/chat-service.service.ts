@@ -123,7 +123,6 @@ export class ChatService implements OnDestroy{
   addMessage(message: Message): Promise<void> {
     const { chat, isPrivate } = this.currentChatSubject.getValue();
     if (chat && chat.id) {
-      // Add message to the specific chat
       return this.channelMessageService.addChannelMessage(chat.id, message, isPrivate);
     } else {
       return Promise.reject('No current chat selected');
@@ -189,14 +188,14 @@ export class ChatService implements OnDestroy{
     }
   }
 
-  /**
+    /**
    * Extracts the file path from a given file URL.
    * @param fileUrl - The full URL of the file.
    * @returns The extracted file path.
    */
-  private getFilePathFromUrl(fileUrl: string): string {
-    return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
-  }
+    private getFilePathFromUrl(fileUrl: string): string {
+      return decodeURIComponent(fileUrl).split('/o/')[1].split('?alt=media')[0];
+    }
 
   /**
    * Updates reactions for a message.
