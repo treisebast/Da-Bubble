@@ -11,7 +11,7 @@ import {
   orderBy,
   onSnapshot,
 } from '@angular/fire/firestore';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { Message } from '../models/message.model';
 import { CacheService } from './cache.service';
 
@@ -51,6 +51,7 @@ export class ChannelMessageService implements OnDestroy{
           id: docSnap.id,
         } as Message));
         this.cacheService.set(key, messages, 5 * 60 * 1000); // 5 Minuten TTL
+        console.log(`[ChannelMessageService] Cache updated for channel: ${channelId}`);
       }, (error) => {
         console.error(`Error listening to messages for channel ${channelId}:`, error);
       });
@@ -71,7 +72,7 @@ export class ChannelMessageService implements OnDestroy{
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] Listener entfernt für Schlüssel: ${key}`);
+        console.log(`[ChannelMessageService] Listener removed for channel: ${channelId}`);
       }
     }
   }
@@ -81,7 +82,7 @@ export class ChannelMessageService implements OnDestroy{
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] Listener entfernt für Schlüssel: ${key}`);
+        console.log(`[ChannelMessageService] All listeners removed`);
       }
     });
   }
@@ -110,7 +111,7 @@ export class ChannelMessageService implements OnDestroy{
 
 
   /**
-   * Adds a new message to the specified channel and invalidates the cache.
+   * Adds a new message to the specified channel and updates the cache.
    * @param channelId - The channel ID.
    * @param message - The message to add.
    * @param isPrivate - Whether the channel is private.
@@ -128,13 +129,16 @@ export class ChannelMessageService implements OnDestroy{
     );
     await addDoc(messagesCollection, message);
 
-    // Invalidate the cache for the channel's messages
+    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key);
+    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
+    const updatedMessages = [...cachedMessages, message];
+    this.cacheService.set(key, updatedMessages);
+    console.log(`[ChannelMessageService] Message added to cache for channel: ${channelId}`);
   }
 
   /**
-   * Edits an existing message in a channel and invalidates the cache.
+   * Edits an existing message in a channel and updates the cache.
    * @param channelId - The channel ID.
    * @param messageId - The message ID.
    * @param updatedContent - The new content.
@@ -158,13 +162,18 @@ export class ChannelMessageService implements OnDestroy{
       edited: true,
     });
 
-    // Invalidate the cache for the channel's messages
+    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key);
+    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
+    const updatedMessages = cachedMessages.map((msg: Message) =>
+      msg.id === messageId ? { ...msg, content: updatedContent, edited: true } : msg
+    );
+    this.cacheService.set(key, updatedMessages);
+    console.log(`[ChannelMessageService] Message edited in cache for channel: ${channelId}`);
   }
 
   /**
-   * Deletes a specific message from a channel and invalidates the cache.
+   * Deletes a specific message from a channel and updates the cache.
    * @param channelId - The channel ID.
    * @param messageId - The message ID.
    * @param isPrivate - Whether the channel is private.
@@ -182,9 +191,12 @@ export class ChannelMessageService implements OnDestroy{
     );
     await deleteDoc(messageDocRef);
 
-    // Invalidate the cache for the channel's messages
+    // Update the cache directly
     const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key);
+    const cachedMessages = (this.cacheService.get(key) as BehaviorSubject<Message[]>).value || [];
+    const updatedMessages = cachedMessages.filter((msg: Message) => msg.id !== messageId);
+    this.cacheService.set(key, updatedMessages);
+    console.log(`[ChannelMessageService] Message deleted from cache for channel: ${channelId}`);
   }
 
   /**

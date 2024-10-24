@@ -24,17 +24,14 @@ export class CacheService {
     if (isDevMode()) {
       (window as any).cacheService = this;
     }
-    this.loadCacheFromLocalStorage();
     this.startCleanupTask();
   }
-
   private startCleanupTask(): void {
     setInterval(() => {
       const now = Date.now();
       this.cache.forEach((entry, key) => {
         if (now > entry.expiry) {
           this.cache.delete(key);
-          localStorage.removeItem(key);
           if (isDevMode()) {
             console.log(`[CacheService] Auto-removed expired key: ${key}`);
           }
@@ -43,48 +40,6 @@ export class CacheService {
     }, this.cleanupInterval);
   }
 
-  /**
-   * Loads cache entries from localStorage into the in-memory cache.
-   */
-  private loadCacheFromLocalStorage(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach((key) => {
-      try {
-        const entryStr = localStorage.getItem(key);
-        if (entryStr) {
-          const isJson = entryStr.startsWith('{') || entryStr.startsWith('[');
-          if (isJson) {
-            const entry: CacheEntry<any> = JSON.parse(entryStr);
-            if (Date.now() < entry.expiry) {
-              this.cache.set(key, entry);
-              if (isDevMode()) {
-                console.log(
-                  `[CacheService] Loaded key from localStorage: ${key}`
-                );
-              }
-            } else {
-              localStorage.removeItem(key);
-              if (isDevMode()) {
-                console.log(
-                  `[CacheService] Removed expired key from localStorage: ${key}`
-                );
-              }
-            }
-          } else {
-            if (isDevMode()) {
-              console.log(`[CacheService] Skipping non-JSON key: ${key}`);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Error loading cache key "${key}" from localStorage:`,
-          error
-        );
-        localStorage.removeItem(key);
-      }
-    });
-  }
 
   /**
    * Retrieves cached data by key.
@@ -102,75 +57,54 @@ export class CacheService {
 
     if (Date.now() > entry.expiry) {
       this.cache.delete(key);
-      localStorage.removeItem(key);
       if (isDevMode()) {
         console.log(`[CacheService] Cache expired for key: ${key}`);
       }
       return null;
     }
 
-    if (!entry.subject) {
-      entry.subject = new BehaviorSubject<T>(entry.data);
-    } else {
-      entry.subject.next(entry.data);
-    }
-
     if (isDevMode()) {
       console.log(`[CacheService] Cache hit for key: ${key}`);
     }
-    return entry.subject.asObservable();
+    return entry.subject ? entry.subject.asObservable() : null;
   }
 
   /**
-   * Sets cached data for a specific key and stores it in localStorage.
+   * Sets cached data for a specific key.
    * @param key - The unique cache key.
    * @param data - The data to cache.
    * @param ttl - Optional: Individual TTL in milliseconds.
    */
   set<T>(key: string, data: T, ttl?: number): void {
-    let entry = this.cache.get(key);
     const effectiveTtl = ttl !== undefined ? ttl : this.defaultTtl;
     const expiry = Date.now() + effectiveTtl;
 
-    if (!entry) {
-      entry = {
+    const existingEntry = this.cache.get(key);
+    if (existingEntry) {
+      // Update existing entry
+      existingEntry.data = data;
+      existingEntry.expiry = expiry;
+      if (existingEntry.subject) {
+        existingEntry.subject.next(data);
+      }
+    } else {
+      // Create new entry
+      const subject = new BehaviorSubject<T>(data);
+      this.cache.set(key, {
         data,
         expiry,
-        subject: new BehaviorSubject<T>(data),
+        subject,
         ttl: effectiveTtl,
-      };
-      this.cache.set(key, entry);
-    } else {
-      entry.data = data;
-      entry.expiry = Date.now() + effectiveTtl;
-      entry.ttl = effectiveTtl;
-      if (entry.subject) {
-        entry.subject.next(data);
-      }
+      });
     }
 
-    try {
-      localStorage.setItem(key, JSON.stringify({ data, expiry }));
-      if (isDevMode()) {
-        console.log(
-          `[CacheService] Cache set for key: ${key} | Expires at: ${new Date(
-            expiry
-          ).toLocaleTimeString()}`
-        );
-      }
-    } catch (error) {
-      console.error(`Error setting cache key "${key}" in localStorage:`, error);
+    if (isDevMode()) {
+      console.log(
+        `[CacheService] Cache set for key: ${key} | Expires at: ${new Date(expiry).toLocaleTimeString()}`
+      );
     }
   }
 
-  /**
-   * Updates cached data for a specific key and stores it in localStorage.
-   * @param key - The unique cache key.
-   * @param data - The new data to cache.
-   */
-  update<T>(key: string, data: T): void {
-    this.set(key, data);
-  }
 
   /**
    * Wraps a fetch function with caching logic.
@@ -204,7 +138,6 @@ export class CacheService {
    */
   clear(key: string): void {
     this.cache.delete(key);
-    localStorage.removeItem(key);
     if (isDevMode()) {
       console.log(`[CacheService] Cache cleared for key: ${key}`);
     }
@@ -215,7 +148,6 @@ export class CacheService {
    */
   clearAll(): void {
     this.cache.clear();
-    localStorage.clear();
     if (isDevMode()) {
       console.log('[CacheService] All caches cleared');
     }

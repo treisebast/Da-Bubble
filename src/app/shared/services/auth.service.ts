@@ -63,7 +63,6 @@ export class AuthService implements OnDestroy{
         if (docSnap.exists()) {
           const data = docSnap.data();
           const status = data['status'] as 'online' | 'away' | 'offline';
-          // Optional: Emit an event or update a BehaviorSubject if Sie den Status im UI anzeigen möchten
           console.log(`User ${userId} status updated to ${status}`);
         }
       },
@@ -86,7 +85,7 @@ export class AuthService implements OnDestroy{
       unsubscribe();
       this.statusListeners.delete(userId);
       if (isDevMode()) {
-        console.log(`[AuthService] Status Listener entfernt für Benutzer: ${userId}`);
+        console.log(`[AuthService] Status Listener removed for user: ${userId}`);
       }
     }
   }
@@ -156,7 +155,7 @@ export class AuthService implements OnDestroy{
           this.setUserOnlineStatus(result.user.uid, 'online');
           this.monitorVisibility(result.user.uid);
           this.addUnloadEvent(result.user.uid);
-          this.listenToUserStatusUpdates(result.user.uid); // Listener hinzufügen
+          this.listenToUserStatusUpdates(result.user.uid);
           this.userService.listenToUserUpdates(result.user.uid);
           this.channelService.listenToChannelUpdates();
         }
@@ -176,7 +175,7 @@ export class AuthService implements OnDestroy{
         this.setUserOnlineStatus(result.user.uid, 'online');
         this.monitorVisibility(result.user.uid);
         this.addUnloadEvent(result.user.uid);
-        this.listenToUserStatusUpdates(result.user.uid); // Listener hinzufügen
+        this.listenToUserStatusUpdates(result.user.uid);
         this.userService.listenToUserUpdates(result.user.uid);
         this.channelService.listenToChannelUpdates();
       }
@@ -312,14 +311,12 @@ export class AuthService implements OnDestroy{
         this.setUserOnlineStatus(user.uid, 'online');
         this.monitorVisibility(user.uid);
         this.addUnloadEvent(user.uid);
-        this.listenToUserStatusUpdates(user.uid); // Listener hinzufügen
+        this.listenToUserStatusUpdates(user.uid);
         this.userService.listenToUserUpdates(user.uid);
         this.channelService.listenToChannelUpdates();
       } else {
-        // Benutzer ist ausgeloggt: Listener entfernen
         this.userService.removeAllUserListeners();
         this.channelService.removeAllChannelListeners();
-        // Weitere Listener entfernen, falls nötig
       }
     });
   }

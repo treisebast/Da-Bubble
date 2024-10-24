@@ -61,6 +61,7 @@ export class ChannelService implements OnDestroy {
     const unsubscribePublic = onSnapshot(publicChannelsQuery, (snapshot) => {
       const channels: Channel[] = snapshot.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id } as Channel));
       this.cacheService.set('channels-public', channels, 10 * 60 * 1000); // 10 Minuten TTL
+      console.log('[ChannelService] Public channels updated in cache');
     }, (error) => {
       console.error('Error listening to public channel updates:', error);
     });
@@ -77,6 +78,7 @@ export class ChannelService implements OnDestroy {
     const unsubscribePrivate = onSnapshot(privateChannelsQuery, (snapshot) => {
       const channels: Channel[] = snapshot.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id } as Channel));
       this.cacheService.set('channels-private', channels, 10 * 60 * 1000); // 10 Minuten TTL
+      console.log('[ChannelService] Private channels updated in cache');
     }, (error) => {
       console.error('Error listening to private channel updates:', error);
     });
@@ -85,14 +87,14 @@ export class ChannelService implements OnDestroy {
   }
 
   /**
-   * Ruft die gespeicherten Listener ab und beendet sie.
+   * Removes all channel listeners.
    */
-  removeAllChannelListeners(): void {
+  public removeAllChannelListeners(): void {
     this.channelListeners.forEach((unsubscribe, key) => {
       unsubscribe();
       this.channelListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
+        console.log(`[ChannelService] Listener removed for key: ${key}`);
       }
     });
   }
@@ -176,9 +178,7 @@ export class ChannelService implements OnDestroy {
     return this.cacheService.wrap(key, () => {
       const collectionRef = collection(this.firestore, collectionPath);
       const channelsQuery = query(collectionRef, orderBy('createdAt', 'asc'));
-      return collectionData(channelsQuery, { idField: 'id' }) as Observable<
-        Channel[]
-      >;
+      return collectionData(channelsQuery, { idField: 'id' }) as Observable<Channel[]>;
     });
   }
 
@@ -188,10 +188,7 @@ export class ChannelService implements OnDestroy {
    * @param isPrivate - Indicates if channels are private.
    * @returns An Observable of Channel array.
    */
-  getChannelsForUser(
-    userId: string,
-    isPrivate: boolean
-  ): Observable<Channel[]> {
+  getChannelsForUser(userId: string, isPrivate: boolean): Observable<Channel[]> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const key = `channels-for-user-${isPrivate}-${userId}`;
     return this.cacheService.wrap(key, () => {
@@ -201,9 +198,7 @@ export class ChannelService implements OnDestroy {
         where('members', 'array-contains', userId),
         orderBy('createdAt', 'asc')
       );
-      return collectionData(channelsQuery, { idField: 'id' }) as Observable<
-        Channel[]
-      >;
+      return collectionData(channelsQuery, { idField: 'id' }) as Observable<Channel[]>;
     });
   }
 
@@ -304,7 +299,7 @@ export class ChannelService implements OnDestroy {
    * @param updatedFields - The fields to update.
    * @returns A promise resolving when the update is complete.
    */
-  updateChannel(
+  async updateChannel(
     channel: Channel,
     updatedFields: Partial<Omit<Channel, 'id'>>
   ): Promise<void> {
@@ -313,21 +308,16 @@ export class ChannelService implements OnDestroy {
       this.firestore,
       `${collectionPath}/${channel.id}`
     );
-    return updateDoc(channelDocRef, {
+    await updateDoc(channelDocRef, {
       ...updatedFields,
       updatedAt: new Date(),
-    })
-      .then(() => {
-        // Invalidate relevant caches
-        const key = `channel-${channel.isPrivate}-${channel.id}`;
-        const keyAllChannels = `channels-${channel.isPrivate}`;
-        this.cacheService.clear(key);
-        this.cacheService.clear(keyAllChannels);
-      })
-      .catch((error) => {
-        console.error('Error updating channel:', error);
-        throw error;
-      });
+    });
+
+    // Invalidate relevant caches
+    const key = `channel-${channel.isPrivate}-${channel.id}`;
+    const keyAllChannels = `channels-${channel.isPrivate}`;
+    this.cacheService.clear(key);
+    this.cacheService.clear(keyAllChannels);
   }
 
   /**
@@ -336,16 +326,16 @@ export class ChannelService implements OnDestroy {
    * @param isPrivate - Indicates if the channel is private.
    * @returns A promise resolving when the deletion is complete.
    */
-  deleteChannel(id: string, isPrivate: boolean): Promise<void> {
+  async deleteChannel(id: string, isPrivate: boolean): Promise<void> {
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const channelDoc = doc(this.firestore, `${collectionPath}/${id}`);
-    return deleteDoc(channelDoc).then(() => {
-      // Invalidate relevant caches
-      const key = `channel-${isPrivate}-${id}`;
-      const keyAllChannels = `channels-${isPrivate}`;
-      this.cacheService.clear(key);
-      this.cacheService.clear(keyAllChannels);
-    });
+    await deleteDoc(channelDoc);
+
+    // Invalidate relevant caches
+    const key = `channel-${isPrivate}-${id}`;
+    const keyAllChannels = `channels-${isPrivate}`;
+    this.cacheService.clear(key);
+    this.cacheService.clear(keyAllChannels);
   }
 
   /**

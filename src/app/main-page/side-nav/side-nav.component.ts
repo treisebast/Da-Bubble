@@ -129,78 +129,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  /**
-   * Lädt die Daten des aktuellen Benutzers und initialisiert die Workspace-Benutzer.
-   */
-  private loadUserData(): Observable<UserWithImageStatus | null> {
-    return this.authService.getUser().pipe(
-      switchMap(firebaseUser => {
-        if (firebaseUser) {
-          return this.userService.getUser(firebaseUser.uid).pipe(
-            map(user => {
-              this.currentUser = { ...user, isImageLoaded: false };
-              this.showWorkspaceUsers();
-              return this.currentUser;
-            })
-          );
-        } else {
-          return of(null);
-        }
-      })
-    );
-  }
-
-  // /**
-  //  * Lädt öffentliche und private Kanäle.
-  //  */
-  // private loadChannels() {
-  //   const publicChannelsSub = this.channelService.getChannels(false).subscribe({
-  //     next: (channels) => {
-  //       this.publicChannels = channels;
-  //     },
-  //     error: (err) => console.error('Fehler beim Laden der öffentlichen Kanäle:', err),
-  //   });
-  //   this.subs.add(publicChannelsSub);
-
-  //   const privateChannelsSub = this.channelService.getChannels(true).subscribe({
-  //     next: (channels) => {
-  //       this.privateChannels = channels;
-  //     },
-  //     error: (err) => console.error('Fehler beim Laden der privaten Kanäle:', err),
-  //   });
-  //   this.subs.add(privateChannelsSub);
-  // }
-
-  private loadChannelsForCurrentUser() {
-    const publicChannelsSub = this.channelService.getChannelsForUser(this.currentUser.userId, false).subscribe({
-      next: (channels) => {
-        this.publicChannels = channels;
-      },
-      error: (err) => console.error('Fehler beim Laden der öffentlichen Kanäle:', err),
-    });
-    this.subs.add(publicChannelsSub);
-
-    const privateChannelsSub = this.channelService.getChannelsForUser(this.currentUser.userId, true).subscribe({
-      next: (channels) => {
-        this.privateChannels = channels;
-      },
-      error: (err) => console.error('Fehler beim Laden der privaten Kanäle:', err),
-    });
-    this.subs.add(privateChannelsSub);
-  }
-
-  /**
-   * Abonniert private Chat-Erstellungsereignisse.
-   */
-  private subscribeToPrivateChats() {
-    const chatSub = this.chatService.createPrivateChat$.subscribe((user) => {
-      if (user) {
-        this.findOrCreatePrivateChannelWithUser(user);
-        this.setSelectedMessage();
-      }
-    });
-    this.subs.add(chatSub);
-  }
 
   trackByUserId(index: number, user: UserWithImageStatus): string {
     return user.userId;
@@ -223,7 +151,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
         });
         this.moveCurrentUserToTop();
       },
-      error: (err) => console.error('Fehler beim Laden der Workspace-Benutzer:', err),
+      error: (err) => console.error('Error loading workspace users:', err),
     });
     this.subs.add(usersSub);
   }
@@ -324,11 +252,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
     try {
       const docRef = await this.channelService.addChannel(newChannel);
       const createdChannel: Channel = { ...newChannel, id: docRef.id };
-      // Wir fügen den Kanal nicht manuell zu privateChannels hinzu, da die Subscription dies automatisch übernimmt
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
     } catch (error) {
-      console.error('Fehler beim Erstellen des privaten Kanals:', error);
+      console.error('Error creating private channel:', error);
     }
   }
 
