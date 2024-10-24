@@ -220,7 +220,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentUserId = user.uid;
     this.currentUserName = user.displayName || '';
   }
-  
+
 
   private subscribeToCurrentChat(): void {
     const chatSub = this.chatService.currentChat$
@@ -441,18 +441,20 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     return new Date();
   }
 
-  scrollToBottom(): void {
-    setTimeout(() => {
-      try {
-        if (this.chatContainer) {
-          this.chatContainer.nativeElement.scrollTop =
-            this.chatContainer.nativeElement.scrollHeight;
-        }
-      } catch (err) {
-        console.error('Scroll to bottom failed:', err);
+scrollToBottom(): void {
+  setTimeout(() => {
+    try {
+      if (this.chatContainer) {
+        this.chatContainer.nativeElement.scrollTo({
+          top: this.chatContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
       }
-    }, 300);
-  }
+    } catch (err) {
+      console.error('Scroll to bottom failed:', err);
+    }
+  }, 300);
+}
 
   trackByUserId(index: number, user: User): string {
     return user.userId ? user.userId : index.toString();
