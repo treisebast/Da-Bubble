@@ -33,7 +33,7 @@
 }
 
 .h2text {
-  color: var(--black, #000);
+  color: var(--black, rgb(0, 0, 0));
   font-size: 20px;
   font-weight: 700;
 }
@@ -59,6 +59,14 @@
     width: fit-content;
     transition: ease-in-out 150ms;
     cursor: pointer;
+
+    &:disabled {
+      cursor: unset;
+      opacity: 0.6;
+      background-color: var(--disabled-background, rgb(204, 204, 204));
+      color: var(--disabled-text, rgb(102, 102, 102));
+      border: none;
+    }
   }
 
   .btn-cancel {
@@ -71,6 +79,12 @@
       background: var(--purple-one, rgb(68, 77, 242));
       color: var(--white, rgb(255, 255, 255));
     }
+
+    &:disabled {
+      background-color: transparent;
+      color: var(--disabled-text, rgb(102, 102, 102));
+      border: 1px solid var(--disabled-border, rgb(204, 204, 204));
+    }
   }
 
   .btn-save {
@@ -82,6 +96,11 @@
 
     &:hover {
       background: var(--purple-two, rgb(121, 126, 243));
+    }
+
+    &:disabled {
+      background-color: var(--disabled-background, rgb(204, 204, 204));
+      color: var(--disabled-text, rgb(102, 102, 102));
     }
   }
 

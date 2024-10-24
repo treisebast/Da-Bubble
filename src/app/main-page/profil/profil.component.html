@@ -25,8 +25,9 @@
           </div>
 
           <div class="profil-img-container">
-            <img [src]="onclickUser.avatar" alt="Profilimage" *ngIf="onclickUser"
-              [ngClass]="isChangingAvatar ? 'hover-effect' : ''" />
+            <img [src]="onclickUser.avatar || 'assets/img/profile/fallback_user.png'" alt="profile image"
+              class="profile-img" (error)="onclickUser.avatar = 'assets/img/profile/fallback_user.png'"
+              *ngIf="onclickUser" />
           </div>
         </div>
 

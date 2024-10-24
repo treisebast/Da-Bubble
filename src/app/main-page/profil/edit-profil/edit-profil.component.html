@@ -1,73 +1,67 @@
-<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()" *ngIf="isEditingName">
-  <!-- Name -->
-  <div class=" flex-container">
+<!-- Formular für den Namen -->
+<form [formGroup]="nameFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingName">
+  <div class="flex-container">
     <div class="account-circle-icon"></div>
     <span class="h2text">Vollständiger Name</span>
   </div>
-  <div class="input-container" [ngClass]="{'invalid-border':
-        name.invalid && (name.dirty || name.touched)
-    }">
+  <div class="input-container"
+    [ngClass]="{'invalid-border': nameControls.name.invalid && (nameControls.name.dirty || nameControls.name.touched)}">
     <input type="text" formControlName="name" autocomplete="name" [placeholder]="ownUser.name" />
   </div>
-  <span class="validMsg" [class.hidden]="!(name.invalid && name.touched)">
+  <span class="validMsg" *ngIf="nameControls.name.invalid && nameControls.name.touched">
     Name muss mindestens 3 Zeichen lang sein.
   </span>
 
-  <div class=" flex-container">
+  <div class="flex-container">
     <div class="account-circle-icon"></div>
     <span class="h2text">Name wiederholen</span>
   </div>
-  <div class="input-container" [ngClass]="{'invalid-border':
-        name.invalid && (name.dirty || name.touched)
-    }">
-    <input type="text" formControlName="name" autocomplete="name" [placeholder]="ownUser.name" />
+  <div class="input-container" [ngClass]="{'invalid-border': nameControls.nameRepeat.invalid}">
+    <input type="text" formControlName="nameRepeat" autocomplete="name" [placeholder]="ownUser.name" />
   </div>
-  <span class="validMsg" [class.hidden]="!(name.invalid && name.touched)">
+  <span class="validMsg" *ngIf="nameControls.nameRepeat.hasError('mismatch')">
     Name stimmt nicht überein.
   </span>
 
-  <!-- Save and Cancel -->
+  <!-- Speichern und Abbrechen -->
   <div class="width-100">
     <div class="button-container">
       <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
-      <button class="btn btn-save" type="submit">Speichern</button>
+      <button class="btn btn-save" type="submit" [disabled]="nameFormGroup.invalid">Speichern</button>
     </div>
   </div>
 </form>
 
-<form [formGroup]="editProfilForm" (ngSubmit)="onSubmitSave()" *ngIf="isEditingEmail">
-  <!-- Email -->
-  <div class="flex-container email-container">
+<!-- Formular für die E-Mail -->
+<form [formGroup]="emailFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingEmail">
+  <div class="flex-container">
     <div class="email-icon"></div>
     <span class="h2text">E-Mail-Adresse</span>
   </div>
-  <div class="input-container" [ngClass]="{
-      'invalid-border': email.invalid && (email.dirty || email.touched)
-    }" required>
+  <div class="input-container"
+    [ngClass]="{'invalid-border': emailControls.email.invalid && (emailControls.email.dirty || emailControls.email.touched)}">
     <input type="email" formControlName="email" [placeholder]="ownUser.email" />
   </div>
-  <span class="validMsg" [class.hidden]="!(email.invalid && email.touched)">
+  <span class="validMsg" *ngIf="emailControls.email.invalid && emailControls.email.touched">
     Bitte geben Sie eine gültige E-Mail-Adresse ein.
   </span>
 
-  <div class="flex-container email-container">
+  <div class="flex-container">
     <div class="email-icon"></div>
     <span class="h2text">E-Mail-Adresse wiederholen</span>
   </div>
-  <div class="input-container" [ngClass]="{
-      'invalid-border': email.invalid && (email.dirty || email.touched)
-    }" required>
-    <input type="email" formControlName="email" [placeholder]="ownUser.email" />
+  <div class="input-container" [ngClass]="{'invalid-border': emailControls.emailRepeat.invalid}">
+    <input type="email" formControlName="emailRepeat" [placeholder]="ownUser.email" />
   </div>
-  <span class="validMsg" [class.hidden]="!(email.invalid && email.touched)">
+  <span class="validMsg" *ngIf="emailControls.emailRepeat.hasError('mismatch')">
     E-Mail-Adresse stimmt nicht überein.
   </span>
 
-  <!-- Save and Cancel -->
+  <!-- Speichern und Abbrechen -->
   <div class="width-100">
     <div class="button-container">
       <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
-      <button class="btn btn-save" type="submit">Speichern</button>
+      <button class="btn btn-save" type="submit" [disabled]="emailFormGroup.invalid">Speichern</button>
     </div>
   </div>
 </form>
