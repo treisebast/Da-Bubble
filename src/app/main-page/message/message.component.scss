@@ -397,6 +397,10 @@
   }
 }
 
+.mobile-mart {
+  display: none;
+}
+
 @keyframes slideInFromLeft {
   0% {
     transform: translateX(-100%);
@@ -500,6 +504,7 @@
   }
 
   .reactionBar {
+    display: none !important;
     top: -40px;
 
     &.reactionBar-left {
@@ -531,6 +536,18 @@
     justify-content: space-around;
     padding: 8px;
     background-color: #f9f9f9;
+    height: 35px;
+    width: 35px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    cursor: pointer;
+    background-color: var(--white);
+    border-radius: 50%;
+    background-image: url(../../../assets/img/chatChannel/add_reaction.svg);
+
+    &:hover {
+      background-image: url(../../../assets/img/chatChannel/add_reaction_hover.svg);
+    }
 
     .mobile-mart-container {
       position: relative;
@@ -550,6 +567,19 @@
       z-index: 1000;
       user-select: none;
 
+      &.left-aligned {
+        left: auto;
+        right: 155px;
+        flex-direction: row-reverse;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: unset;
+      }
+
+      &.right-aligned {
+        right: 0;
+        flex-direction: row;
+      }
+
       .mobile-emoji {
         font-size: 24px;
         cursor: pointer;
@@ -567,10 +597,6 @@
   }
 
   .mart-button {
-    display: none !important;
-  }
-
-  .reactionBar {
     display: none !important;
   }
 
@@ -662,22 +688,6 @@
 
 .highlight {
   background-color: var(--main-background, rgb(235, 239, 254));
-}
-
-.mobile-mart {
-  display: none;
-  height: 35px;
-  width: 35px;
-  background-repeat: no-repeat;
-  background-position: center center;
-  cursor: pointer;
-  background-color: var(--white);
-  border-radius: 50%;
-  background-image: url(../../../assets/img/chatChannel/add_reaction.svg);
-
-  &:hover {
-    background-image: url(../../../assets/img/chatChannel/add_reaction_hover.svg);
-  }
 }
 
 .mobile-thread-opener {

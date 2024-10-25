@@ -55,7 +55,7 @@
     <div class="reaction-button-bar">
       <div class="mobile-nav-menu">
         <div class="mobile-mart" *ngIf="screenSmall" (click)="toggleMobileEmojis()" #mobileMartButton>
-          <div class="mobile-mart-container" *ngIf="showMobileEmojis" #mobileMartContainer>
+          <div class="mobile-mart-container"  [ngClass]="{'left-aligned': isCurrentUser, 'right-aligned': !isCurrentUser}" *ngIf="showMobileEmojis" #mobileMartContainer>
             <span *ngFor="let emoji of mobileEmojis" class="mobile-emoji" (click)="onMobileEmojiClick(emoji)">
               {{ emoji }}
             </span>

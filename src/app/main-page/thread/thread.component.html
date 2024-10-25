@@ -72,13 +72,6 @@
         <div class="reaction" (click)="toggleEmojiPicker($event, currentMessageToOpen)"></div>
       </div>
 
-      <!-- <mat-menu #menu0="matMenu">
-        <ng-container *ngIf="currentMessageToOpen.senderId === currentUserId">
-          <button mat-menu-item (click)="editMessage(currentMessageToOpen)">Nachricht bearbeiten</button>
-          <button mat-menu-item (click)="deleteMessage(currentMessageToOpen)">Nachricht löschen</button>
-        </ng-container>
-      </mat-menu> -->
-
       <!-- Reaction Bar for the original message -->
       <div class="reaction-button-bar">
         <div class="reaction-button" *ngFor="let emoji of (currentMessageToOpen.reactions | keyvalue)"
