@@ -117,4 +117,13 @@ export class MainPageComponent implements OnInit {
       this.showSecondary = view === 'secondary';
     }
   }
+
+  openWelcomeChannel() {
+    this.chatService.setCurrentChat(null, false);
+  }
+  
+  handleServerNameClick() {
+    this.switchTo('main');
+    this.openWelcomeChannel();
+  }
 }

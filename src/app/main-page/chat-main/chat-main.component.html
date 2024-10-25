@@ -1,21 +1,30 @@
 <!-- Neue Nachricht -->
 <div *ngIf="!currentChat" class="newMessageChatContainer">
-  <!-- Header für Neue Nachricht -->
+  <div class="header column">
+    <app-welcome-channel></app-welcome-channel>
+  </div>
+
+
+
+
+
+
+  <!-- class="newMessageChatContainer"
   <div class="header column">
     <h2>Neue Nachricht</h2>
     <input type="text" (keyup)="onKeyUp($event)" placeholder="An: #channel, oder @jemand oder E-Mail Adresse" />
-    <!-- Gefilterte Kanäle -->
+    
     <ul *ngIf="filteredChannels.length > 0">
       <li *ngFor="let channel of filteredChannels">{{ channel.name }}</li>
     </ul>
-    <!-- Gefilterte Öffentliche Kanäle -->
+    
     <ul *ngIf="filteredPublicChannels.length > 0">
       <li *ngFor="let channel of filteredPublicChannels">{{ channel.name }}</li>
     </ul>
-  </div>
+  </div> -->
 
   <!-- Nachrichteneingabefeld -->
-  <div class="messageBox absolute-bottom">
+  <!-- <div class="messageBox absolute-bottom">
     <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht eingeben..."
       (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
 
@@ -27,12 +36,10 @@
         <div class="emoji" (click)="toggleEmojiPicker()"></div>
       </div>
       <div (click)="sendMessage()" class="sendMessage"></div>
-
-      <!-- Emoji-Auswahl -->
       <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" class="emoji-mart-message-box"
         (emojiClick)="addEmoji($event)"></emoji-mart>
     </div>
-  </div>
+  </div> -->
 </div>
 
 <!-- Chat-Schnittstelle -->

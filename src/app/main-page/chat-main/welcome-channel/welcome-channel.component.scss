@@ -1,0 +1,29 @@
+.header {
+    background-color: var(--main-background);
+    color: black;
+    padding: 20px;
+    text-align: center;
+    border-radius: 20px;
+}
+
+.overview,
+.tutorial {
+    padding: 20px;
+    margin: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.overview h3,
+.tutorial h3 {
+    color: #333;
+}
+
+.overview ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.tutorial ol {
+    list-style-type: decimal;
+    margin-left: 20px;
+}

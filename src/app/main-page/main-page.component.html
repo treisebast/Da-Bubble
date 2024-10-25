@@ -6,7 +6,9 @@
 
     <app-side-nav [@slideInOut]="!isMobileView ? (showChannels ? 'in' : 'out') : ''"
       *ngIf="!isMobileView || currentView === 'channels'" [ngClass]="{'full-width': isMobileView}"
-      (channelSelected)="onChannelSelected()"></app-side-nav>
+      (channelSelected)="onChannelSelected()"
+      (serverNameClicked)="handleServerNameClick()"
+      ></app-side-nav>
 
     <app-chat-main [ngClass]="{'full-width': !showChannels && !showSecondary}"
       *ngIf="(!isMobileView && (currentView === 'main' || currentView === 'channels')) || (isMobileView && currentView === 'main')"

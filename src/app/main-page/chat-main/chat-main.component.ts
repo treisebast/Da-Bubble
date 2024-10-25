@@ -26,12 +26,13 @@ import { ChannelService } from '../../shared/services/channel.service';
 import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.component';
 import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.component';
 import { NavigationService } from '../../shared/services/navigation-service.service';
+import { WelcomeChannelComponent } from './welcome-channel/welcome-channel.component';
 
 @Component({
   selector: 'app-chat-main',
   standalone: true,
   imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent,
-    ProfilComponent, ImageOverlayComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
+    ProfilComponent, ImageOverlayComponent, WelcomeChannelComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })

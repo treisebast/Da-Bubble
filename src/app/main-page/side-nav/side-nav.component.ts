@@ -62,7 +62,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   currentUser!: UserWithImageStatus;
   currentChat: { chat: Channel | null; isPrivate: boolean } = { chat: null, isPrivate: false };
   subs = new Subscription();
-
+  @Output() serverNameClicked = new EventEmitter<void>();
   @Output() channelSelected = new EventEmitter<void>();
 
   constructor(
@@ -318,5 +318,9 @@ export class SideNavComponent implements OnInit, OnDestroy {
       }
     }
     return false;
+  }
+
+  onServerNameClick() {
+    this.serverNameClicked.emit();
   }
 }
