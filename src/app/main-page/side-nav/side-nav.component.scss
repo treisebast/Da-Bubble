@@ -61,7 +61,8 @@ table {
     height: 40px;
     display: flex;
     align-items: center;
-    width: 80%;
+    width: 100%;
+    max-width: 250px;
     font-weight: 400;
     font-size: 18px;
 
@@ -241,11 +242,17 @@ tr {
   transition: background-color 255ms ease-in-out, color 255ms ease-in-out;
 }
 
+@media(max-width: 1200px) {
+  .edit {
+    display: none;
+  }
+}
 
 @media(max-width:600px) {
   .channels {
     tr {
       font-size: 15px;
+      max-width: 200px;
     }
   }
 }

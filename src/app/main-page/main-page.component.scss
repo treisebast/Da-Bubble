@@ -94,3 +94,10 @@
     display: none;
   }
 }
+
+@media(max-width:374px) {
+  app-side-nav.full-width {
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+  }
+}

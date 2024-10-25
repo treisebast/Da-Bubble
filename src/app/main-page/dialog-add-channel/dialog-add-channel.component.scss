@@ -14,7 +14,6 @@
   padding-right: 20px;
   padding-bottom: 40px;
   z-index: 10;
-  width: 710px;
 }
 
 mat-label,
@@ -39,7 +38,6 @@ mat-label,
   outline-color: var(--purple-one);
   font-size: 18px;
   color: var(--black);
-  // margin-bottom: 16px;
   padding: 20px;
 
   &:hover {
@@ -136,6 +134,7 @@ mat-dialog-content {
   align-items: center;
   cursor: pointer;
   margin-bottom: 8px;
+
   &:hover {
     .radio-circle {
       transform: scale(1.1);
@@ -162,7 +161,8 @@ mat-dialog-content {
     height: 10px;
     background-color: #444df2;
     border-radius: 50%;
-    transform: scale(0); /* Beginne mit dem inneren Kreis verkleinert */
+    transform: scale(0);
+    /* Beginne mit dem inneren Kreis verkleinert */
     transition: transform 0.3s ease;
   }
 }
@@ -177,16 +177,19 @@ mat-label {
   padding: 4px 20px;
   align-items: center;
   gap: 15px;
+
   &:hover {
     border-radius: 30px;
     background-color: #eceefe;
   }
-  > h2 {
+
+  >h2 {
     margin: 0;
     padding: 0;
     color: var(--Black, #000);
     font-size: 18px;
   }
+
   img {
     width: 50px;
     height: 50px;
@@ -200,8 +203,9 @@ mat-label {
 .userToClick.disabled {
   cursor: not-allowed;
   opacity: 0.6;
+
   h2 {
-   color: grey;
+    color: grey;
   }
 }
 
@@ -218,9 +222,11 @@ mat-label {
   gap: 15px;
   border-radius: 30px;
   background-color: #b8beec;
+
   &:hover {
     background-color: #8690df;
   }
+
   h2 {
     margin: 0;
   }
@@ -229,9 +235,12 @@ mat-label {
 .radio-circle.checked {
   background-color: #ffffff;
   border-color: #444df2;
-  animation: radio-circle-expand 0.3s ease; /* Animation beim Check */
+  animation: radio-circle-expand 0.3s ease;
+
+  /* Animation beim Check */
   &::after {
-    transform: scale(1); /* Innerer Kreis skaliert auf seine normale Größe */
+    transform: scale(1);
+    /* Innerer Kreis skaliert auf seine normale Größe */
   }
 }
 
@@ -239,9 +248,11 @@ mat-label {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.4);
   }
+
   100% {
     transform: scale(1);
   }
@@ -322,7 +333,7 @@ mat-label {
 mat-icon {
   font-size: 24px;
   font-weight: 700;
-  color: var(--black, #000)!important;
+  color: var(--black, #000) !important;
   cursor: pointer;
 }
 
@@ -392,4 +403,33 @@ mat-icon {
   font-size: 14px;
   margin-left: 12px;
   margin-top: 8px;
+}
+
+@media(max-width: 700px) {
+  .addChannelInputs {
+    font-size: 16px;
+  }
+
+  h2 {
+    font-size: 18px !important;
+  }
+
+  h4 {
+    font-size: 16px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+
+@media(max-width: 350px) {
+  .addChannelInputs {
+    font-size: 12px;
+  }
+
+  h2 {
+    font-size: 16px !important;
+  }
 }

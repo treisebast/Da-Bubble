@@ -104,9 +104,35 @@
     }
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 550px) {
     justify-content: space-between;
     width: 100%;
     gap: unset;
+  }
+}
+
+
+@media(max-width:550px) {
+  .h2text {
+    font-size: 16px;
+  }
+
+  .account-circle-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .button-container {
+    .btn {
+      padding: 8px 16px;
+    }
+
+    .btn-cancel {
+      font-size: 14px;
+    }
+
+    .btn-save {
+      font-size: 14px;
+    }
   }
 }

@@ -1,6 +1,6 @@
 ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
   display: inline-flex;
-  padding: 40px;
+  padding: 32px;
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
@@ -52,14 +52,14 @@ mat-dialog-content {
   width: 100%;
   flex-direction: column;
   align-items: flex-start;
-  gap: 13px;
+  gap: 8px;
   padding: 0 !important;
 }
 
 .memberDiv {
   display: flex;
   width: 100%;
-  padding: 4px 20px;
+  padding: 0px 20px;
   align-items: center;
   gap: 15px;
   flex-shrink: 0;
@@ -182,16 +182,19 @@ mat-dialog-content {
   align-items: center;
   padding: 4px 15px;
   gap: 10px;
+
   &:hover {
     border-radius: 30px;
     background-color: #eceefe;
   }
-  > h2 {
+
+  >h2 {
     margin: 0;
     padding: 0;
     color: var(--Black, #000);
     font-size: 16px;
   }
+
   img {
     width: 50px;
     height: 50px;
@@ -209,9 +212,11 @@ mat-dialog-content {
   gap: 15px;
   border-radius: 30px;
   background-color: #b8beec;
+
   &:hover {
     background-color: #8690df;
   }
+
   h2 {
     margin: 0;
   }
@@ -246,9 +251,7 @@ mat-dialog-content {
   background-color: transparentize($color: #eceefe, $amount: 0.5);
 }
 
-.userToClick.disabled
-
-.already-member-text {
+.userToClick.disabled .already-member-text {
   font-size: 10px;
   color: grey;
   margin-left: 5px;
@@ -335,7 +338,7 @@ mat-icon {
   cursor: pointer;
 }
 
-.mdc-dialog__content > :last-child {
+.mdc-dialog__content> :last-child {
   width: 100% !important;
 }
 
@@ -459,3 +462,55 @@ mat-icon {
     cursor: not-allowed;
   }
 }
+
+
+@media (max-width: 1079px) {
+  ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    padding: 24px;
+    min-width: 320px;
+    border-radius: 30px !important;
+  }
+
+  .memberDiv {
+    padding: 0px 20px;
+
+    img {
+      width: 45px;
+      height: 45px;
+    }
+  }
+
+  .status-indicator {
+    margin-top: 35px;
+    margin-right: 0;
+  }
+
+  .addUserContent {
+
+    h2 {
+      font-size: 16px;
+    }
+
+    .channelName {
+      span {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .inputDiv {
+    font-size: 16px;
+
+    input {
+      font-size: 16px;
+    }
+  }
+
+}
+
+@media(max-width: 550px) {}
