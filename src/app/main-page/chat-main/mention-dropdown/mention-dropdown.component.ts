@@ -14,7 +14,7 @@ export class MentionDropdownComponent implements OnInit, OnChanges {
   @Input() searchTerm: string = '';
   @Output() userSelected = new EventEmitter<User>();
   @ViewChildren('userItem') userItems!: QueryList<ElementRef>;
-  
+
   filteredUsers: User[] = [];
   selectedIndex: number = -1;
 
@@ -72,5 +72,10 @@ export class MentionDropdownComponent implements OnInit, OnChanges {
       const element = this.userItems.toArray()[this.selectedIndex].nativeElement;
       element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
+  }
+
+  handleImgError(event: Event) {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = 'assets/img/profile/fallback_user.png';
   }
 }

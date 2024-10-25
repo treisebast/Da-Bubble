@@ -107,7 +107,6 @@ export class MessageComponent implements OnInit, OnChanges {
 
   checkScreenWidth() {
     this.screenSmall = window.innerWidth <= 600;
-    console.error(this.screenSmall);
   }
 
   convertToDate(timestamp: Timestamp | FieldValue | undefined): Date {
