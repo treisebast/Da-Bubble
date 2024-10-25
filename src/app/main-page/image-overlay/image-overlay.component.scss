@@ -50,3 +50,12 @@
         opacity: 1;
     }
 }
+
+@media(max-width: 600px) {
+    .overlay-content {
+        img {
+            width: 60%;
+            height: 60%;
+        }
+    }
+}
