@@ -4,18 +4,38 @@
     padding: 20px;
     text-align: center;
     border-radius: 20px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    p {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    h2,
+    p {
+        margin-block-end: 8px;
+    }
 }
 
 .overview,
 .tutorial {
     padding: 20px;
-    margin: 20px;
-    border-bottom: 1px solid #ddd;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 30px;
+    background-color: var(--main-background);
+
 }
 
 .overview h3,
 .tutorial h3 {
     color: #333;
+    font-weight: 700;
+
 }
 
 .overview ul {
@@ -26,4 +46,11 @@
 .tutorial ol {
     list-style-type: decimal;
     margin-left: 20px;
+}
+
+
+.footer-section {
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    text-align: center;
 }
