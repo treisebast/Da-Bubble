@@ -8,11 +8,13 @@ import { AuthService } from '../../shared/services/auth.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { User } from '../../shared/models/user.model';
 import { Subscription } from 'rxjs';
+import { ProfilComponent } from '../profil/profil.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-channel-info-popup',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProfilComponent],
   templateUrl: './channel-info-popup.component.html',
   styleUrls: ['./channel-info-popup.component.scss']
 })
@@ -26,14 +28,17 @@ export class ChannelInfoPopupComponent {
   createdByName: string = '';
   nameErrorMessage: string = '';
   usersOfSelectedChannel: User[] = [];
+  selectedUser: User | null = null;
   currentUserId: string = '';
+  showChannelPopup: boolean = true;
   private userSubscription: Subscription | null = null;
 
   constructor(private channelService: ChannelService,
     private userService: UserService,
     private elementRef: ElementRef,
     private chatService: ChatService,
-    private authService: AuthService) { }
+    private authService: AuthService,
+    private dialog: MatDialog) { }
 
   ngOnInit() {
     if (this.channel) {
@@ -159,5 +164,16 @@ export class ChannelInfoPopupComponent {
   closePopup(event: Event) {
     event.stopPropagation();
     this.close.emit();
+  }
+
+
+  openProfile(user: User): void {
+    this.selectedUser = user;
+    this.showChannelPopup = false;
+  }
+
+  closeProfileCard(): void {
+    this.selectedUser = null;
+    this.showChannelPopup = true;
   }
 }

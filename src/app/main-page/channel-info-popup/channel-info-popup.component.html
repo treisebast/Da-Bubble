@@ -1,6 +1,6 @@
 <div *ngIf="channel" class="modal-container">
     <div class="modal-background" (click)="closePopup($event)"></div>
-    <div *ngIf="channel" class="channel-popup" (click)="$event.stopPropagation()">
+    <div *ngIf="channel" class="channel-popup" (click)="$event.stopPropagation()" [style.display]="showChannelPopup ? 'block' : 'none'">
         <div class="popup-header">
             <h2><img src="../../../assets/img/chatChannel/tag.svg"> {{ channel.name }}</h2>
             <button (click)="closePopup($event)" class="close-button"></button>
@@ -45,29 +45,31 @@
 
             <div class="channel-members">
                 <h3>Mitglieder</h3>
-                <div class="members-list"> 
-                  <ng-container *ngFor="let user of usersOfSelectedChannel; let i = index; trackBy: trackByUserId">
-                    <div class="channel-member">
-                      <div class="avatar-container">
-                        <img [src]="user.avatar" alt="user"
-                          (error)="user.avatar = 'assets/img/profile/fallback_user.png'" />
-                        <!-- Status Icons -->
-                        <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
-                        <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
-                        <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
-                      </div>
-                      <span>
-                        {{ user.name }}
-                        <span *ngIf="user.userId === currentUserId">(Du)</span>
-                      </span>
-                    </div>
-                  </ng-container>
+                <div class="members-list">
+                    <ng-container *ngFor="let user of usersOfSelectedChannel; let i = index; trackBy: trackByUserId">
+                        <div class="channel-member" (click)="openProfile(user)">
+                            <div class="avatar-container">
+                                <img [src]="user.avatar" alt="user"
+                                    (error)="user.avatar = 'assets/img/profile/fallback_user.png'" />
+                                <!-- Status Icons -->
+                                <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
+                                <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
+                                <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
+                            </div>
+                            <span>
+                                {{ user.name }}
+                                <span *ngIf="user.userId === currentUserId">(Du)</span>
+                            </span>
+                        </div>
+                    </ng-container>
                 </div>
-              </div>
+            </div>
 
         </div>
         <div class="leave-container">
             <button class="leave-button" (click)="leaveChannel()">Channel verlassen</button>
         </div>
     </div>
+    <!-- Profil-Komponente einbinden -->
+    <app-profil *ngIf="selectedUser" [onclickUser]="selectedUser" (closeProfileCard)="closeProfileCard()"></app-profil>
 </div>

@@ -245,6 +245,11 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+
+  &:hover {
+    background-color: var(--main-background);
+    border-radius: 30px;
+  }
 }
 
 .avatar-container {
@@ -287,6 +292,12 @@
   font-size: 14px;
 }
 
+app-profil {
+  position: absolute;
+  top: 400px;
+  left: 50%;
+}
+
 @media(max-width: 1300px) {
   .channel-members {
     display: flex !important;
@@ -308,8 +319,8 @@
 
 @media(max-width: 850px) {
   .channel-popup {
-    position: absolute;
-    top: 80px;
+    position: fixed;
+    top: 500px;
     width: 450px;
   }
 }
@@ -320,6 +331,7 @@
     top: 0;
     width: 100%;
     padding: 16px 12px;
+    position: fixed;
 
     .leave-button {
       font-size: 14px;
