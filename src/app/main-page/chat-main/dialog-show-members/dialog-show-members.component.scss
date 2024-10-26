@@ -513,4 +513,62 @@ mat-icon {
 
 }
 
-@media(max-width: 550px) {}
+@media(max-width: 550px) {
+  ::ng-deep .mat-mdc-dialog-container {
+    max-width: 280px !important;
+    max-height: 250px !important;
+  }
+
+  ::ng-deep .mdc-dialog__surface {
+    max-width: 280px !important;
+    max-height: 100% !important;
+  }
+
+  .hoveringUserList {
+    max-width: 250px;
+    padding: 8px;
+    gap: 0px;
+
+    .userToClick {
+      padding: 0px;
+      margin: 8px;
+
+      img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .status-indicator_addUser {
+        margin-top: 25px;
+      }
+    }
+  }
+
+  .inputDiv {
+    mat-chip-grid {
+      min-height: 30px;
+      padding: 5px 10px;
+    }
+  }
+
+  .addUserContent {
+    .channelName {
+      padding: 0 0 8px 0;
+    }
+  }
+
+  .userToClick.disabled {
+    img {
+      width: 30px;
+      height: 30px;
+    }
+
+    h2 {
+      text-wrap: auto;
+    }
+
+    .status-indicator_addUser {
+      margin-top: 25px;
+    }
+  }
+}

@@ -43,6 +43,28 @@
                 </div>
             </div>
 
+            <div class="channel-members">
+                <h3>Mitglieder</h3>
+                <div class="members-list"> 
+                  <ng-container *ngFor="let user of usersOfSelectedChannel; let i = index; trackBy: trackByUserId">
+                    <div class="channel-member">
+                      <div class="avatar-container">
+                        <img [src]="user.avatar" alt="user"
+                          (error)="user.avatar = 'assets/img/profile/fallback_user.png'" />
+                        <!-- Status Icons -->
+                        <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
+                        <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
+                        <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
+                      </div>
+                      <span>
+                        {{ user.name }}
+                        <span *ngIf="user.userId === currentUserId">(Du)</span>
+                      </span>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+
         </div>
         <div class="leave-container">
             <button class="leave-button" (click)="leaveChannel()">Channel verlassen</button>

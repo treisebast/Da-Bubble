@@ -968,4 +968,13 @@ export class ThreadComponent implements OnInit, OnDestroy {
       textarea.dispatchEvent(inputEvent);
     }, 0);
   }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: UIEvent): void {
+    const windowWidth = (event.target as Window).innerWidth;
+
+    if (windowWidth < 1300) {
+      this.onCloseThread();
+    }
+  }
 }

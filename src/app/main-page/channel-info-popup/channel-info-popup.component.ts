@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { ChatService } from '../../shared/services/chat-service.service';
+import { User } from '../../shared/models/user.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-channel-info-popup',
@@ -23,8 +25,15 @@ export class ChannelInfoPopupComponent {
   editedDescription: string = '';
   createdByName: string = '';
   nameErrorMessage: string = '';
+  usersOfSelectedChannel: User[] = [];
+  currentUserId: string = '';
+  private userSubscription: Subscription | null = null;
 
-  constructor(private channelService: ChannelService, private userService: UserService, private elementRef: ElementRef, private chatService: ChatService, private authService: AuthService) { }
+  constructor(private channelService: ChannelService,
+    private userService: UserService,
+    private elementRef: ElementRef,
+    private chatService: ChatService,
+    private authService: AuthService) { }
 
   ngOnInit() {
     if (this.channel) {
@@ -33,7 +42,29 @@ export class ChannelInfoPopupComponent {
       this.userService.getUser(this.channel.createdBy).subscribe((user) => {
         this.createdByName = user.name;
       });
+
+      this.authService.getUser().subscribe((user) => {
+        if (user) {
+          this.currentUserId = user.uid;
+        }
+      });
+
+      if (this.channel.members && this.channel.members.length > 0) {
+        this.userSubscription = this.userService.getUsersByIds(this.channel.members).subscribe((users) => {
+          this.usersOfSelectedChannel = users;
+        });
+      }
     }
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+  }
+
+  trackByUserId(index: number, user: User): string {
+    return user.userId ? user.userId : index.toString();
   }
 
   startEditingName() {
@@ -49,44 +80,44 @@ export class ChannelInfoPopupComponent {
       this.isEditingName = false;
       return;
     }
-  
+
     if (this.editedName === this.channel.name) {
       this.isEditingName = false;
       return;
     }
-  
+
     const validationError = this.validateName(this.editedName);
     if (validationError) {
       this.nameErrorMessage = validationError;
       return;
     }
-  
+
     try {
       const isDuplicate = await this.isDuplicateChannelName(this.editedName);
       if (isDuplicate) {
         this.nameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
         return;
       }
-  
+
       await this.updateChannelName();
     } catch (error) {
       console.error('Fehler beim Speichern des Namens:', error);
       this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuchen Sie es erneut.';
     }
   }
-  
+
   private validateName(name: string): string | null {
     if (name.length > 17) {
       return 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
     }
     return null;
   }
-  
+
   private async isDuplicateChannelName(name: string): Promise<boolean> {
     const duplicateChannel = await this.channelService.getChannelByName(name, this.channel!.isPrivate);
     return !!duplicateChannel && duplicateChannel.id !== this.channel!.id;
   }
-  
+
   private async updateChannelName(): Promise<void> {
     const updatedFields = { name: this.editedName };
     await this.channelService.updateChannel(this.channel!, updatedFields);

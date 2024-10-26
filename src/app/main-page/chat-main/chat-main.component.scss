@@ -568,6 +568,16 @@
   z-index: 20;
 }
 
+app-welcome-channel {
+  width: 100%;
+}
+
+
+@media(max-width:1300px) {
+  .channelMembersIcons {
+    display: none !important;
+  }
+}
 
 @media (max-width: 600px) {
 
@@ -593,6 +603,28 @@
         width: 25px;
         height: 25px;
         background-size: 20px;
+      }
+    }
+  }
+
+  .no-messages {
+    padding: 0px 16px;
+
+    .nm_header {
+
+      .nm_hashtag {
+        width: 15px !important;
+        height: 15px !important;
+      }
+
+      .nm_channelName {
+        font-size: 14px !important;
+      }
+    }
+
+    .nm_content {
+      span {
+        font-size: 14px !important;
       }
     }
   }
