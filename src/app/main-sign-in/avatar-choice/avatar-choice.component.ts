@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewChild, ElementRef, ChangeDetectorRef, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -20,12 +30,22 @@ import { sendEmailVerification } from '@angular/fire/auth';
 @Component({
   selector: 'app-avatar-choice',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterOutlet,
+    RouterModule,
+  ],
   templateUrl: './avatar-choice.component.html',
   styleUrls: ['./avatar-choice.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class AvatarChoiceComponent implements OnInit {
   selectedAvatar: string = '';
   avatars: string[] = [];
@@ -58,7 +78,6 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
    * Lifecycle hook that is called after Angular has initialized all data-bound properties.
    * It calls the method to load avatars.
@@ -66,7 +85,6 @@ export class AvatarChoiceComponent implements OnInit {
   ngOnInit() {
     this.loadAvatars();
   }
-
 
   /**
    * Loads the avatar images from specified paths and sets the first one as the selected avatar.
@@ -91,7 +109,6 @@ export class AvatarChoiceComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-
   /**
    * Selects an avatar and updates the component's state.
    * If a file input is present, it resets the input value.
@@ -105,7 +122,6 @@ export class AvatarChoiceComponent implements OnInit {
     }
     this.cdr.detectChanges();
   }
-
 
   /**
    * Handles the file selection event. Validates the file type and reads the file if valid.
@@ -127,7 +143,6 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
    * Checks if the given file type is a valid image type.
    * @param {string} fileType - The MIME type of the file.
@@ -137,7 +152,6 @@ export class AvatarChoiceComponent implements OnInit {
     const validImageTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
     return validImageTypes.includes(fileType);
   }
-
 
   /**
    * Reads the selected file and updates the selected avatar with the file's data URL.
@@ -150,7 +164,6 @@ export class AvatarChoiceComponent implements OnInit {
     };
     reader.readAsDataURL(file);
   }
-
 
   /**
    * Updates the selected avatar URL and updates the component's state.
@@ -165,7 +178,6 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
    * Logs the selected avatar to the console, retrieves the current user,
    * and updates the user's avatar URL in the database.
@@ -178,7 +190,7 @@ export class AvatarChoiceComponent implements OnInit {
       const avatarUrl = await this.getAvatarUrl(currentUser.uid);
       await this.updateUserAvatar(currentUser.uid, avatarUrl);
       this.showConfirmationDialog();
-      if (!currentUser.emailVerified) {
+      if (!currentUser.emailVerified && !this.isChangingAvatar) {
         await sendEmailVerification(currentUser);
         console.log('Verification email sent to user');
       }
@@ -191,7 +203,6 @@ export class AvatarChoiceComponent implements OnInit {
     }
   }
 
-
   /**
    * Displays a confirmation dialog indicating that the avatar has been selected.
    */
@@ -202,7 +213,6 @@ export class AvatarChoiceComponent implements OnInit {
     });
   }
 
-
   /**
    * Retrieves the currently authenticated user.
    * @returns {Promise<any>} The current user.
@@ -211,7 +221,6 @@ export class AvatarChoiceComponent implements OnInit {
   async getCurrentUser() {
     return await firstValueFrom(this.authService.getUser());
   }
-
 
   /**
    * Gets the avatar URL for the specified user ID.
@@ -232,7 +241,6 @@ export class AvatarChoiceComponent implements OnInit {
     return this.selectedAvatar;
   }
 
-
   /**
    * Updates the user's avatar URL in the database.
    * Logs success or error messages based on the update result.
@@ -248,7 +256,6 @@ export class AvatarChoiceComponent implements OnInit {
     } else {
     }
   }
-
 
   /**
    * Determines if the continue button should be enabled.
