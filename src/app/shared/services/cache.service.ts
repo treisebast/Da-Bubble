@@ -33,7 +33,7 @@ export class CacheService {
         if (now > entry.expiry) {
           this.cache.delete(key);
           if (isDevMode()) {
-            console.log(`[CacheService] Auto-removed expired key: ${key}`);
+            // console.log(`[CacheService] Auto-removed expired key: ${key}`);
           }
         }
       });
@@ -50,7 +50,7 @@ export class CacheService {
     const entry = this.cache.get(key);
     if (!entry) {
       if (isDevMode()) {
-        console.log(`[CacheService] Cache miss for key: ${key}`);
+        // console.log(`[CacheService] Cache miss for key: ${key}`);
       }
       return null;
     }
@@ -58,13 +58,13 @@ export class CacheService {
     if (Date.now() > entry.expiry) {
       this.cache.delete(key);
       if (isDevMode()) {
-        console.log(`[CacheService] Cache expired for key: ${key}`);
+        // console.log(`[CacheService] Cache expired for key: ${key}`);
       }
       return null;
     }
 
     if (isDevMode()) {
-      console.log(`[CacheService] Cache hit for key: ${key}`);
+      // console.log(`[CacheService] Cache hit for key: ${key}`);
     }
     return entry.subject ? entry.subject.asObservable() : null;
   }
@@ -98,7 +98,7 @@ export class CacheService {
 
     if (isDevMode()) {
       console.log(
-        `[CacheService] Cache set for key: ${key} | Expires at: ${new Date(expiry).toLocaleTimeString()}`
+        // `[CacheService] Cache set for key: ${key} | Expires at: ${new Date(expiry).toLocaleTimeString()}`
       );
     }
   }
@@ -117,7 +117,7 @@ export class CacheService {
     }
 
     if (isDevMode()) {
-      console.log(`[CacheService] Fetching data for key: ${key}`);
+      // console.log(`[CacheService] Fetching data for key: ${key}`);
     }
 
     const observable = fetchFn().pipe(
@@ -137,7 +137,7 @@ export class CacheService {
   clear(key: string): void {
     this.cache.delete(key);
     if (isDevMode()) {
-      console.log(`[CacheService] Cache cleared for key: ${key}`);
+      // console.log(`[CacheService] Cache cleared for key: ${key}`);
     }
   }
 
@@ -147,7 +147,7 @@ export class CacheService {
   clearAll(): void {
     this.cache.clear();
     if (isDevMode()) {
-      console.log('[CacheService] All caches cleared');
+      // console.log('[CacheService] All caches cleared');
     }
   }
 }
