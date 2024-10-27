@@ -14,7 +14,7 @@ import { User } from '../../shared/models/user.model';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipEditedEvent, MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
@@ -33,10 +33,6 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
   description = '';
   isDialogOpen = false;
   currentUserId = '';
-
-  channelNameErrorMessage: string = '';
-  showChannelNameErrorMessage: boolean = false;
-  private channelNameErrorTimeout: any;
   channelMembers: Set<string> = new Set();
 
   dialogProgressState: 'addChannel' | 'addUsers' = 'addChannel';
@@ -61,6 +57,8 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     isPrivate: false,
   };
 
+  //---------------------------------------- Lifecycle Hooks ----------------------------------------
+
   constructor(
     public dialogRef: MatDialogRef<DialogAddChannelComponent>,
     private channelService: ChannelService,
@@ -79,8 +77,10 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  //---------------------------------------- Initialization ----------------------------------------
+
   /**
-   * Initialize the component
+   * Initializes the component.
    */
   private initialize() {
     this.subscribeToDialogEvents();
@@ -89,85 +89,86 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     this.dialogProgressState = 'addChannel';
   }
 
-  trackByUserId(index: number, user: User): string {
-    return user.userId;
-  }
-
   /**
-   * Subscribe to dialog events
+   * Subscribes to dialog events to manage the dialog state.
    */
   private subscribeToDialogEvents() {
-    this.dialogRef.afterOpened()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(() => {
-      this.isDialogOpen = true;
-    });
+    this.dialogRef
+      .afterOpened()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDialogOpen = true;
+      });
 
-    this.dialogRef.afterClosed()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(() => {
-      this.isDialogOpen = false;
-    });
+    this.dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDialogOpen = false;
+      });
   }
 
   /**
-   * Set the current user
+   * Sets the current user's ID from the AuthService.
    */
   private setCurrentUser() {
-    this.authService.getUser()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((firebaseUser) => {
-      if (firebaseUser) {
-        this.currentUserId = firebaseUser.uid;
-      }
-    });
+    this.authService
+      .getUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((firebaseUser) => {
+        if (firebaseUser) {
+          this.currentUserId = firebaseUser.uid;
+        }
+      });
   }
 
   /**
-   * Load users from the UserService and apply an initial filter
+   * Loads users from the UserService.
    */
   private loadUsers(): void {
-    this.userService.getUsers()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((users) => {
-      this.loadedUsers = users;
-    });
+    this.userService
+      .getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((users) => {
+        this.loadedUsers = users;
+      });
   }
 
+  //---------------------------------------- User Selection ----------------------------------------
 
   /**
    * Filters the list of users based on the search input and sorts them.
-   * The method trims and converts the search input to lowercase, then filters the `loadedUsers` array
-   * to include only users whose names contain the search term. If the search term is empty, it returns
-   * a copy of all users.
-   * After filtering, the users are sorted such that members (determined by `isAlreadyMember`) appear
-   * before non-members. Within each group (members and non-members), users are sorted alphabetically
-   * by name.
    */
   filterUsers(): void {
     const searchTerm = this.searchInput.trim().toLowerCase();
 
-    const filtered = searchTerm
-      ? this.loadedUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchTerm)
-      )
-      : this.loadedUsers.slice(); // Kopie aller Benutzer
+    const filtered = searchTerm ? this.loadedUsers.filter((user) =>
+          user.name.toLowerCase().includes(searchTerm)
+        ) : this.loadedUsers.slice();
 
-    this.filteredUsers = filtered.sort((a, b) => {
+    this.filteredUsers = this.sortUsers(filtered);
+  }
+
+  /**
+   * Sorts users by membership status and name.
+   * @param users - The list of users to sort.
+   * @returns The sorted list of users.
+   */
+  private sortUsers(users: User[]): User[] {
+    return users.sort((a, b) => {
       const aIsMember = this.isAlreadyMember(a) ? 1 : 0;
       const bIsMember = this.isAlreadyMember(b) ? 1 : 0;
 
-      if (aIsMember === bIsMember) {
-        return a.name.localeCompare(b.name);
-      } else {
+      if (aIsMember !== bIsMember) {
         return aIsMember - bIsMember;
       }
+      return a.name.localeCompare(b.name);
     });
   }
 
   /**
-   * Set the selected radio option and reapply the user filter if needed
-   * @param option - The selected option
+   * Sets the selected radio option and filters users accordingly.
+   * @param option - The selected option.
    */
   selectOption(option: string): void {
     this.selectedRadio = option;
@@ -175,8 +176,8 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check or uncheck users in the selection list
-   * @param user - The user object that was clicked
+   * Toggles the selection of a user.
+   * @param user - The user to select or deselect.
    */
   selectUsers(user: User): void {
     const index = this.selectedUsers.findIndex((u) => u.userId === user.userId);
@@ -186,84 +187,44 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     } else {
       this.selectedUsers.splice(index, 1);
       this.announcer.announce(`Removed ${user.name} from selection`);
-
     }
   }
 
+  /**
+   * Removes a user from the selection.
+   * @param user - The user to remove.
+   */
   remove(user: User): void {
     const index = this.selectedUsers.indexOf(user);
 
     if (index >= 0) {
       this.selectedUsers.splice(index, 1);
       this.announcer.announce(`Removed ${user.name} from selection`);
-
     }
   }
 
   /**
-   * Check if a user is selected
-   * @param user - The user to check
-   * @returns boolean - Whether the user is selected or not
+   * Checks if a user is selected.
+   * @param user - The user to check.
    */
   isSelected(user: User): boolean {
     return this.selectedUsers.some((u) => u.userId === user.userId);
   }
 
-
   /**
-   * Adds users to a channel based on the selected option.
-   *
-   * @param {Channel} channel - The target channel.
-   * @param {string} selectedRadio - The selected option ('allFromChannel' or specific users).
-   * @returns {Promise<void>} - Resolves when the operation is complete.
-   *
-   * @remarks
-   * - Filters out existing members.
-   * - Updates Firebase if not in testing mode.
-   * - Logs locally if in testing mode.
+   * Checks if a user is already a member of the channel.
+   * @param user - The user to check.
    */
-  async addUsersToChannel(
-    channel: Channel,
-    selectedRadio: string
-  ): Promise<void> {
-    this.loading = true;
-
-    const usersToAddIds = (
-      selectedRadio === 'allFromChannel' ? this.loadedUsers : this.selectedUsers
-    )
-      .filter(user => !this.isAlreadyMember(user))
-      .map(user => user.userId);
-
-    try {
-      const updatedMembers = [...new Set([...channel.members, ...usersToAddIds])];
-      channel.members = updatedMembers;
-        await this.channelService.updateChannel(channel, {
-          members: updatedMembers,
-        });
-        console.log('Users added to channel in Firebase:', channel);
-    } catch (error) {
-      console.error('Error adding users to channel:', error);
-    } finally {
-      this.loading = false;
-      this.closeDialog();
-    }
+  isAlreadyMember(user: User): boolean {
+    return this.channelMembers.has(user.userId);
   }
+
+  //---------------------------------------- Channel Creation ----------------------------------------
 
   /**
    * Creates a new channel and navigates to the add users page.
    */
   async createChannelAndGoToAddUsers() {
-    this.channelNameErrorMessage = '';
-    this.showChannelNameErrorMessage = false;
-
-    // Validierung des Channel-Namens
-    this.validateChannelName();
-
-    // Überprüfen, ob eine Fehlermeldung vorliegt
-    if (this.channelNameErrorMessage) {
-      return; // Abbrechen, wenn der Name zu lang ist
-    }
-
     try {
       const duplicateChannel = await this.channelService.getChannelByName(
         this.channelName,
@@ -271,8 +232,7 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
       );
 
       if (duplicateChannel) {
-        this.channelNameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
-        this.showChannelNameErrorMessage = true;
+        console.error('Ein Channel mit diesem Namen existiert bereits.');
         return;
       }
 
@@ -281,49 +241,12 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
       this.dialogProgressState = 'addUsers';
     } catch (error) {
       console.error('Fehler beim Erstellen des Channels:', error);
-      this.channelNameErrorMessage = 'Fehler beim Erstellen des Channels. Bitte versuchen Sie es erneut.';
-      this.showChannelNameErrorMessage = true;
     }
   }
 
   /**
- * Validates the Channel name for max length.
- */
-  validateChannelName(): void {
-    if (this.channelName.length > 17) {
-      this.channelNameErrorMessage = 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
-    } else {
-      this.channelNameErrorMessage = '';
-    }
-  }
-
-  /**
-   * Saves a channel to Firebase or locally if testing.
-   * @param newChannel - The new channel to be saved.
-   */
-  async saveChannelToFirebase(newChannel: NewChannel) {
-    this.loading = true;
-    try {
-      const channelDocRef = await this.channelService.addChannel(newChannel);
-      const createdChannel: Channel = { ...newChannel, id: channelDocRef.id };
-      this.channel = createdChannel;
-      // Aktualisiere die channelMembers
-      this.channelMembers = new Set(createdChannel.members);
-      console.log('Channel added to Firebase:', createdChannel);
-    } catch (error) {
-      console.error('Error adding channel:', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  isAlreadyMember(user: User): boolean {
-    return this.channelMembers.has(user.userId);
-  }
-
-  /**
-   * Create a Channel object
-   * @returns Channel
+   * Creates a channel object.
+   * @returns The new channel object.
    */
   private createChannelObject(): NewChannel {
     return {
@@ -338,8 +261,76 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Close the dialog
+   * Saves a channel to Firebase.
+   * @param newChannel - The new channel to be saved.
    */
+  private async saveChannelToFirebase(newChannel: NewChannel) {
+    this.loading = true;
+    try {
+      const channelDocRef = await this.channelService.addChannel(newChannel);
+      const createdChannel: Channel = { ...newChannel, id: channelDocRef.id };
+      this.channel = createdChannel;
+      // Update channel members
+      this.channelMembers = new Set(createdChannel.members);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  //---------------------------------------- Add Users to Channel ----------------------------------------
+
+  /**
+   * Adds users to a channel based on the selected option.
+   * @param channel - The target channel.
+   * @param selectedRadio - The selected option ('allFromChannel' or specific users).
+   */
+  async addUsersToChannel(
+    channel: Channel,
+    selectedRadio: string
+  ): Promise<void> {
+    this.loading = true;
+
+    const usersToAddIds = this.getUsersToAdd(selectedRadio);
+
+    try {
+      const updatedMembers = [
+        ...new Set([...channel.members, ...usersToAddIds]),
+      ];
+      channel.members = updatedMembers;
+      await this.channelService.updateChannel(channel, {
+        members: updatedMembers,
+      });
+    } finally {
+      this.loading = false;
+      this.closeDialog();
+    }
+  }
+
+  /**
+   * Retrieves the list of user IDs to add to the channel.
+   * @param selectedRadio - The selected option.
+   * @returns An array of user IDs.
+   */
+  private getUsersToAdd(selectedRadio: string): string[] {
+    return (
+      selectedRadio === 'allFromChannel' ? this.loadedUsers : this.selectedUsers
+    )
+      .filter((user) => !this.isAlreadyMember(user))
+      .map((user) => user.userId);
+  }
+
+  //---------------------------------------- Utility Methods ----------------------------------------
+
+  /**
+   * TrackBy function for ngFor loops.
+   * @param index - The index of the item.
+   * @param user - The user object.
+   * @returns The unique user ID.
+   */
+  trackByUserId(index: number, user: User): string {
+    return user.userId;
+  }
+
   closeDialog() {
     this.dialogRef.close();
   }

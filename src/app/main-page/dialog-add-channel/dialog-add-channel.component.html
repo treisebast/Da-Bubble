@@ -1,4 +1,8 @@
-<div *ngIf="isDialogOpen" class="modal-background" (click)="closeDialog()"></div>
+<div
+  *ngIf="isDialogOpen"
+  class="modal-background"
+  (click)="closeDialog()"
+></div>
 <div class="popup-container">
   <ng-container *ngIf="dialogProgressState == 'addChannel'">
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -9,15 +13,43 @@
         themenbezogen sein #marketing zum Beispiel.
       </p>
       <h4>Channel-Name</h4>
-      <input [(ngModel)]="channelName" type="text" placeholder="#   z.B. Kooperationsprojekte" class="addChannelInputs"
-        (ngModelChange)="validateChannelName()" />
-      <div class="error-message">{{ channelNameErrorMessage }}</div>
+      <input
+        [(ngModel)]="channelName"
+        #channelNameModel="ngModel"
+        type="text"
+        placeholder="#   z.B. Kooperationsprojekte"
+        class="addChannelInputs"
+        minlength="3"
+        maxlength="25"
+        required
+      />
+
+      <!-- Fehlermeldungen für die Validierung -->
+      <div class="error-message" *ngIf="channelNameModel.errors?.['required']">
+        Channel-Name ist erforderlich.
+      </div>
+      <div class="error-message" *ngIf="channelNameModel.errors?.['minlength']">
+        Der Channel-Name muss mindestens 3 Zeichen lang sein.
+      </div>
+      <div class="error-message" *ngIf="channelNameModel.errors?.['maxlength']">
+        Der Channel-Name darf maximal 25 Zeichen lang sein.
+      </div>
+
       <h4>Beschreibung <span class="optional">(optional)</span></h4>
-      <input class="addChannelInputs" [(ngModel)]="description" type="text" placeholder="Dein Text hier" />
+      <input
+        class="addChannelInputs"
+        [(ngModel)]="description"
+        type="text"
+        placeholder="Dein Text hier"
+      />
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button class="saveChannelBtn" [disabled]="loading || !channelName || channelName.length > 17"
-        (click)="createChannelAndGoToAddUsers()" mat-flat-button>
+      <button
+        class="saveChannelBtn"
+        [disabled]="loading || !channelName || channelName.length > 17"
+        (click)="createChannelAndGoToAddUsers()"
+        mat-flat-button
+      >
         Erstellen
       </button>
     </mat-dialog-actions>
@@ -28,19 +60,34 @@
     <h2>für Channel: {{ channel.name }}</h2>
     <mat-dialog-content class="addUserContent">
       <div class="custom-radio-group">
-        <div class="custom-radio-button" (click)="selectOption('allFromChannel')">
-          <div class="radio-circle" [class.checked]="selectedRadio === 'allFromChannel'"></div>
+        <div
+          class="custom-radio-button"
+          (click)="selectOption('allFromChannel')"
+        >
+          <div
+            class="radio-circle"
+            [class.checked]="selectedRadio === 'allFromChannel'"
+          ></div>
           <mat-label>Alle Mitglieder von Devspace hinzufügen</mat-label>
         </div>
-        <div class="custom-radio-button" (click)="selectOption('chooseUsersToAdd')">
-          <div class="radio-circle" [class.checked]="selectedRadio === 'chooseUsersToAdd'"></div>
+        <div
+          class="custom-radio-button"
+          (click)="selectOption('chooseUsersToAdd')"
+        >
+          <div
+            class="radio-circle"
+            [class.checked]="selectedRadio === 'chooseUsersToAdd'"
+          ></div>
           <mat-label>Bestimmte Leute hinzufügen</mat-label>
         </div>
       </div>
       <div *ngIf="selectedRadio === 'chooseUsersToAdd'">
         <div class="inputDiv">
           <mat-chip-grid #chipGrid aria-label="Enter User">
-            <mat-chip-row *ngFor="let user of selectedUsers; trackBy: trackByUserId" (removed)="remove(user)">
+            <mat-chip-row
+              *ngFor="let user of selectedUsers; trackBy: trackByUserId"
+              (removed)="remove(user)"
+            >
               <div (click)="remove(user)" class="chip-content">
                 <img src="{{ user.avatar }}" alt="{{ user.name }}" />
                 <span>{{ user.name }}</span>
@@ -49,22 +96,46 @@
                 <mat-icon>close</mat-icon>
               </button>
             </mat-chip-row>
-            <input [matChipInputFor]="chipGrid" [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-              [matChipInputAddOnBlur]="addOnBlur" [(ngModel)]="searchInput" (ngModelChange)="filterUsers()" type="text"
-              placeholder="Name eingeben" class="addUserInput" />
+            <input
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="addOnBlur"
+              [(ngModel)]="searchInput"
+              (ngModelChange)="filterUsers()"
+              type="text"
+              placeholder="Name eingeben"
+              class="addUserInput"
+            />
           </mat-chip-grid>
           <div *ngIf="searchInput.trim()" class="hoveringUserList">
             <div *ngIf="filteredUsers.length > 0; else noUsersFound">
-              <div *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="userToClick"
-                (click)="!isAlreadyMember(user) && selectUsers(user)" [ngClass]="{
-                'selected': isSelected(user),
-                'disabled': isAlreadyMember(user)
-              }" [title]="isAlreadyMember(user) ? 'Bereits Mitglied' : ''">
-                <img [src]="user.avatar || 'assets/img/profile/fallback_user.png'" alt="{{ user.name }}"
-                  (error)="user.avatar = 'assets/img/profile/fallback_user.png'" />
-                <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
-                <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
-                <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
+              <div
+                *ngFor="let user of filteredUsers; trackBy: trackByUserId"
+                class="userToClick"
+                (click)="!isAlreadyMember(user) && selectUsers(user)"
+                [ngClass]="{
+                  selected: isSelected(user),
+                  disabled: isAlreadyMember(user)
+                }"
+                [title]="isAlreadyMember(user) ? 'Bereits Mitglied' : ''"
+              >
+                <img
+                  [src]="user.avatar || 'assets/img/profile/fallback_user.png'"
+                  alt="{{ user.name }}"
+                  (error)="user.avatar = 'assets/img/profile/fallback_user.png'"
+                />
+                <div
+                  *ngIf="user.status === 'online'"
+                  class="status-indicator online"
+                ></div>
+                <div
+                  *ngIf="user.status === 'away'"
+                  class="status-indicator away"
+                ></div>
+                <div
+                  *ngIf="user.status === 'offline'"
+                  class="status-indicator offline"
+                ></div>
                 <h2>{{ user.name }}</h2>
               </div>
             </div>
@@ -76,10 +147,15 @@
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button class="addUsersBtn" [disabled]="
+      <button
+        class="addUsersBtn"
+        [disabled]="
           loading ||
           (selectedRadio === 'chooseUsersToAdd' && selectedUsers.length === 0)
-        " (click)="addUsersToChannel(channel, selectedRadio)" mat-flat-button>
+        "
+        (click)="addUsersToChannel(channel, selectedRadio)"
+        mat-flat-button
+      >
         Bestätigen
       </button>
     </mat-dialog-actions>
