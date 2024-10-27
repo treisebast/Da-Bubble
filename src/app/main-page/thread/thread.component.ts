@@ -87,75 +87,92 @@ export class ThreadComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) { }
 
-  ngOnInit() {
-    // Authentifizierung des Benutzers
-    this.authService
-      .getUser()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe({
-        next: (user) => {
-          if (user) {
-            this.currentUserId = user.uid;
-            this.currentUserName = user.displayName || '';
+ngOnInit() {
+  this.authenticateUser();
+  this.subscribeToEmojis();
+  this.openCurrentMessage();
+  this.subscribeToCurrentChat();
+  this.subscribeToCurrentThread();
+  this.loadUserListFromCurrentChat();
+}
+
+private authenticateUser() {
+  // Authentifizierung des Benutzers
+  this.authService
+    .getUser()
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
+      next: (user) => {
+        if (user) {
+          this.currentUserId = user.uid;
+          this.currentUserName = user.displayName || '';
+        }
+      },
+      error: (error) => {
+        console.error('Fehler beim Abrufen des Benutzers:', error);
+      },
+    });
+}
+
+private subscribeToEmojis() {
+  // Emoji-Abonnements
+  this.userService.lastTwoEmojis$
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
+      next: (emojis) => {
+        this.lastTwoEmojis = emojis;
+      },
+      error: (error) => {
+        console.error('Fehler beim Abrufen der letzten Emojis:', error);
+      },
+    });
+}
+
+private openCurrentMessage() {
+  // Aktuelle Nachricht für den Thread öffnen
+  this.threadService
+    .getCurrentMessageToOpen()
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
+      next: (chatMessage: Message | null) => {
+        if (chatMessage) {
+          this.currentMessageToOpen = chatMessage;
+          this.resolveUserName(chatMessage.senderId);
+          this.loadUserProfiles([chatMessage]);
+
+          if (this.currentChat && this.currentChat.id && chatMessage.id) {
+            this.watchMessageChanges(this.currentChat.id, chatMessage.id);
           }
-        },
-        error: (error) => {
-          console.error('Fehler beim Abrufen des Benutzers:', error);
-        },
-      });
 
-    // Emoji-Abonnements
-    this.userService.lastTwoEmojis$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe({
-        next: (emojis) => {
-          this.lastTwoEmojis = emojis;
-        },
-        error: (error) => {
-          console.error('Fehler beim Abrufen der letzten Emojis:', error);
-        },
-      });
+          this.loadAttachments(chatMessage.attachments);
+        }
+      },
+      error: (error) => {
+        console.error('Fehler beim Abrufen der aktuellen Nachricht:', error);
+      },
+    });
+}
 
-    // Aktuelle Nachricht für den Thread öffnen
-    this.threadService
-      .getCurrentMessageToOpen()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe({
-        next: (chatMessage: Message | null) => {
-          if (chatMessage) {
-            this.currentMessageToOpen = chatMessage;
-            this.resolveUserName(chatMessage.senderId);
-            this.loadUserProfiles([chatMessage]);
+private watchMessageChanges(chatId: string, messageId: string) {
+  this.threadService
+    .watchMessageChanges(chatId, messageId)
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
+      next: (updatedMessage) => {
+        this.currentMessageToOpen = updatedMessage;
+        this.loadUserProfiles([updatedMessage]);
+      },
+      error: (error) => {
+        console.error('Fehler beim Überwachen der Nachrichtenänderungen:', error);
+      },
+    });
+}
 
-            if (this.currentChat && this.currentChat.id && chatMessage.id) {
-              const chatId = this.currentChat.id;
-              this.threadService
-                .watchMessageChanges(chatId, chatMessage.id)
-                .pipe(takeUntil(this.unsubscribe$))
-                .subscribe({
-                  next: (updatedMessage) => {
-                    this.currentMessageToOpen = updatedMessage;
-                    this.loadUserProfiles([updatedMessage]);
-                  },
-                  error: (error) => {
-                    console.error(
-                      'Fehler beim Überwachen der Nachrichtenänderungen:',
-                      error
-                    );
-                  },
-                });
-            }
-
-            this.loadAttachments(chatMessage.attachments);
-          }
-        },
-        error: (error) => {
-          console.error('Fehler beim Abrufen der aktuellen Nachricht:', error);
-        },
-      });
-
-    // Aktuellen Chat abonnieren
-    this.chatService.currentChat$.pipe(takeUntil(this.unsubscribe$)).subscribe({
+private subscribeToCurrentChat() {
+  // Aktuellen Chat abonnieren
+  this.chatService.currentChat$
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
       next: ({ chat }) => {
         this.currentChat = chat;
       },
@@ -163,38 +180,45 @@ export class ThreadComponent implements OnInit, OnDestroy {
         console.error('Fehler beim Abrufen des aktuellen Chats:', error);
       },
     });
+}
 
-    // Aktuelle Threads abonnieren
-    this.threadService.currentThread$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe({
-        next: async (currentThread) => {
-          if (Array.isArray(currentThread)) {
-            this.messages = this.sortMessagesByTimestamp(currentThread);
-            await this.resolveUserNames(this.messages);
-            this.loadUserProfiles(this.messages);
-            this.totalReplies = this.messages.length;
+private subscribeToCurrentThread() {
+  // Aktuelle Threads abonnieren
+  this.threadService.currentThread$
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe({
+      next: async (currentThread) => {
+        if (Array.isArray(currentThread)) {
+          this.messages = this.sortMessagesByTimestamp(currentThread);
+          await this.resolveUserNames(this.messages);
+          this.loadUserProfiles(this.messages);
+          this.totalReplies = this.messages.length;
 
-            for (const message of this.messages) {
-              this.loadAttachments(message.attachments);
-            }
-          } else {
-            this.messages = [];
+          for (const message of this.messages) {
+            this.loadAttachments(message.attachments);
           }
-        },
-        error: (error) => {
-          console.error('Fehler beim Abrufen der aktuellen Threads:', error);
-        },
-      });
+        } else {
+          this.messages = [];
+        }
+      },
+      error: (error) => {
+        console.error('Fehler beim Abrufen der aktuellen Threads:', error);
+      },
+    });
+}
 
-    // Load user list from currentChat
-    if (this.currentChat && this.currentChat.members) {
-      this.userService.getUsers().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-        this.usersOfSelectedChannel = users.filter(user => this.currentChat!.members.includes(user.userId));
+private loadUserListFromCurrentChat() {
+  if (this.currentChat && this.currentChat.members) {
+    this.userService
+      .getUsers()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.usersOfSelectedChannel = users.filter((user) =>
+          this.currentChat!.members.includes(user.userId)
+        );
       });
-    }
-
   }
+}
 
   ngOnDestroy() {
     this.unsubscribe$.next();

@@ -32,8 +32,7 @@ import { ScrollService } from '../../shared/services/scroll-service.service';
 @Component({
   selector: 'app-chat-main',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent,
-    ProfilComponent, ImageOverlayComponent, WelcomeChannelComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
+  imports: [CommonModule, MatIconModule, FormsModule, MessageComponent, MatProgressSpinnerModule, ChannelInfoPopupComponent, ProfilComponent, ImageOverlayComponent, WelcomeChannelComponent, PickerComponent, MatDialogModule, MatDialogClose, MentionDropdownComponent, ChannelDropdownComponent],
   templateUrl: './chat-main.component.html',
   styleUrls: ['./chat-main.component.scss'],
 })
