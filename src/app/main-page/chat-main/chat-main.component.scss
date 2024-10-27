@@ -115,7 +115,7 @@
     padding-right: 16px;
 
     .channelMembersIcons {
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: center;
       padding: 3px 10px;

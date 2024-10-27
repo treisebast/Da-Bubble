@@ -306,6 +306,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUsersOfSelectedChannel(chat: Channel) {
+    console.log('chat.members:', chat.members);
+
     if (this.usersOfSelectedChannelSubscription) {
       this.usersOfSelectedChannelSubscription.unsubscribe();
       this.usersOfSelectedChannelSubscription = null;
