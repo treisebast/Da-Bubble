@@ -3,7 +3,7 @@ import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } fr
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ChatService } from '../../services/chat-service.service';
 
 @Component({
@@ -18,7 +18,7 @@ export class MenuComponent {
   @Output() openProfile = new EventEmitter<void>();
   isMenuOpen: boolean = true;
 
-  constructor(private auth: AuthService, private chatService: ChatService) { }
+  constructor(private auth: AuthService, private chatService: ChatService, private router: Router) { }
 
 
   /**
@@ -44,6 +44,8 @@ export class MenuComponent {
   logout() {
     this.close();
     this.chatService.setCurrentChat(null, false);
-    this.auth.signOut();
+    this.auth.signOut().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
   }
 }

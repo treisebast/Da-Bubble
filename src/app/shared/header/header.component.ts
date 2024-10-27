@@ -53,6 +53,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private searchService: SearchService,
     private navigationService: NavigationService,
+    private router: Router
   ) { }
 
 
@@ -103,7 +104,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
  * Logs out the currently authenticated user.
  */
   logout() {
-    this.auth.signOut();
+    this.auth.signOut().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
   }
 
 
