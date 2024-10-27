@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChannelService } from '../../shared/services/channel.service';
 import { Channel } from '../../shared/models/channel.model';
@@ -7,7 +14,7 @@ import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { User } from '../../shared/models/user.model';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { ProfilComponent } from '../profil/profil.component';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -16,12 +23,12 @@ import { MatDialog } from '@angular/material/dialog';
   standalone: true,
   imports: [CommonModule, FormsModule, ProfilComponent],
   templateUrl: './channel-info-popup.component.html',
-  styleUrls: ['./channel-info-popup.component.scss']
+  styleUrls: ['./channel-info-popup.component.scss'],
 })
-
 export class ChannelInfoPopupComponent {
   @Input() channel: Channel | null = null;
   @Output() close = new EventEmitter<void>();
+
   isEditingName = false;
   isEditingDescription = false;
   editedName: string = '';
@@ -32,18 +39,21 @@ export class ChannelInfoPopupComponent {
   selectedUser: User | null = null;
   currentUserId: string = '';
   showChannelPopup: boolean = true;
-  private userSubscription: Subscription | null = null;
+  private destroy$ = new Subject<void>();
 
-  constructor(private channelService: ChannelService,
+  constructor(
+    private channelService: ChannelService,
     private userService: UserService,
     private elementRef: ElementRef,
     private chatService: ChatService,
     private authService: AuthService,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog
+  ) {}
+
+  //---------------------------------------- Lifecycle Hooks ----------------------------------------
 
   /**
-   * Lifecycle hook that is called after data-bound properties are initialized.
-   * Initializes edited fields and loads necessary user and channel data.
+   * Initializes the component after data-bound properties are set.
    */
   ngOnInit(): void {
     if (this.channel) {
@@ -54,15 +64,15 @@ export class ChannelInfoPopupComponent {
     }
   }
 
-
   /**
-   * Lifecycle hook that is called when the component is destroyed.
    * Cleans up subscriptions to prevent memory leaks.
    */
   ngOnDestroy(): void {
-    this.unsubscribeFromUser();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  //---------------------------------------- Initialization Methods ----------------------------------------
 
   /**
    * Initializes the editable fields with the channel's current name and description.
@@ -72,101 +82,126 @@ export class ChannelInfoPopupComponent {
     this.editedDescription = this.channel!.description ?? '';
   }
 
-
-
   /**
-    * Loads the user who created the channel and sets the `createdByName`.
-    */
+   * Loads the user who created the channel.
+   */
   private loadCreatedByUser(): void {
-    if (this.channel!.createdBy) {
-      this.userService.getUser(this.channel!.createdBy).subscribe({
-        next: (user) => {
-          this.createdByName = user.name;
-        },
-        error: () => {
-          this.createdByName = 'Unknown';
-        }
-      });
+    if (this.channel?.createdBy) {
+      this.userService
+        .getUser(this.channel.createdBy)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (user) => {
+            this.createdByName = user.name;
+          },
+          error: () => {
+            this.createdByName = 'Unknown';
+          },
+        });
     }
   }
-
 
   /**
    * Loads the currently authenticated user's ID.
    */
   private loadCurrentUser(): void {
-    this.authService.getUser().subscribe({
-      next: (user) => {
-        if (user) {
-          this.currentUserId = user.uid;
-        }
-      },
-      error: () => {
-        // Handle error silently or implement alternative logic
-      }
-    });
-  }
-
-
-  /**
-   * Loads the members of the selected channel.
-   */
-  private loadChannelMembers(): void {
-    if (this.channel && this.channel.members && this.channel.members.length > 0) {
-      this.userSubscription = this.userService.getUsersByIds(this.channel.members).subscribe({
-        next: (users) => {
-          // Filtern von undefined-Einträgen
-          this.usersOfSelectedChannel = users.filter(user => user !== undefined && user !== null);
+    this.authService
+      .getUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (user) => {
+          if (user) {
+            this.currentUserId = user.uid;
+          }
         },
         error: () => {
-          // Fehlerbehandlung
-        }
+          console.error('Error loading current user.');
+        },
       });
-    }
   }
 
-
   /**
-    * Unsubscribes from the user subscription to prevent memory leaks.
-    */
-  private unsubscribeFromUser(): void {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-      this.userSubscription = null;
-    }
-  }
-
-
-  /**
-   * Tracks users by their unique ID to optimize rendering in Angular templates.
-   *
-   * @param index - The index of the user in the list.
-   * @param user - The user object.
-   * @returns The unique identifier for the user.
+   * Loads the members of the selected channel and removes any invalid users.
    */
-  trackByUserId(index: number, user: User): string {
-    return user.userId ? user.userId : index.toString();
+  private loadChannelMembers(): void {
+    if (this.channel?.members?.length) {
+      // Filter out null or empty member IDs
+      const validMemberIds = this.channel.members.filter(
+        (id) => id != null && id !== ''
+      );
+
+      this.userService
+        .getUsersByIds(validMemberIds)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: async (users) => {
+            // Filter out undefined or null users
+            const validUsers = users.filter((user) => user != null) as User[];
+            this.usersOfSelectedChannel = validUsers;
+
+            // Remove any invalid member IDs from the channel
+            await this.removeInvalidMembers(validMemberIds, validUsers);
+          },
+          error: () => {
+            console.error('Error loading channel members.');
+          },
+        });
+    }
   }
 
+  /**
+   * Removes invalid member IDs from the channel's members list and updates the backend.
+   * @param validMemberIds - The list of valid member IDs after filtering.
+   * @param validUsers - The list of valid User objects fetched from the backend.
+   */
+  private async removeInvalidMembers(
+    validMemberIds: string[],
+    validUsers: User[]
+  ): Promise<void> {
+    const returnedUserIds = validUsers.map((user) => user.userId);
+    const invalidMemberIds = validMemberIds.filter(
+      (id) => !returnedUserIds.includes(id)
+    );
+
+    if (invalidMemberIds.length > 0 && this.channel) {
+      console.log('Invalid member IDs:', invalidMemberIds);
+      this.channel.members = this.channel.members.filter(
+        (id) => !invalidMemberIds.includes(id)
+      );
+      try {
+        await this.channelService.updateChannel(this.channel, {
+          members: this.channel.members,
+        });
+        console.log(
+          'Removed invalid member IDs:',
+          invalidMemberIds,
+          'Updated channel:',
+          this.channel
+        );
+      } catch (error) {
+        console.error('Error updating channel members:', error);
+      }
+    }
+  }
+
+  //---------------------------------------- Editing Methods ----------------------------------------
 
   /**
-   * Enables the editing mode for the channel name.
+   * Enables editing mode for the channel name.
    */
   startEditingName(): void {
     this.isEditingName = true;
   }
 
-
   /**
-   * Enables the editing mode for the channel description.
+   * Enables editing mode for the channel description.
    */
   startEditingDescription(): void {
     this.isEditingDescription = true;
   }
 
-
   /**
-   * Saves the edited channel name after validation and duplication checks.
+   * Saves the edited channel name after checking for duplicates.
    */
   async saveName(): Promise<void> {
     if (!this.channel) {
@@ -176,12 +211,6 @@ export class ChannelInfoPopupComponent {
 
     if (this.editedName === this.channel.name) {
       this.isEditingName = false;
-      return;
-    }
-
-    const validationError = this.validateName(this.editedName);
-    if (validationError) {
-      this.nameErrorMessage = validationError;
       return;
     }
 
@@ -198,34 +227,22 @@ export class ChannelInfoPopupComponent {
     }
   }
 
-
   /**
-   * Validates the channel name to ensure it meets the required criteria.
-   * @param name - The channel name to validate.
-   * @returns A validation error message if invalid, otherwise `null`.
-   */
-  private validateName(name: string): string | null {
-    if (name.length > 17) {
-      return 'The channel name must be at most 17 characters long.';
-    }
-    return null;
-  }
-
-
-  /**
-   * Checks if a channel name is already in use to prevent duplicates.
-   * @param name - The channel name to check for duplication.
-   * @returns A promise that resolves to `true` if the name is duplicate, otherwise `false`.
+   * Checks if the channel name is already in use.
+   * @param name - The channel name to check.
+   * @returns `true` if duplicate, otherwise `false`.
    */
   private async isDuplicateChannelName(name: string): Promise<boolean> {
-    const duplicateChannel = await this.channelService.getChannelByName(name, this.channel!.isPrivate);
+    const duplicateChannel = await this.channelService.getChannelByName(
+      name,
+      this.channel!.isPrivate
+    );
     return !!duplicateChannel && duplicateChannel.id !== this.channel!.id;
   }
 
-
   /**
- * Updates the channel's name with the edited value.
- */
+   * Updates the channel's name.
+   */
   private async updateChannelName(): Promise<void> {
     const updatedFields = { name: this.editedName };
     await this.channelService.updateChannel(this.channel!, updatedFields);
@@ -233,7 +250,6 @@ export class ChannelInfoPopupComponent {
     this.isEditingName = false;
     this.nameErrorMessage = '';
   }
-
 
   /**
    * Saves the edited channel description.
@@ -247,6 +263,7 @@ export class ChannelInfoPopupComponent {
     this.isEditingDescription = false;
   }
 
+  //---------------------------------------- Channel Member Methods ----------------------------------------
 
   /**
    * Allows the current user to leave the channel.
@@ -256,17 +273,49 @@ export class ChannelInfoPopupComponent {
 
     if (this.channel && currentUser) {
       try {
-        await this.channelService.removeUserFromChannel(this.channel.id, currentUser.uid, this.channel.isPrivate);
+        await this.channelService.removeUserFromChannel(
+          this.channel.id,
+          currentUser.uid,
+          this.channel.isPrivate
+        );
         this.chatService.setCurrentChat(null, false);
         this.close.emit();
       } catch (error) {
+        console.error('Error leaving channel:', error);
       }
     }
   }
 
+  //---------------------------------------- Event Handlers ----------------------------------------
 
   /**
-   * Listens for click events on the document to close the popup when clicking outside.
+   * Opens the profile view for a selected user.
+   * @param user - The user to view.
+   */
+  openProfile(user: User): void {
+    this.selectedUser = user;
+    this.showChannelPopup = false;
+  }
+
+  /**
+   * Closes the profile card view.
+   */
+  closeProfileCard(): void {
+    this.selectedUser = null;
+    this.showChannelPopup = true;
+  }
+
+  /**
+   * Closes the channel info popup.
+   * @param event - The event that triggered the closure.
+   */
+  closePopup(event: Event): void {
+    event.stopPropagation();
+    this.close.emit();
+  }
+
+  /**
+   * Closes the popup when clicking outside.
    * @param event - The click event.
    */
   @HostListener('document:click', ['$event'])
@@ -276,32 +325,23 @@ export class ChannelInfoPopupComponent {
     }
   }
 
+  //---------------------------------------- Utility Methods ----------------------------------------
 
   /**
- * Closes the channel info popup.
- * @param event - The event that triggered the popup closure.
- */
-  closePopup(event: Event): void {
-    event.stopPropagation();
-    this.close.emit();
-  }
-
-
-  /**
-   * Opens the profile view for a selected user.
-   * @param user - The user whose profile is to be viewed.
+   * Tracks users by their unique ID.
+   * @param index - The index of the user in the list.
+   * @param user - The user object.
+   * @returns The unique identifier for the user.
    */
-  openProfile(user: User): void {
-    this.selectedUser = user;
-    this.showChannelPopup = false;
+  trackByUserId(index: number, user: User): string {
+    return user.userId ? user.userId : index.toString();
   }
 
-
   /**
- * Closes the profile card view and returns to the channel popup.
- */
-  closeProfileCard(): void {
-    this.selectedUser = null;
-    this.showChannelPopup = true;
+   * Checks if the edited name is valid.
+   * @returns True if valid, false otherwise.
+   */
+  isNameValid(): boolean {
+    return this.editedName.trim().length > 0 && this.editedName.length <= 17;
   }
 }
