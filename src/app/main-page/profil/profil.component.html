@@ -16,7 +16,7 @@
 
         <div *ngIf="!isEditingEmail && !isEditingName">
           <div style=" display: flex; align-items: center ;justify-content: flex-end">
-            <div class="edit-icon-container">
+            <div class="edit-icon-container" *ngIf="!hideEditIconContainer">
               <div class="edit-icon" (click)="editProfil('avatar'); $event.stopPropagation()"></div>
             </div>
             <span *ngIf="onclickUserID === ownUserID" class="edit"
@@ -35,7 +35,7 @@
           <div class="profil-name-container">
             <div class="title-container">
               <mat-card-title>{{ onclickUser.name }}</mat-card-title>
-              <div class="edit-icon-container">
+              <div class="edit-icon-container" *ngIf="!hideEditIconContainer">
                 <div class="edit-icon" (click)="editProfil('name')"></div>
               </div>
               <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil('name')">Name bearbeiten</span>
@@ -56,7 +56,7 @@
               <img src="./../../../assets/img/profilecard/mail.svg" alt="Emailimage" />
               <div style=" display: flex; align-items: center; justify-content: space-between; width: 100%">
                 <mat-card-subtitle>E-Mail-Adresse</mat-card-subtitle>
-                <div class="edit-icon-container">
+                <div class="edit-icon-container" *ngIf="!hideEditIconContainer">
                   <div class="edit-icon" (click)="editProfil('email')"></div>
                 </div>
                 <span *ngIf="onclickUserID === ownUserID" class="edit" (click)="editProfil('email')">Email

@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
   templateUrl: './channel-info-popup.component.html',
   styleUrls: ['./channel-info-popup.component.scss']
 })
+
 export class ChannelInfoPopupComponent {
   @Input() channel: Channel | null = null;
   @Output() close = new EventEmitter<void>();
@@ -40,46 +41,131 @@ export class ChannelInfoPopupComponent {
     private authService: AuthService,
     private dialog: MatDialog) { }
 
-  ngOnInit() {
+  /**
+   * Lifecycle hook that is called after data-bound properties are initialized.
+   * Initializes edited fields and loads necessary user and channel data.
+   */
+  ngOnInit(): void {
     if (this.channel) {
-      this.editedName = this.channel.name ?? '';
-      this.editedDescription = this.channel.description ?? '';
-      this.userService.getUser(this.channel.createdBy).subscribe((user) => {
-        this.createdByName = user.name;
-      });
+      this.initializeEditedFields();
+      this.loadCreatedByUser();
+      this.loadCurrentUser();
+      this.loadChannelMembers();
+    }
+  }
 
-      this.authService.getUser().subscribe((user) => {
+
+  /**
+   * Lifecycle hook that is called when the component is destroyed.
+   * Cleans up subscriptions to prevent memory leaks.
+   */
+  ngOnDestroy(): void {
+    this.unsubscribeFromUser();
+  }
+
+
+  /**
+   * Initializes the editable fields with the channel's current name and description.
+   */
+  private initializeEditedFields(): void {
+    this.editedName = this.channel!.name ?? '';
+    this.editedDescription = this.channel!.description ?? '';
+  }
+
+
+
+  /**
+    * Loads the user who created the channel and sets the `createdByName`.
+    */
+  private loadCreatedByUser(): void {
+    if (this.channel!.createdBy) {
+      this.userService.getUser(this.channel!.createdBy).subscribe({
+        next: (user) => {
+          this.createdByName = user.name;
+        },
+        error: () => {
+          this.createdByName = 'Unknown';
+        }
+      });
+    }
+  }
+
+
+  /**
+   * Loads the currently authenticated user's ID.
+   */
+  private loadCurrentUser(): void {
+    this.authService.getUser().subscribe({
+      next: (user) => {
         if (user) {
           this.currentUserId = user.uid;
         }
-      });
-
-      if (this.channel.members && this.channel.members.length > 0) {
-        this.userSubscription = this.userService.getUsersByIds(this.channel.members).subscribe((users) => {
-          this.usersOfSelectedChannel = users;
-        });
+      },
+      error: () => {
+        // Handle error silently or implement alternative logic
       }
+    });
+  }
+
+
+  /**
+   * Loads the members of the selected channel.
+   */
+  private loadChannelMembers(): void {
+    if (this.channel!.members && this.channel!.members.length > 0) {
+      this.userSubscription = this.userService.getUsersByIds(this.channel!.members).subscribe({
+        next: (users) => {
+          this.usersOfSelectedChannel = users;
+        },
+        error: () => {
+        }
+      });
     }
   }
 
-  ngOnDestroy() {
+
+  /**
+    * Unsubscribes from the user subscription to prevent memory leaks.
+    */
+  private unsubscribeFromUser(): void {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
+      this.userSubscription = null;
     }
   }
 
+
+  /**
+   * Tracks users by their unique ID to optimize rendering in Angular templates.
+   * 
+   * @param index - The index of the user in the list.
+   * @param user - The user object.
+   * @returns The unique identifier for the user.
+   */
   trackByUserId(index: number, user: User): string {
     return user.userId ? user.userId : index.toString();
   }
 
-  startEditingName() {
+
+  /**
+   * Enables the editing mode for the channel name.
+   */
+  startEditingName(): void {
     this.isEditingName = true;
   }
 
-  startEditingDescription() {
+
+  /**
+   * Enables the editing mode for the channel description.
+   */
+  startEditingDescription(): void {
     this.isEditingDescription = true;
   }
 
+
+  /**
+   * Saves the edited channel name after validation and duplication checks.
+   */
   async saveName(): Promise<void> {
     if (!this.channel) {
       this.isEditingName = false;
@@ -100,29 +186,44 @@ export class ChannelInfoPopupComponent {
     try {
       const isDuplicate = await this.isDuplicateChannelName(this.editedName);
       if (isDuplicate) {
-        this.nameErrorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
+        this.nameErrorMessage = 'A channel with this name already exists.';
         return;
       }
 
       await this.updateChannelName();
     } catch (error) {
-      console.error('Fehler beim Speichern des Namens:', error);
-      this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuchen Sie es erneut.';
+      this.nameErrorMessage = 'Error saving the name. Please try again.';
     }
   }
 
+
+  /**
+   * Validates the channel name to ensure it meets the required criteria.
+   * @param name - The channel name to validate.
+   * @returns A validation error message if invalid, otherwise `null`.
+   */
   private validateName(name: string): string | null {
     if (name.length > 17) {
-      return 'Der Channel-Name darf maximal 17 Zeichen lang sein.';
+      return 'The channel name must be at most 17 characters long.';
     }
     return null;
   }
 
+
+  /**
+   * Checks if a channel name is already in use to prevent duplicates.
+   * @param name - The channel name to check for duplication.
+   * @returns A promise that resolves to `true` if the name is duplicate, otherwise `false`.
+   */
   private async isDuplicateChannelName(name: string): Promise<boolean> {
     const duplicateChannel = await this.channelService.getChannelByName(name, this.channel!.isPrivate);
     return !!duplicateChannel && duplicateChannel.id !== this.channel!.id;
   }
 
+
+  /**
+ * Updates the channel's name with the edited value.
+ */
   private async updateChannelName(): Promise<void> {
     const updatedFields = { name: this.editedName };
     await this.channelService.updateChannel(this.channel!, updatedFields);
@@ -131,7 +232,11 @@ export class ChannelInfoPopupComponent {
     this.nameErrorMessage = '';
   }
 
-  async saveDescription() {
+
+  /**
+   * Saves the edited channel description.
+   */
+  async saveDescription(): Promise<void> {
     if (this.channel && this.editedDescription !== this.channel.description) {
       const updatedFields = { description: this.editedDescription };
       await this.channelService.updateChannel(this.channel, updatedFields);
@@ -140,7 +245,11 @@ export class ChannelInfoPopupComponent {
     this.isEditingDescription = false;
   }
 
-  async leaveChannel() {
+
+  /**
+   * Allows the current user to leave the channel.
+   */
+  async leaveChannel(): Promise<void> {
     const currentUser = this.authService.getCurrentUser();
 
     if (this.channel && currentUser) {
@@ -149,29 +258,46 @@ export class ChannelInfoPopupComponent {
         this.chatService.setCurrentChat(null, false);
         this.close.emit();
       } catch (error) {
-        console.error('Fehler beim Verlassen des Channels:', error);
       }
     }
   }
 
+
+  /**
+   * Listens for click events on the document to close the popup when clicking outside.
+   * @param event - The click event.
+   */
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event) {
+  onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.closePopup(event);
     }
   }
 
-  closePopup(event: Event) {
+
+  /**
+ * Closes the channel info popup.
+ * @param event - The event that triggered the popup closure.
+ */
+  closePopup(event: Event): void {
     event.stopPropagation();
     this.close.emit();
   }
 
 
+  /**
+   * Opens the profile view for a selected user.
+   * @param user - The user whose profile is to be viewed.
+   */
   openProfile(user: User): void {
     this.selectedUser = user;
     this.showChannelPopup = false;
   }
 
+
+  /**
+ * Closes the profile card view and returns to the channel popup.
+ */
   closeProfileCard(): void {
     this.selectedUser = null;
     this.showChannelPopup = true;

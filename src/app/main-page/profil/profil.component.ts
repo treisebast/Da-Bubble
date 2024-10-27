@@ -19,18 +19,7 @@ import { AvatarChoiceComponent } from '../../main-sign-in/avatar-choice/avatar-c
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatDialogActions,
-    MatDialogClose,
-    MatDialogTitle,
-    MatDialogContent,
-    MatCardModule,
-    MatButtonModule,
-    EditProfilComponent,
-    AvatarChoiceComponent,
-  ],
+  imports: [CommonModule, MatButtonModule, MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent, MatCardModule, MatButtonModule, EditProfilComponent, AvatarChoiceComponent,],
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
 })
@@ -38,7 +27,7 @@ export class ProfilComponent implements OnInit {
   @Output() closeProfileCard = new EventEmitter();
   @Input() onclickUser: Partial<User> = {};
   onclickUserID: string = '';
-
+  @Input() hideEditIconContainer: boolean = false;
   isChangingAvatar = false;
   isEditingEmail = false;
   isEditingName = false;
@@ -52,7 +41,7 @@ export class ProfilComponent implements OnInit {
     private userService: UserService,
     private auth: AuthService,
     private chat: ChatService
-  ) {}
+  ) { }
 
   ngOnInit() {
     const authSub = this.auth.getUser().subscribe((firebaseUser) => {

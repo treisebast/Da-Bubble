@@ -35,7 +35,7 @@
 .tutorial h3 {
     color: #333;
     font-weight: 700;
-
+    font-size: 18px;
 }
 
 .overview ul {
@@ -46,6 +46,11 @@
 .tutorial ol {
     list-style-type: decimal;
     margin-left: 20px;
+    font-size: 16px;
+
+    p {
+        font-size: 14px;
+    }
 }
 
 
