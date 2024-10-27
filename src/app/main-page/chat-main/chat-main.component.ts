@@ -151,7 +151,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (this.chatContainer) {
-      this.scrollService.scrollToBottom(this.chatContainer);
+      this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
     }
     setTimeout(() => {
       document.addEventListener(
@@ -286,7 +286,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.setLoadingState(false);
 
       if (this.messages && this.userProfiles) {
-        this.scrollService.scrollToBottom(this.chatContainer);
+        this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
       }
     });
   }
@@ -367,7 +367,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // this.setLoadingState(true);
     this.selectedFile
       ? this.uploadAttachmentAndSendMessage()
       : this.createAndSendMessage();
@@ -396,7 +395,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       .addMessage(newMessage)
       .then(() => {
         this.clearMessageInput();
-        this.scrollService.scrollToBottom(this.chatContainer);
+        this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
         this.setLoadingState(false);
       })
       .catch((error) => {

@@ -20,6 +20,7 @@ import { Subject } from 'rxjs';
 import { convertToDate } from '../../shared/utils';
 import { MentionDropdownComponent } from '../chat-main/mention-dropdown/mention-dropdown.component';
 import { MessageMenuComponent } from '../message/message-menu/message-menu.component';
+import { ScrollService } from '../../shared/services/scroll-service.service';
 
 @Component({
   selector: 'app-thread',
@@ -69,11 +70,13 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private threadService = inject(ThreadService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private scrollService = inject(ScrollService);
 
   @ViewChild('fileInput') fileInput!: ElementRef;
   @Output() closeThread = new EventEmitter<void>();
   @ViewChild('mentionDropdown') mentionDropdownComponent?: MentionDropdownComponent;
   @ViewChild('messageTextarea') messageTextarea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('threadContainer') threadContainer!: ElementRef;
   @ViewChildren(MessageMenuComponent) messageMenuComponents!: QueryList<MessageMenuComponent>;
 
   private unsubscribe$ = new Subject<void>();
@@ -210,14 +213,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
   async sendMessage(event?: Event) {
     if (event) event.preventDefault();
     if (!this.canSendMessage()) return;
+    await this.uploadAttachment();
+    await this.addThreadMessage();
+    this.resetMessageFields();
+    this.scrollService.scrollToBottomOfThread(this.threadContainer);
 
-    try {
-      await this.uploadAttachment();
-      await this.addThreadMessage();
-      this.resetMessageFields();
-    } catch (error) {
-      console.error('Error sending thread message:', error);
-    }
   }
 
   canSendMessage(): boolean {

@@ -10,7 +10,7 @@
   </div>
   <div (click)="onCloseThread()" class="close"></div>
 </div>
-<div class="chat-container" #chatContainer>
+<div class="chat-container" #threadContainer>
   <div *ngIf="currentMessageToOpen" class="singelMessageContainer m-25"
     [ngClass]="{'message-right': currentMessageToOpen.senderId !== currentUserId, 'message-left': currentMessageToOpen.senderId === currentUserId}"
     (mouseleave)="onMouseLeave($event, currentMessageToOpen)">

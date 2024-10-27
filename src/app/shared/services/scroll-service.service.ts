@@ -5,16 +5,21 @@ import { ElementRef, Injectable } from '@angular/core';
 })
 export class ScrollService {
   
-  scrollToBottom(container: ElementRef): void {
+  scrollToBottomOfMainChat(container: ElementRef): void {
     setTimeout(() => {
-      try {
-        container.nativeElement.scrollTo({
-          top: container.nativeElement.scrollHeight,
-          behavior: 'smooth',
-        });
-      } catch (err) {
-        console.error('Scroll to bottom failed:', err);
-      }
+      container.nativeElement.scrollTo({
+        top: container.nativeElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }, 300);
+  }
+
+  scrollToBottomOfThread(container: ElementRef): void {
+    setTimeout(() => {
+      container.nativeElement.scrollTo({
+        top: container.nativeElement.scrollHeight,
+        behavior: 'smooth',
+      });
     }, 300);
   }
 
