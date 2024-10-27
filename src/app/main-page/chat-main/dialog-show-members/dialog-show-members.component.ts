@@ -113,8 +113,8 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
  * @param user - The user object.
  * @returns The unique user ID as a string.
  */
-  trackByUserId(index: number, user: User): string {
-    return user.userId;
+  trackByUserId(index: number, user: User | undefined): string {
+    return user && user.userId ? user.userId : index.toString();
   }
 
 
@@ -126,8 +126,19 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       .getUsers()
       .pipe(takeUntil(this.destroy$))
       .subscribe((users) => {
-        this.loadedUsers = users;
+        this.loadedUsers = users.filter(user => !!user);
+        this.removeInvalidMembers();
       });
+  }
+
+  private removeInvalidMembers(): void {
+    const validMemberIds = this.loadedUsers.map(user => user.userId);
+    const updatedMemberIds = this.data.channel.members.filter(memberId => validMemberIds.includes(memberId));
+
+    if (updatedMemberIds.length !== this.data.channel.members.length) {
+      this.data.channel.members = updatedMemberIds;
+      this.channelService.updateChannel(this.data.channel, { members: updatedMemberIds });
+    }
   }
 
 
@@ -154,10 +165,10 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     const searchTerm = this.searchInput.trim().toLowerCase();
 
     const filtered = searchTerm
-      ? this.loadedUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchTerm)
+    ? this.loadedUsers.filter((user) =>
+        user && user.name.toLowerCase().includes(searchTerm)
       )
-      : [];
+    : [];
 
     this.filteredUsers = filtered.sort((a, b) => {
       const aIsMember = this.isAlreadyMember(a) ? 1 : 0;
