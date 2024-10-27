@@ -11,7 +11,7 @@ import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { UserWithImageStatus } from '../../shared/models/user.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subscription, combineLatest, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { filter, map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-side-nav',
@@ -73,61 +73,44 @@ export class SideNavComponent implements OnInit, OnDestroy {
   ) { }
 
 
-  /**
+/**
  * Lifecycle hook that is called after data-bound properties are initialized.
  * Subscribes to user authentication, channel data, and current chat updates.
  */
-  ngOnInit() {
-    const user$ = this.authService.getUser().pipe(
-      switchMap(firebaseUser => {
-        if (firebaseUser) {
-          return this.userService.getUser(firebaseUser.uid).pipe(
-            map(user => {
-              this.currentUser = { ...user, isImageLoaded: false };
-              return this.currentUser;
-            })
-          );
-        } else {
-          return of(null);
-        }
-      })
-    );
+ngOnInit() {
+  const user$ = this.authService.getUser().pipe(
+    filter(firebaseUser => !!firebaseUser && !!firebaseUser.uid),
+    switchMap(firebaseUser => this.userService.getUser(firebaseUser!.uid)),
+    filter(user => !!user && !!user.userId),
+    map(user => {
+      this.currentUser = { ...user, isImageLoaded: false };
+      return this.currentUser;
+    })
+  );
 
-    const publicChannels$ = user$.pipe(
-      switchMap(user => {
-        if (user) {
-          return this.channelService.getChannelsForUser(user.userId, false);
-        } else {
-          return of([]);
-        }
-      })
-    );
+  const publicChannels$ = user$.pipe(
+    switchMap(user => this.channelService.getChannelsForUser(user.userId, false))
+  );
 
-    const privateChannels$ = user$.pipe(
-      switchMap(user => {
-        if (user) {
-          return this.channelService.getChannelsForUser(user.userId, true);
-        } else {
-          return of([]);
-        }
-      })
-    );
+  const privateChannels$ = user$.pipe(
+    switchMap(user => this.channelService.getChannelsForUser(user.userId, true))
+  );
 
-    // Combine the Observables for public and private channels
-    const channelsSub = combineLatest([publicChannels$, privateChannels$]).subscribe(([publicChannels, privateChannels]) => {
+  const channelsSub = combineLatest([publicChannels$, privateChannels$]).subscribe(
+    ([publicChannels, privateChannels]) => {
       this.publicChannels = publicChannels;
       this.privateChannels = privateChannels;
       this.showWorkspaceUsers();
-    });
+    }
+  );
 
-    this.subs.add(channelsSub);
+  this.subs.add(channelsSub);
 
-    // Subscribe to the current chat updates
-    const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
-      this.currentChat = chatData;
-    });
-    this.subs.add(chatSub);
-  }
+  const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
+    this.currentChat = chatData;
+  });
+  this.subs.add(chatSub);
+}
 
 
   /**
