@@ -1,5 +1,5 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle, MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -18,6 +18,7 @@ import { MatChipEditedEvent, MatChipInputEvent, MatChipsModule } from '@angular/
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -26,7 +27,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss'],
 })
-export class DialogAddChannelComponent {
+export class DialogAddChannelComponent implements OnInit, OnDestroy {
   loading = false;
   channelName = '';
   description = '';
@@ -47,6 +48,7 @@ export class DialogAddChannelComponent {
   announcer = inject(LiveAnnouncer);
   addOnBlur = true;
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
+  destroy$ = new Subject<void>();
 
   channel: Channel = {
     id: '',
@@ -65,8 +67,16 @@ export class DialogAddChannelComponent {
     private authService: AuthService,
     private dialog: MatDialog,
     private userService: UserService
-  ) {
+  ) {}
+
+  ngOnInit(): void {
     this.initialize();
+  }
+
+  ngOnDestroy(): void {
+    this.announcer.clear();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -87,11 +97,15 @@ export class DialogAddChannelComponent {
    * Subscribe to dialog events
    */
   private subscribeToDialogEvents() {
-    this.dialogRef.afterOpened().subscribe(() => {
+    this.dialogRef.afterOpened()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       this.isDialogOpen = true;
     });
 
-    this.dialogRef.afterClosed().subscribe(() => {
+    this.dialogRef.afterClosed()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       this.isDialogOpen = false;
     });
   }
@@ -100,7 +114,9 @@ export class DialogAddChannelComponent {
    * Set the current user
    */
   private setCurrentUser() {
-    this.authService.getUser().subscribe((firebaseUser) => {
+    this.authService.getUser()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((firebaseUser) => {
       if (firebaseUser) {
         this.currentUserId = firebaseUser.uid;
       }
@@ -111,7 +127,9 @@ export class DialogAddChannelComponent {
    * Load users from the UserService and apply an initial filter
    */
   private loadUsers(): void {
-    this.userService.getUsers().subscribe((users) => {
+    this.userService.getUsers()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((users) => {
       this.loadedUsers = users;
     });
   }
