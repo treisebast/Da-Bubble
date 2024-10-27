@@ -59,8 +59,6 @@ export class AuthService implements OnDestroy {
         console.error(`Error listening to status updates for user ${userId}:`, error);
       }
     );
-
-    // Listener speichern
     this.statusListeners.set(userId, unsubscribe);
   }
 
