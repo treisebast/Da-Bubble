@@ -28,7 +28,11 @@ import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.co
 import { NavigationService } from '../../shared/services/navigation-service.service';
 import { WelcomeChannelComponent } from './welcome-channel/welcome-channel.component';
 import { ScrollService } from '../../shared/services/scroll-service.service';
-import { sortMessagesByTimestamp,  isNewDay as helperIsNewDay, convertTimestampToDate } from './chat-main.helper';
+import { sortMessagesByTimestamp, isNewDay as helperIsNewDay, convertTimestampToDate } from './chat-main.helper';
+import { isValidFile, createFilePreview, FileValidationResult } from './file-helper';
+import { setErrorMessage, clearErrorMessage } from './error-helper';
+import { loadMetadataForMessage } from './message-helper';
+import { handleTextareaInput, handleTextareaKeydown, InputHandlerState, KeydownHandlerCallbacks, KeydownHandlerState } from './chat-keydown.helper';
 
 @Component({
   selector: 'app-chat-main',
@@ -84,6 +88,28 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredPublicChannels: Channel[] = [];
   currentThreadData: any;
   private previousChatId: string | null = null;
+
+  private keydownState: KeydownHandlerState = {
+    showMentionDropdown: this.showMentionDropdown,
+    mentionDropdownComponent: this.mentionDropdownComponent,
+    showChannelDropdown: this.showChannelDropdown,
+    channelDropdownComponent: this.channelDropdownComponent
+  };
+
+  private inputState: InputHandlerState = {
+    showMentionDropdown: this.showMentionDropdown,
+    mentionSearchTerm: this.mentionSearchTerm,
+    showChannelDropdown: this.showChannelDropdown,
+    channelSearchTerm: this.channelSearchTerm,
+    mentionStartPosition: this.mentionStartPosition,
+    channelMentionStartPosition: this.channelMentionStartPosition
+  };
+
+  private keydownCallbacks: KeydownHandlerCallbacks = {
+    onUserSelected: this.onUserSelected.bind(this),
+    onChannelSelected: this.onChannelSelected.bind(this),
+    sendMessage: this.sendMessage.bind(this)
+  };
 
   @Output() openThreadEvent = new EventEmitter<void>();
 
@@ -165,7 +191,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private async handleSelectedMessage(message: Message) {
     const chatId = message.chatId;
     const isPrivate = message.isPrivateChat;
-
+  
     if (chatId) {
       if (
         this.currentChat?.id !== chatId ||
@@ -175,8 +201,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (message.id) {
         this.scrollService.scrollToMessage(message.id);
-      } else {
-        console.error('Message ID is undefined');
       }
     }
   }
@@ -274,7 +298,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const sortedMessages = sortMessagesByTimestamp(validMessages);
 
     const metadataRequests: Observable<Message>[] = sortedMessages.map(
-      (message) => this.loadMetadataForMessage(message)
+      (message) => loadMetadataForMessage(message, this.firebaseStorageService)
     );
 
     forkJoin(metadataRequests).subscribe((messagesWithMetadata: Message[]) => {
@@ -306,8 +330,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getUsersOfSelectedChannel(chat: Channel) {
-    console.log('chat.members:', chat.members);
-
     if (this.usersOfSelectedChannelSubscription) {
       this.usersOfSelectedChannelSubscription.unsubscribe();
       this.usersOfSelectedChannelSubscription = null;
@@ -338,20 +360,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const userIds = [...new Set(messages.map((message) => message.senderId))];
     userIds.forEach((userId) => {
       if (!this.userProfiles[userId]) {
-        const userSub = this.userService.getUser(userId).subscribe({
-          next: (user: User) => {
-            this.userProfiles[userId] = {
-              name: user.name,
-              avatar: user.avatar,
-              status: user.status === 'online',
-            };
-          },
-          error: (error) => {
-            console.error(
-              `Error loading user profile for userId ${userId}:`,
-              error
-            );
-          },
+        const userSub = this.userService.getUser(userId).subscribe((user: User) => {
+          this.userProfiles[userId] = {
+            name: user.name,
+            avatar: user.avatar,
+            status: user.status === 'online',
+          };
         });
         this.subscriptions.add(userSub);
       }
@@ -361,7 +375,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   sendMessage(event?: Event) {
     event?.preventDefault();
     if (!this.isChatSelected() || this.isMessageEmpty()) {
-      console.error('No chat selected or message is empty');
       return;
     }
 
@@ -371,33 +384,24 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async uploadAttachmentAndSendMessage(): Promise<void> {
-    try {
-      const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile?.name}`;
-      const downloadUrl = await firstValueFrom(
-        this.firebaseStorageService.uploadFile(this.selectedFile!, filePath)
-      );
-      this.attachmentUrl = downloadUrl;
-      await this.createAndSendMessage();
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      this.setLoadingState(false);
-    }
+    const autoId = doc(collection(this.firestore, 'dummy')).id;
+    const filePath = `chat-files/${this.currentChat.id}/${autoId}_${this.selectedFile?.name}`;
+    const downloadUrl = await firstValueFrom(
+      this.firebaseStorageService.uploadFile(this.selectedFile!, filePath)
+    );
+    this.attachmentUrl = downloadUrl;
+    await this.createAndSendMessage();
   }
 
   private createAndSendMessage(): void {
     const newMessage: Message = this.buildNewMessage();
     this.isLoading = false;
-
+  
     this.chatService
       .addMessage(newMessage)
       .then(() => {
         this.clearMessageInput();
         this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
-        this.setLoadingState(false);
-      })
-      .catch((error) => {
-        console.error('Error sending message:', error);
         this.setLoadingState(false);
       });
   }
@@ -448,12 +452,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async openThread(message: Message) {
     if (!message || !message.id) {
-      console.error('Invalid message object:', message);
       return;
     }
-
     this.openThreadEvent.emit();
-
     this.threadService
       .getThreads(this.currentChat.id, message.id)
       .subscribe((currentThread) => {
@@ -480,7 +481,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   showUserListPopup(currentChat: Channel, popupState: 'listView' | 'addUsers'): void {
-    console.log('showUserListPopup for Channel:', currentChat);
     const dialogRef = this.dialog.open(DialogShowMembersComponent, {
       data: {
         members: this.usersOfSelectedChannel,
@@ -490,9 +490,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       hasBackdrop: true,
       backdropClass: 'backdropVisible',
     });
-
     let alreadyOpen = false;
-
     dialogRef.afterClosed().subscribe((result) => {
       if (result && !alreadyOpen) {
         this.openProfilePopup(result.userId);
@@ -501,20 +499,11 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Profil-Card öffnen
+
   openProfilePopup(userId: string) {
     if (!this.isProfileOpen && userId) {
-      this.profileSubscription = this.userService.getUser(userId).subscribe({
-        next: (user: User) => {
-          this.clickedUser = user;
-          console.log('Profil geöffnet für:', user);
-        },
-        error: (error) => {
-          console.error(
-            `Fehler beim Laden des Profils für Benutzer ${userId}:`,
-            error
-          );
-        },
+      this.profileSubscription = this.userService.getUser(userId).subscribe((user: User) => {
+        this.clickedUser = user;
       });
       this.isProfileOpen = true;
     }
@@ -557,12 +546,25 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
+      const validation: FileValidationResult = isValidFile(file);
 
-      if (!this.isValidFile(file)) {
+      if (!validation.isValid) {
+        if (validation.errorMessage) {
+          setErrorMessage(this, validation.errorMessage);
+        }
         return;
       }
 
-      this.createFilePreview(file);
+      createFilePreview(file).then((preview) => {
+        if (preview) {
+          this.previewUrl = preview;
+          this.attachmentUrl = null;
+          this.selectedFile = file;
+          clearErrorMessage(this);
+        }
+      }).catch((error) => {
+        setErrorMessage(this, 'Fehler beim Erstellen der Dateivorschau.');
+      });
     }
   }
 
@@ -571,115 +573,57 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setLoadingState(false);
   }
 
-  private loadMetadataForMessage(message: Message): Observable<Message> {
-    if (message.attachments?.length) {
-      const metadataRequests = message.attachments.map((attachment) =>
-        this.firebaseStorageService.getFileMetadata(attachment)
-      );
-
-      return forkJoin(metadataRequests).pipe(
-        map((metadataArray) => {
-          message.metadata = {};
-          metadataArray.forEach((metadata, index) => {
-            message.metadata![message.attachments![index]] = {
-              name: metadata.name,
-              size: metadata.size,
-            };
-          });
-          return message;
-        })
-      );
-    } else {
-      return of(message);
-    }
+  setErrorMessage(message: string): void {
+    setErrorMessage(this, message);
   }
 
-  private isValidFile(file: File): boolean {
-    const maxSizeInKB = 500;
-    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-
-    if (file.size > maxSizeInKB * 1024) {
-      this.setErrorMessage(
-        `Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`
-      );
-      return false;
-    }
-
-    if (!allowedTypes.includes(file.type)) {
-      this.setErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
-      return false;
-    }
-
-    return true;
-  }
-
-  private createFilePreview(file: File): void {
-    if (file.type === 'application/pdf') {
-      this.previewUrl = '../../assets/img/chatChannel/pdf.png';
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-        this.attachmentUrl = null;
-        this.selectedFile = file;
-        this.clearErrorMessage();
-      };
-      reader.readAsDataURL(file);
-    }
-    this.attachmentUrl = null;
-    this.selectedFile = file;
-    this.clearErrorMessage();
-  }
-
-  private setErrorMessage(message: string): void {
-    this.errorMessage = message;
-    if (this.errorTimeout) {
-      clearTimeout(this.errorTimeout);
-    }
-    this.errorTimeout = setTimeout(() => {
-      this.errorMessage = null;
-    }, 4000);
-  }
-
-  private clearErrorMessage(): void {
-    this.errorMessage = null;
-    if (this.errorTimeout) {
-      clearTimeout(this.errorTimeout);
-      this.errorTimeout = null;
-    }
+  clearErrorMessage(): void {
+    clearErrorMessage(this);
   }
 
   async getUserNameById(currentChat: any) {
+    this.unsubscribeClickedUser();
+
+    if (this.isGroupChat(currentChat)) {
+      await this.handleGroupChat(currentChat);
+    } else {
+      this.handleSingleUserChat();
+    }
+  }
+
+  private unsubscribeClickedUser() {
     if (this.clickedUserSubscription) {
       this.clickedUserSubscription.unsubscribe();
       this.clickedUserSubscription = null;
     }
+  }
 
-    if (currentChat && currentChat.members && currentChat.members.length > 1) {
-      const otherUserId = this.getOtherUserOfMembers(currentChat.members);
+  private isGroupChat(currentChat: any): boolean {
+    return currentChat?.members?.length > 1;
+  }
 
-      if (!otherUserId) {
-        console.error('No other user found in chat members');
-        return;
-      }
-
-      const userName = await this.userService.getUserNameById(otherUserId);
-      this.clickedUserName = userName || 'Unbekannter Benutzer';
-
-      this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User | undefined) => {
-        if (user && this.currentChat && this.currentChat.members.includes(user.userId)) {
-          this.clickedUser = user;
-        } else {
-          console.error(`User not found for userId ${otherUserId}`);
-        }
-      });
-    } else {
-      this.clickedUserName = `${this.currentUserName} (Du)`;
-
-      this.clickedUserSubscription = this.userService.getUser(this.currentUserId).subscribe((user: User) => {
-        this.clickedUser = user;
-      });
+  private async handleGroupChat(currentChat: any) {
+    const otherUserId = this.getOtherUserOfMembers(currentChat.members);
+    if (!otherUserId) {
+      return;
     }
+
+    const userName = await this.userService.getUserNameById(otherUserId);
+    this.clickedUserName = userName || 'Unbekannter Benutzer';
+
+    this.clickedUserSubscription = this.userService.getUser(otherUserId).subscribe((user: User | undefined) => {
+      if (user && this.currentChat?.members.includes(user.userId)) {
+        this.clickedUser = user;
+      }
+    });
+  }
+
+  private handleSingleUserChat() {
+    this.clickedUserName = `${this.currentUserName} (Du)`;
+
+    this.clickedUserSubscription = this.userService.getUser(this.currentUserId).subscribe((user: User) => {
+      this.clickedUser = user;
+    });
   }
 
 
@@ -713,40 +657,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.fileInput.nativeElement.value = '';
   }
 
-  onKeyUp(event: KeyboardEvent) {
-    const input = (event.target as HTMLInputElement).value.trim();
-    this.filterChannels(input);
-  }
-
-
-  private filterChannels(input: string) {
-    const privateChannels = this.filterChannelList(
-      input,
-      '@',
-      this.privateChannels
-    );
-    const publicChannels = this.filterChannelList(
-      input,
-      '#',
-      this.publicChannels
-    );
-
-    this.filteredChannels = privateChannels;
-    this.filteredPublicChannels = publicChannels;
-  }
-
-  private filterChannelList(
-    input: string,
-    symbol: string,
-    channels: Channel[]
-  ): Channel[] {
-    const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
-    return match
-      ? channels.filter((ch) =>
-        ch.name?.toLowerCase().includes(match[1].toLowerCase())
-      )
-      : [];
-  }
 
   addUserPopup(currentChannel: Channel) {
     console.log('addUserPopup:', currentChannel);
@@ -760,7 +670,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.overlayImageUrl = null;
   }
 
-  // Emoji Picker
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker;
     if (this.showEmojiPicker) {
@@ -801,39 +710,21 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onTextareaInput(event: Event) {
-    const textarea = event.target as HTMLTextAreaElement;
-    const cursorPosition = textarea.selectionStart || 0;
-    const textBeforeCursor = textarea.value.substring(0, cursorPosition);
-
-    // Reset Dropdowns
-    this.showMentionDropdown = false;
-    this.mentionSearchTerm = '';
-    this.showChannelDropdown = false;
-    this.channelSearchTerm = '';
-
-    // Check for "@" Mention
-    const atIndex = textBeforeCursor.lastIndexOf('@');
-    const isAtSymbol =
-      atIndex >= 0 &&
-      (atIndex === 0 || /\s/.test(textBeforeCursor.charAt(atIndex - 1)));
-
-    // Check for "#" für Channels
-    const hashIndex = textBeforeCursor.lastIndexOf('#');
-    const isHashSymbol =
-      hashIndex >= 0 &&
-      (hashIndex === 0 || /\s/.test(textBeforeCursor.charAt(hashIndex - 1)));
-
-    if (isAtSymbol && (!isHashSymbol || atIndex > hashIndex)) {
-      // If "@" is last used symbol
-      this.mentionSearchTerm = textBeforeCursor.substring(atIndex + 1);
-      this.showMentionDropdown = true;
-      this.mentionStartPosition = atIndex;
-    } else if (isHashSymbol) {
-      // If "#" is last used symbol
-      this.channelSearchTerm = textBeforeCursor.substring(hashIndex + 1);
-      this.showChannelDropdown = true;
-      this.channelMentionStartPosition = hashIndex;
-    }
+    this.inputState = {
+      showMentionDropdown: this.showMentionDropdown,
+      mentionSearchTerm: this.mentionSearchTerm,
+      showChannelDropdown: this.showChannelDropdown,
+      channelSearchTerm: this.channelSearchTerm,
+      mentionStartPosition: this.mentionStartPosition,
+      channelMentionStartPosition: this.channelMentionStartPosition
+    };
+    handleTextareaInput(event, this.inputState);
+    this.showMentionDropdown = this.inputState.showMentionDropdown;
+    this.mentionSearchTerm = this.inputState.mentionSearchTerm;
+    this.showChannelDropdown = this.inputState.showChannelDropdown;
+    this.channelSearchTerm = this.inputState.channelSearchTerm;
+    this.mentionStartPosition = this.inputState.mentionStartPosition;
+    this.channelMentionStartPosition = this.inputState.channelMentionStartPosition;
   }
 
   onUserSelected(user: User) {
@@ -860,49 +751,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onTextareaKeydown(event: KeyboardEvent) {
-    if (this.showMentionDropdown && this.mentionDropdownComponent) {
-      // for Mention-Dropdown
-      if (event.key === 'Escape') {
-        this.showMentionDropdown = false;
-        event.preventDefault();
-      } else if (event.key === 'ArrowDown') {
-        this.mentionDropdownComponent.moveSelectionDown();
-        event.preventDefault();
-      } else if (event.key === 'ArrowUp') {
-        this.mentionDropdownComponent.moveSelectionUp();
-        event.preventDefault();
-      } else if (event.key === 'Enter') {
-        const selectedUser = this.mentionDropdownComponent.getSelectedUser();
-        if (selectedUser) {
-          this.onUserSelected(selectedUser);
-          event.preventDefault();
-        }
-      }
-    } else if (this.showChannelDropdown && this.channelDropdownComponent) {
-      // for Channel-Dropdown
-      if (event.key === 'Escape') {
-        this.showChannelDropdown = false;
-        event.preventDefault();
-      } else if (event.key === 'ArrowDown') {
-        this.channelDropdownComponent.moveSelectionDown();
-        event.preventDefault();
-      } else if (event.key === 'ArrowUp') {
-        this.channelDropdownComponent.moveSelectionUp();
-        event.preventDefault();
-      } else if (event.key === 'Enter') {
-        const selectedChannel =
-          this.channelDropdownComponent.getSelectedChannel();
-        if (selectedChannel) {
-          this.onChannelSelected(selectedChannel);
-          event.preventDefault();
-        }
-      }
-    } else {
-      // No dropdown active
-      if (event.key === 'Enter') {
-        this.sendMessage(event);
-      }
-    }
+    this.keydownState = {
+      showMentionDropdown: this.showMentionDropdown,
+      mentionDropdownComponent: this.mentionDropdownComponent,
+      showChannelDropdown: this.showChannelDropdown,
+      channelDropdownComponent: this.channelDropdownComponent
+    };
+    handleTextareaKeydown(event, this.keydownState, this.keydownCallbacks);
+    this.showMentionDropdown = this.keydownState.showMentionDropdown;
+    this.showChannelDropdown = this.keydownState.showChannelDropdown;
   }
 
   @HostListener('document:click', ['$event'])
