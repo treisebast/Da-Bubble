@@ -112,12 +112,14 @@ export class ChannelInfoPopupComponent {
    * Loads the members of the selected channel.
    */
   private loadChannelMembers(): void {
-    if (this.channel!.members && this.channel!.members.length > 0) {
-      this.userSubscription = this.userService.getUsersByIds(this.channel!.members).subscribe({
+    if (this.channel && this.channel.members && this.channel.members.length > 0) {
+      this.userSubscription = this.userService.getUsersByIds(this.channel.members).subscribe({
         next: (users) => {
-          this.usersOfSelectedChannel = users;
+          // Filtern von undefined-Einträgen
+          this.usersOfSelectedChannel = users.filter(user => user !== undefined && user !== null);
         },
         error: () => {
+          // Fehlerbehandlung
         }
       });
     }
@@ -137,7 +139,7 @@ export class ChannelInfoPopupComponent {
 
   /**
    * Tracks users by their unique ID to optimize rendering in Angular templates.
-   * 
+   *
    * @param index - The index of the user in the list.
    * @param user - The user object.
    * @returns The unique identifier for the user.
