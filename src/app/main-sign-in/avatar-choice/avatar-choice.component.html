@@ -5,7 +5,8 @@
     <mat-card-title class="m-20">Wähle deinen<span class="break"> Avatar</span></mat-card-title>
     <div class="avatar-big">
         <img #uploadedImage [src]="selectedAvatar" alt="main avatar">
-        <h1>{{ownUser.name || userName}}</h1>
+        <h1 *ngIf="ownUser">{{ownUser.name}}</h1>
+        <h1 *ngIf="!ownUser">{{userName}}</h1>
     </div>
     <div>
         <p>Aus der Liste wählen</p>
