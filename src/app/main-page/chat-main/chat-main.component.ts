@@ -28,6 +28,7 @@ import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.co
 import { NavigationService } from '../../shared/services/navigation-service.service';
 import { WelcomeChannelComponent } from './welcome-channel/welcome-channel.component';
 import { ScrollService } from '../../shared/services/scroll-service.service';
+import { sortMessagesByTimestamp,  isNewDay as helperIsNewDay, convertTimestampToDate } from './chat-main.helper';
 
 @Component({
   selector: 'app-chat-main',
@@ -182,15 +183,12 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   private subscribeToChannels(): void {
-    // Abonnieren der privaten Kanäle
     const privateChannelsSub = this.channelService
       .getPrivateChannels()
       .subscribe((channels) => {
         this.privateChannels = channels;
       });
     this.subscriptions.add(privateChannelsSub);
-
-    // Abonnieren der öffentlichen Kanäle
     const publicChannelsSub = this.channelService
       .getPublicChannels()
       .subscribe((channels) => {
@@ -273,7 +271,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const validMessages = messages.filter((message) => message.timestamp);
-    const sortedMessages = this.sortMessagesByTimestamp(validMessages);
+    const sortedMessages = sortMessagesByTimestamp(validMessages);
 
     const metadataRequests: Observable<Message>[] = sortedMessages.map(
       (message) => this.loadMetadataForMessage(message)
@@ -290,12 +288,14 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private sortMessagesByTimestamp(messages: Message[]): Message[] {
-    return messages.sort(
-      (a, b) =>
-        this.convertToDate(a.timestamp).getTime() -
-        this.convertToDate(b.timestamp).getTime()
-    );
+  convertToDate(timestamp: Timestamp | FieldValue): Date {
+    return convertTimestampToDate(timestamp);
+  }
+
+  isNewDay(currentMessage: Message, index: number): boolean {
+    if (index === 0) return true;
+    const previousMessage = this.messages[index - 1];
+    return helperIsNewDay(currentMessage, previousMessage);
   }
 
   private subscribeToLoadingState(): void {
@@ -336,7 +336,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadUserProfiles(messages: Message[]) {
     const userIds = [...new Set(messages.map((message) => message.senderId))];
-
     userIds.forEach((userId) => {
       if (!this.userProfiles[userId]) {
         const userSub = this.userService.getUser(userId).subscribe({
@@ -438,29 +437,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.chatService.setLoadingState(isLoading);
   }
 
-  convertToDate(timestamp: Timestamp | FieldValue): Date {
-    if (timestamp instanceof Timestamp) {
-      return timestamp.toDate();
-    }
-    return new Date();
-  }
-
   trackByUserId(index: number, user: User): string {
     return user.userId ? user.userId : index.toString();
   }
 
-  isNewDay(timestamp: Timestamp | FieldValue | undefined, index: number): boolean {
-    if (index === 0) return true;
-
-    const prevMessage = this.messages[index - 1];
-    if (!prevMessage || !prevMessage.timestamp || !timestamp) {
-      return false;
-    }
-
-    const prevDate = this.convertToDate(prevMessage.timestamp);
-    const currentDate = this.convertToDate(timestamp);
-    return prevDate.toDateString() !== currentDate.toDateString();
-  }
 
   isChatUserProfile(chat: User | Channel): chat is User {
     return (chat as User).avatar !== undefined;
@@ -669,14 +649,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  /**
-   * Retrieves the username of the other member in the current chat and subscribes to user updates.
-   * If the current chat has more than one member, it fetches the username of the other member.
-   * If the current chat has only one member, it sets the username to the current user's name.
-   *
-   * @param {any} currentChat - The current chat object containing chat members.
-   * @returns {Promise<void>} - A promise that resolves when the username is retrieved and subscription is set.
-   */
   async getUserNameById(currentChat: any) {
     if (this.clickedUserSubscription) {
       this.clickedUserSubscription.unsubscribe();
@@ -710,12 +682,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  /**
-   * Retrieves the other user from the list of chat members, excluding the current user.
-   *
-   * @param {string[]} currentChatMembers - An array of user IDs representing the members of the current chat.
-   * @returns {string | null} - The user ID of the other member in the chat, or null if no other member is found.
-   */
+
   getOtherUserOfMembers(currentChatMembers: string[]): string | null {
     for (const member of currentChatMembers) {
       if (member !== this.currentUserId) {
@@ -751,9 +718,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterChannels(input);
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // ------------------------------------- Private methods ------------------------------------------
-  // ------------------------------------------------------------------------------------------------
 
   private filterChannels(input: string) {
     const privateChannels = this.filterChannelList(

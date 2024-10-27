@@ -68,7 +68,7 @@
           let i = index;
           trackBy: trackByMessageId
         ">
-        <div *ngIf="message.timestamp && isNewDay(message.timestamp, i)" class="date-divider">
+        <div *ngIf="message.timestamp && isNewDay(message, i)" class="date-divider">
           <span class="date">{{
             convertToDate(message.timestamp) | date : "fullDate" : "" : "de"
             }}</span>
