@@ -1,15 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import {
-  MatDialog,
-  MatDialogModule,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogClose,
-  MatDialogActions,
-  MatDialogTitle,
-} from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MAT_DIALOG_DATA, MatDialogRef, MatDialogClose, MatDialogActions, MatDialogTitle } from '@angular/material/dialog';
 import { User } from '../../../shared/models/user.model';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -27,25 +19,12 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-dialog-show-members',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatDialogClose,
-    MatDialogActions,
-    MatDialogTitle,
-    MatIconModule,
-    MatProgressBarModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    FormsModule,
-  ],
+  imports: [CommonModule, MatButtonModule, MatDialogModule, MatDialogClose, MatDialogActions, MatDialogTitle, MatIconModule, MatProgressBarModule, MatChipsModule, MatFormFieldModule, FormsModule],
   templateUrl: './dialog-show-members.component.html',
   styleUrls: ['./dialog-show-members.component.scss'],
 })
 export class DialogShowMembersComponent implements OnInit, OnDestroy {
   isTesting = false; // Set this to true when testing without Firebase
-
   loading = false;
   isDialogOpen = false;
   dialogProgressState: 'listView' | 'addUsers' = 'listView';
@@ -76,6 +55,11 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     this.dialogProgressState = data.popupState;
   }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Subscribes to dialog events, loads users, and initializes the set of channel member IDs.
+ */
   ngOnInit(): void {
     this.subscribeToDialogEvents();
     this.loadUsers();
@@ -83,14 +67,25 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     this.channelMemberIds = new Set(this.data.channel.members);
   }
 
+
+  /**
+ * Lifecycle hook that is called when the component is destroyed.
+ * Cleans up subscriptions to prevent memory leaks.
+ */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+
+  /**
+ * Opens the profile dialog for a selected user and closes the current dialog.
+ * @param user - The user whose profile is to be opened.
+ */
   openProfile(user: User): void {
     this.dialogRef.close(user);
   }
+
 
   /**
    * Subscribe to dialog events
@@ -111,9 +106,18 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       });
   }
 
+
+  /**
+ * Tracks users by their unique user ID.
+ * This helps Angular optimize rendering by identifying items in a list.
+ * @param index - The index of the user in the list.
+ * @param user - The user object.
+ * @returns The unique user ID as a string.
+ */
   trackByUserId(index: number, user: User): string {
     return user.userId;
   }
+
 
   /**
    * Load users from the UserService and apply an initial filter
@@ -127,6 +131,12 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       });
   }
 
+
+  /**
+ * Checks if a user is already a member of the channel.
+ * @param user - The user to check.
+ * @returns `true` if the user is already a member, otherwise `false`.
+ */
   isAlreadyMember(user: User): boolean {
     return this.channelMemberIds.has(user.userId);
   }
@@ -134,7 +144,6 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
 
   /**
    * Filters the list of users based on the search input and sorts them.
-   *
    * The method trims and converts the search input to lowercase, then filters the loaded users
    * whose names include the search term. The filtered users are then sorted such that members
    * appear before non-members. If two users have the same membership status, they are sorted
@@ -147,8 +156,8 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
 
     const filtered = searchTerm
       ? this.loadedUsers.filter((user) =>
-          user.name.toLowerCase().includes(searchTerm)
-        )
+        user.name.toLowerCase().includes(searchTerm)
+      )
       : [];
 
     this.filteredUsers = filtered.sort((a, b) => {
@@ -179,6 +188,11 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Removes a user from the selected users list.
+ * @param user - The user to be removed.
+ */
   remove(user: User): void {
     const index = this.selectedUsers.indexOf(user);
 

@@ -13,6 +13,10 @@ export class ImageOverlayComponent {
   @Input() imageUrl: string | null = null;
   @Output() closeOverlay = new EventEmitter<void>();
 
+
+  /**
+ * Emits the `closeOverlay` event to notify that the overlay should be closed.
+ */
   onClose() {
     this.closeOverlay.emit();
   }

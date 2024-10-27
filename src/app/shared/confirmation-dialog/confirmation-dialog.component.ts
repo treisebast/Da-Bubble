@@ -14,6 +14,7 @@ import { MatDialogModule } from '@angular/material/dialog';
   ]
 })
 export class ConfirmationDialogComponent {
+
   /**
    * Creates an instance of ConfirmationDialogComponent.
    * @param {Object} data - The data injected into the dialog.
@@ -23,8 +24,14 @@ export class ConfirmationDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { message: string; image?: string },
     public dialogRef: MatDialogRef<ConfirmationDialogComponent>
-  ) {}
+  ) { }
 
+
+  /**
+ * Handles the end of an animation event.
+ * Closes the dialog if the animation name is 'slide-out'.
+ * @param {AnimationEvent} event - The animation event that occurred.
+ */
   onAnimationEnd(event: AnimationEvent): void {
     if (event.animationName === 'slide-out') {
       this.dialogRef.close();

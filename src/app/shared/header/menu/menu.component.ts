@@ -20,15 +20,27 @@ export class MenuComponent {
 
   constructor(private auth: AuthService, private chatService: ChatService) { }
 
+
+  /**
+ * Toggles the visibility of the menu and emits an event to close the menu after a delay.
+ */
   close() {
     this.isMenuOpen = !this.isMenuOpen;
     setTimeout(() => this.closeMenu.emit(), 300);
   }
 
+
+  /**
+ * Emits an event to open the profile section.
+ */
   openProfilContent() {
     this.openProfile.emit();
   }
 
+
+  /**
+ * Logs out the current user by closing the menu, resetting the current chat, and signing out.
+ */
   logout() {
     this.close();
     this.chatService.setCurrentChat(null, false);

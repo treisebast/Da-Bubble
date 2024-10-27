@@ -18,10 +18,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-sign-up',
   standalone: true,
-  imports: [
-    MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule,
-    MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule
-  ],
+  imports: [MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule, MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule],
   templateUrl: './sign-up.component.html',
   styleUrls: ['./sign-up.component.scss']
 })
@@ -193,7 +190,6 @@ export class SignUpComponent {
   * @param {any} error - The error object.
   */
   private handleSignUpError(error: any): void {
-    console.error('Error during sign up or saving user details', error);
     if (error.code === 'auth/email-already-in-use') {
       this.emailError = 'Diese E-Mail existiert bereits.';
     } else {

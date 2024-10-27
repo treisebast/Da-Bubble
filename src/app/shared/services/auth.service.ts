@@ -1,19 +1,5 @@
-// auth.service.ts
 import { Injectable, isDevMode, OnDestroy } from '@angular/core';
-import {
-  Auth,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  authState,
-  User as FirebaseUser,
-  GoogleAuthProvider,
-  sendPasswordResetEmail,
-  confirmPasswordReset,
-  updateProfile,
-  Unsubscribe,
-} from '@angular/fire/auth';
+import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider, sendPasswordResetEmail, confirmPasswordReset, updateProfile, Unsubscribe } from '@angular/fire/auth';
 import { from, Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { UserService } from './user.service';
@@ -22,7 +8,7 @@ import { ChannelService } from './channel.service';
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService implements OnDestroy{
+export class AuthService implements OnDestroy {
   private awayTimeout?: number;
   private offlineTimeout?: number;
   private readonly AWAY_LIMIT = 25000;
@@ -43,7 +29,10 @@ export class AuthService implements OnDestroy{
   }
 
 
-
+  /**
+   * Lifecycle hook that is called when the component is destroyed.
+   * It performs cleanup by signaling observable completions and unsubscribing from active subscriptions.
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -191,13 +180,13 @@ export class AuthService implements OnDestroy{
     return from(
       this.auth.currentUser
         ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
-            () => {
-              this.removeUserStatusListener(this.auth.currentUser!.uid);
-              this.userService.removeAllUserListeners();
-              this.channelService.removeAllChannelListeners();
-              return signOut(this.auth);
-            }
-          )
+          () => {
+            this.removeUserStatusListener(this.auth.currentUser!.uid);
+            this.userService.removeAllUserListeners();
+            this.channelService.removeAllChannelListeners();
+            return signOut(this.auth);
+          }
+        )
         : signOut(this.auth)
     );
   }

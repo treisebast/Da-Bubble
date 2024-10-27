@@ -1,8 +1,6 @@
 @import './../../styles.scss';
 @import '../../styles/front-page.scss';
 
-
-
 header {
     width: 100%;
     max-width: 1920px;
@@ -99,8 +97,6 @@ header {
     }
   }
 
-
-
 @media (min-width: 1200px) {
 
     header {
@@ -180,5 +176,4 @@ header {
             }
         }
     }
-
 }

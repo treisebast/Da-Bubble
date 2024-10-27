@@ -1,16 +1,5 @@
 import { Injectable, isDevMode, OnDestroy } from '@angular/core';
-import {
-  Firestore,
-  collectionData,
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  updateDoc,
-  query,
-  orderBy,
-  onSnapshot,
-} from '@angular/fire/firestore';
+import { Firestore, collectionData, addDoc, collection, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { Message } from '../models/message.model';
 import { CacheService } from './cache.service';
@@ -18,14 +7,14 @@ import { CacheService } from './cache.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ChannelMessageService implements OnDestroy{
+export class ChannelMessageService implements OnDestroy {
   private messageListeners: Map<string, () => void> = new Map();
   private destroy$ = new Subject<void>();
 
   constructor(
     private firestore: Firestore,
     private cacheService: CacheService
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     this.removeAllMessageListeners();

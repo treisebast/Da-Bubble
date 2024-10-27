@@ -3,11 +3,9 @@
   <img (click)="addNewChannel()" class="edit" src="/assets/img/icons/add.svg" alt="" />
 </div>
 <div class="sidenav-content">
-  <!---------------channels----------------->
   <div class="menuChannelDropdown">
     <div (click)="openMenuChannelDropdown()" class="opend dropdown" *ngIf="menuChannelIsDropedDown"></div>
     <div (click)="openMenuChannelDropdown()" class="closed dropdown" *ngIf="!menuChannelIsDropedDown"></div>
-
     <table>
       <div class="channels ml40" [@dropDown]="menuChannelIsDropedDown ? 'expanded' : 'collapsed'"
         [ngStyle]="{'overflow-y': menuChannelIsDropedDown ? 'visible' : 'hidden'}">
@@ -21,41 +19,29 @@
       </div>
     </table>
   </div>
-
-  <!--------------direct messages--------------->
   <div class="directMessages">
     <div (click)="openDirectMessagesDropdown()" class="directMessagesOpend dropdown" *ngIf="directMessagesIsDropedDown">
     </div>
     <div (click)="openDirectMessagesDropdown()" class="directMessagesClose dropdown"
       *ngIf="!directMessagesIsDropedDown"></div>
-
     <table>
       <div [@dropDown]="directMessagesIsDropedDown ? 'expanded' : 'collapsed'" class="channels"
         [ngStyle]="{'overflow-y': directMessagesIsDropedDown ? 'visible' : 'hidden'}">
         <tr class="message-tr" *ngFor="let user of workspaceUsers; trackBy: trackByUserId"
           (click)="findOrCreatePrivateChannelWithUser(user); setSelectedMessage()"
           [ngClass]="{'active-chat': isActiveUser(user)}">
-
-          <!-- Avatar -->
           <ng-container>
             <img *ngIf="user.avatar; else avatarSpinner" class="table-profile-img" [src]="user.avatar"
               alt="profile image" (load)="onImageLoad(user.userId)" (error)="onImageError(user.userId)" />
-
-            <!-- Fallback to Spinner if avatar is not available -->
             <ng-template #avatarSpinner>
               <mat-spinner class="table-profile-img" diameter="30"></mat-spinner>
             </ng-template>
           </ng-container>
-
-          <!-- Status icons -->
           <div *ngIf="user.status === 'online'" class="status-indicator online"></div>
           <div *ngIf="user.status === 'away'" class="status-indicator away"></div>
           <div *ngIf="user.status === 'offline'" class="status-indicator offline"></div>
-
-          <!-- Mark the current user with (Du) -->
           <ng-container *ngIf="user.userId === currentUser.userId">{{ user.name }} (Du)</ng-container>
           <ng-container *ngIf="user.userId !== currentUser.userId">{{ user.name }}</ng-container>
-
         </tr>
       </div>
     </table>

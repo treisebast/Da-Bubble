@@ -1,5 +1,8 @@
 import { Timestamp, FieldValue } from '@angular/fire/firestore';
 
+/**
+ * Represents a message within a chat or channel.
+ */
 export interface Message {
   id?: string;
   content: string;
@@ -19,5 +22,5 @@ export interface Message {
     }
   }
   reactions?: { [emoji: string]: string[] };
-  isPrivateChat: boolean; // Neues Feld
+  isPrivateChat: boolean;
 }

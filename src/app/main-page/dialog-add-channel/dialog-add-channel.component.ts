@@ -22,25 +22,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 @Component({
   selector: 'app-dialog-add-channel',
   standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    MatProgressBarModule,
-    CommonModule,
-    MatDialogModule,
-    MatCheckboxModule,
-    MatRadioModule,
-    JsonPipe,
-    MatCardModule,
-    MatChipsModule,
-    MatIconModule
-  ],
+  imports: [MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatProgressBarModule, CommonModule, MatDialogModule, MatCheckboxModule, MatRadioModule, JsonPipe, MatCardModule, MatChipsModule, MatIconModule],
   templateUrl: './dialog-add-channel.component.html',
   styleUrls: ['./dialog-add-channel.component.scss'],
 })
@@ -150,8 +132,8 @@ export class DialogAddChannelComponent {
 
     const filtered = searchTerm
       ? this.loadedUsers.filter((user) =>
-          user.name.toLowerCase().includes(searchTerm)
-        )
+        user.name.toLowerCase().includes(searchTerm)
+      )
       : this.loadedUsers.slice(); // Kopie aller Benutzer
 
     this.filteredUsers = filtered.sort((a, b) => {

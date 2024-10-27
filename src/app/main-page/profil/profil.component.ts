@@ -1,10 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import {
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogTitle,
-  MatDialogContent,
-} from '@angular/material/dialog';
+import { MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
@@ -34,7 +29,6 @@ export class ProfilComponent implements OnInit {
   profiltext: string = 'Profil';
   ownUser: Partial<User> = {};
   ownUserID: string = '';
-
   subs = new Subscription();
 
   constructor(
@@ -43,6 +37,11 @@ export class ProfilComponent implements OnInit {
     private chat: ChatService
   ) { }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Subscribes to authentication and user data, and initializes user IDs.
+ */
   ngOnInit() {
     const authSub = this.auth.getUser().subscribe((firebaseUser) => {
       if (firebaseUser?.uid) {
@@ -61,17 +60,30 @@ export class ProfilComponent implements OnInit {
     this.onclickUserID = this.onclickUser.userId!;
   }
 
+
+  /**
+ * Lifecycle hook that is called when the component is destroyed.
+ * Unsubscribes from all subscriptions to prevent memory leaks.
+ */
   ngOnDestroy() {
     this.subs.unsubscribe();
   }
 
+
+  /**
+ * Emits an event to close the profile card.
+ */
   closeProfil() {
     this.closeProfileCard.emit();
   }
 
+
+  /**
+  * Initiates the profile editing process based on the selected field.
+  * @param text - The field to edit ('avatar', 'name', or 'email')
+  */
   editProfil(text: string) {
     this.profiltext = 'Dein Profil bearbeiten';
-    console.log('editing profile...');
     switch (text) {
       case 'avatar':
         this.isChangingAvatar = true;
@@ -85,12 +97,22 @@ export class ProfilComponent implements OnInit {
     }
   }
 
+
+  /**
+  * Closes the edit profile dialogs and resets editing flags.
+  * @param event - Boolean indicating whether to close the edit dialogs
+  */
   closeEditProfil(event: boolean) {
     this.isEditingName = event;
     this.isEditingEmail = event;
     this.isChangingAvatar = event;
   }
 
+
+  /**
+ * Initiates a private chat with the specified user.
+ * @param userId - The ID of the user to chat with
+ */
   sendMessage(userId: string) {
     const userSub = this.userService.getUser(userId).subscribe((user: User) => {
       this.chat.startPrivateChat(user);
@@ -99,6 +121,11 @@ export class ProfilComponent implements OnInit {
     this.subs.add(userSub);
   }
 
+
+  /**
+ * Sets the selected avatar state.
+ * @param event - Boolean indicating the avatar selection state
+ */
   setSelectedAvatar(event: boolean) {
     this.isChangingAvatar = event.valueOf();
   }

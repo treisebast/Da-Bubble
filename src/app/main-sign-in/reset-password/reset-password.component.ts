@@ -16,17 +16,7 @@ import { AuthService } from '../../shared/services/auth.service';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    CommonModule,
-    MatIconModule,
-    MatCardModule,
-    RouterOutlet,
-    RouterModule,
-    ReactiveFormsModule
-  ],
+  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, CommonModule, MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
@@ -44,6 +34,7 @@ export class ResetPasswordComponent {
       email: ['', [Validators.required, Validators.email]]
     });
   }
+
 
   /**
     * Gets the email form control.
@@ -63,23 +54,23 @@ export class ResetPasswordComponent {
     }
   }
 
+
   /**
    * Initiates the password reset process.
    * @param {string} email - The email address to send the reset link to.
    */
   private handlePasswordReset(email: string): void {
-    console.log(`Attempting to send reset password email to: ${email}`);
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => this.onPasswordResetSuccess(),
       error: (error: any) => this.onPasswordResetError(error)
     });
   }
 
+
   /**
    * Handles successful password reset email submission.
    */
   private onPasswordResetSuccess(): void {
-    console.log('Reset Password Form Submitted', this.resetPasswordForm.value);
     this.openDialog('E-Mail gesendet', './assets/img/front-page/send.svg');
   }
 
@@ -88,7 +79,6 @@ export class ResetPasswordComponent {
    * @param {any} error - The error object.
    */
   private onPasswordResetError(error: any): void {
-    console.error('Error sending reset password email', error);
     this.openDialog('Fehler beim Senden der E-Mail', '');
   }
 

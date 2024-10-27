@@ -13,16 +13,7 @@ import { slideInOut, slideInOutRight } from './main-page.animations';
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [
-    SideNavComponent,
-    ChatMainComponent,
-    ThreadComponent,
-    CommonModule,
-    MatButtonModule,
-    MatDividerModule,
-    MatIconModule,
-    HeaderComponent,
-  ],
+  imports: [SideNavComponent, ChatMainComponent, ThreadComponent, CommonModule, MatButtonModule, MatDividerModule, MatIconModule, HeaderComponent],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],
   animations: [slideInOut, slideInOutRight],
@@ -36,11 +27,17 @@ export class MainPageComponent implements OnInit {
   private previousChatId: string | null = null;
   workspaceMenu: string = 'Workspace-Menü schließen';
 
+
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.checkViewModes();
   }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Initializes the view modes and subscribes to current chat updates.
+ */
   ngOnInit() {
     this.checkViewModes();
 
@@ -58,6 +55,11 @@ export class MainPageComponent implements OnInit {
     });
   }
 
+
+  /**
+ * Checks and updates the view modes based on the current window width.
+ * Adjusts visibility of channels and updates the current view accordingly.
+ */
   checkViewModes() {
     const width = window.innerWidth;
     this.isMobileView = width <= 1079;
@@ -77,12 +79,22 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+
+  /**
+ * Handles the event when a channel is selected.
+ * Switches the view to 'main' if in mobile view.
+ */
   onChannelSelected() {
     if (this.isMobileView) {
       this.currentView = 'main';
     }
   }
 
+
+  /**
+ * Toggles the visibility of the chat channel menu.
+ * Adjusts the workspace menu text based on the new state.
+ */
   openCloseChatChannel() {
     if (this.isMobileView) {
       this.currentView = 'channels';
@@ -92,6 +104,10 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+
+  /**
+ * Closes the thread component and updates the view based on the current view mode.
+ */
   closeThreadComponent() {
     console.log('Closing thread component');
     this.showSecondary = false;
@@ -100,6 +116,10 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+
+  /**
+ * Opens the thread component and updates the view based on the current view mode.
+ */
   openThreadComponent() {
     console.log('Opening thread component');
     this.showSecondary = true;
@@ -108,6 +128,12 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+
+  /**
+ * Switches the current view to the specified mode.
+ * Updates visibility of channels and secondary components based on the view.
+ * @param view - The view to switch to ('channels', 'main', or 'secondary')
+ */
   switchTo(view: 'channels' | 'main' | 'secondary') {
     console.log('Switching to view:', view);
     this.currentView = view;
@@ -118,10 +144,19 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+
+  /**
+ * Opens the welcome channel by resetting the current chat context.
+ */
   openWelcomeChannel() {
     this.chatService.setCurrentChat(null, false);
   }
-  
+
+
+  /**
+ * Handles the event when the server name is clicked.
+ * Switches to the 'main' view and opens the welcome channel.
+ */
   handleServerNameClick() {
     this.switchTo('main');
     this.openWelcomeChannel();

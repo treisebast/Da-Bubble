@@ -12,7 +12,7 @@ import { IntroComponent } from './intro/intro.component';
 @Component({
   selector: 'app-main-sign-in',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule,IntroComponent],
+  imports: [MatFormFieldModule, MatInputModule, CommonModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule, IntroComponent],
   templateUrl: './main-sign-in.component.html',
   styleUrl: './main-sign-in.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,6 +25,11 @@ export class MainSignInComponent {
 
   constructor(private router: Router) { }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Subscribes to router navigation events to update the visibility of UI sections.
+ */
   ngOnInit() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -36,11 +41,11 @@ export class MainSignInComponent {
   }
 
 
-      /**
-   * Handles the completion of the intro animation.
-   * @param {boolean} isComplete - The completion status of the intro animation.
-   */
-      handleIntroComplete(isComplete: boolean) {
-        this.showIntro = !isComplete;
-      }
+  /**
+* Handles the completion of the intro animation.
+* @param {boolean} isComplete - The completion status of the intro animation.
+*/
+  handleIntroComplete(isComplete: boolean) {
+    this.showIntro = !isComplete;
+  }
 }

@@ -1,10 +1,8 @@
 <div class="modal-background" (click)="closeProfil()">
   <div class="max-width" [ngClass]="">
-
     <app-avatar-choice class="profil-card profil-card-ownUser visible" *ngIf="isChangingAvatar" [ownUser]="onclickUser"
       [isChangingAvatar]="isChangingAvatar" (setSelectedAvatar)="setSelectedAvatar($event)"
       (click)="$event.stopPropagation()"></app-avatar-choice>
-
     <mat-card class="profil-card"
       [ngClass]="onclickUserID === ownUserID ? 'profil-card-ownUser visible' : ' profil-card-foreignUser visible'"
       (click)="$event.stopPropagation()" *ngIf="!isChangingAvatar">
@@ -13,7 +11,6 @@
           <mat-card-title>{{ profiltext }}</mat-card-title>
           <div class="close-img" (click)="closeProfil()"></div>
         </div>
-
         <div *ngIf="!isEditingEmail && !isEditingName">
           <div style=" display: flex; align-items: center ;justify-content: flex-end">
             <div class="edit-icon-container" *ngIf="!hideEditIconContainer">
@@ -23,14 +20,12 @@
               (click)="editProfil('avatar'); $event.stopPropagation()">Avatar
               bearbeiten</span>
           </div>
-
           <div class="profil-img-container">
             <img [src]="onclickUser.avatar || 'assets/img/profile/fallback_user.png'" alt="profile image"
               class="profile-img" (error)="onclickUser.avatar = 'assets/img/profile/fallback_user.png'"
               *ngIf="onclickUser" />
           </div>
         </div>
-
         <ng-template [ngIf]="!( isEditingEmail || isEditingName ) && onclickUser">
           <div class="profil-name-container">
             <div class="title-container">
@@ -50,7 +45,6 @@
                 }}</mat-card-subtitle>
             </div>
           </div>
-
           <div class="mail-container" *ngIf="!isEditingEmail">
             <div class="mail-header">
               <img src="./../../../assets/img/profilecard/mail.svg" alt="Emailimage" />
@@ -68,12 +62,10 @@
             </mat-card-subtitle>
           </div>
         </ng-template>
-
         <ng-template [ngIf]="(isEditingName || isEditingEmail) && (onclickUserID === ownUserID)">
           <app-edit-profil [ownUser]="onclickUser" [isEditingName]="isEditingName" [isEditingEmail]="isEditingEmail"
             (closeEditProfil)="closeEditProfil($event)"></app-edit-profil>
         </ng-template>
-
         <ng-template [ngIf]="onclickUserID !== ownUserID">
           <div class="message-btn-container" (click)="sendMessage(onclickUserID)">
             <div class="message-btn" mat-button cdkFocusInitial>
@@ -84,6 +76,5 @@
         </ng-template>
       </div>
     </mat-card>
-
   </div>
 </div>

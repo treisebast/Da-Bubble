@@ -57,6 +57,8 @@ export class MessageComponent implements OnInit, OnChanges {
     private sanitizer: DomSanitizer
   ) { }
 
+
+
   ngOnInit(): void {
     this.checkScreenWidth();
     this.userService.lastTwoEmojis$.subscribe((emojis) => {
@@ -70,17 +72,33 @@ export class MessageComponent implements OnInit, OnChanges {
     this.loadReactionUsernames();
   }
 
+
+  /**
+ * Lifecycle hook that is called when any data-bound property changes.
+ * @param changes - Object of changed properties
+ */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message']) {
       this.loadReactionUsernames();
     }
   }
 
+
+  /**
+ * Handles window resize events to check screen width.
+ * @param event - The resize event
+ */
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.checkScreenWidth();
   }
 
+
+  /**
+ * Handles document click events to manage the visibility of emoji pickers.
+ * Closes the emoji pickers if the click is outside their containers.
+ * @param event - The mouse event that occurred
+ */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (this.showEmojiPicker) {
@@ -105,10 +123,20 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
+
+  /**
+ * Checks the current screen width and updates the `screenSmall` flag.
+ */
   checkScreenWidth() {
     this.screenSmall = window.innerWidth <= 600;
   }
 
+
+  /**
+ * Converts a timestamp or field value to a Date object.
+ * @param timestamp - The timestamp or field value to convert
+ * @returns The corresponding Date object
+ */
   convertToDate(timestamp: Timestamp | FieldValue | undefined): Date {
     if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
@@ -116,15 +144,28 @@ export class MessageComponent implements OnInit, OnChanges {
     return new Date();
   }
 
+
+  /**
+ * Emits an event when the message is clicked.
+ */
   onMessageClick() {
     this.messageClicked.emit(this.message);
   }
 
+
+  /**
+ * Initiates the editing mode for the message.
+ */
   startEditing() {
     this.isEditing = true;
     this.editContent = this.message.content;
   }
 
+
+  /**
+ * Saves the edited message content.
+ * Updates the message if there are changes or attachments.
+ */
   saveEdit() {
     const hasAttachments = this.message.attachments && this.message.attachments.length > 0;
     if (this.editContent.trim() !== '' || hasAttachments) {
@@ -133,40 +174,70 @@ export class MessageComponent implements OnInit, OnChanges {
     this.isEditing = false;
   }
 
+
+  /**
+ * Cancels the editing mode without saving changes.
+ */
   cancelEdit() {
     this.isEditing = false;
   }
 
+
+  /**
+ * Initiates the message editing process if the current user is the owner.
+ */
   editMessage() {
     if (this.isCurrentUser) {
       this.startEditing();
     }
   }
 
+
+  /**
+ * Deletes the message if the current user is the owner.
+ */
   deleteMessage() {
     if (this.isCurrentUser) {
       this.chatService.deleteMessage(this.message.id!);
-    } else {
-      console.error(
-        'Du kannst die Nachricht eines anderen Benutzers nicht löschen.'
-      );
     }
   }
 
+
+  /**
+ * Determines if a given URL points to an image based on its extension.
+ * @param url - The URL to check
+ * @returns `true` if the URL is an image, otherwise `false`
+ */
   isImage(url: string): boolean {
     const imageTypes = ['.png', '.jpg', '.jpeg'];
     return imageTypes.some((type) => url.split('?')[0].endsWith(type));
   }
 
+
+  /**
+ * Opens the profile popup for a user.
+ * @param Id - The ID of the user whose profile is to be opened
+ */
   openProfilePopup(Id: string | undefined) {
     console.log(Id);
     this.senderId.emit(Id);
   }
 
+
+  /**
+ * Emits an event when an image is clicked.
+ * @param imageUrl - The URL of the clicked image
+ */
   onImageClick(imageUrl: string) {
     this.imageClicked.emit(imageUrl);
   }
 
+
+  /**
+ * Loads metadata for a file attachment and updates the message object.
+ * @param url - The URL of the file
+ * @param message - The message containing the attachment
+ */
   loadFileMetadata(url: string, message: Message) {
     this.storageService.getFileMetadata(url).subscribe(
       (metadata) => {
@@ -179,11 +250,16 @@ export class MessageComponent implements OnInit, OnChanges {
         };
       },
       (error) => {
-        console.error('Fehler beim Abrufen der Metadaten:', error);
       }
     );
   }
 
+
+  /**
+ * Formats a file size in bytes to a more readable string.
+ * @param size - The size of the file in bytes
+ * @returns The formatted file size string
+ */
   formatFileSize(size: number): string {
     if (size < 1024) {
       return size + ' B';
@@ -192,8 +268,12 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
-  // Emoji reactions //
 
+  /**
+ * Toggles the visibility of the emoji picker.
+ * Adjusts the position class based on the click position and user.
+ * @param event - The mouse event that triggered the toggle
+ */
   toggleEmojiPicker(event: MouseEvent) {
     event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker;
@@ -206,6 +286,11 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
+
+  /**
+ * Handles mouse leave events to close the message menu if the mouse is not over it.
+ * @param event - The mouse event that occurred
+ */
   onMouseLeave(event: MouseEvent) {
     const relatedTarget = event.relatedTarget as HTMLElement;
     if (
@@ -217,6 +302,11 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
+
+  /**
+ * Adds an emoji reaction to the message.
+ * @param event - The event containing the selected emoji
+ */
   addEmoji(event: any) {
     const emoji = event.emoji.native;
     this.addReaction(this.message, emoji, this.currentUserId);
@@ -224,6 +314,13 @@ export class MessageComponent implements OnInit, OnChanges {
     this.showEmojiPicker = false;
   }
 
+
+  /**
+ * Adds or removes a reaction from a message based on user interaction.
+ * @param message - The message to update
+ * @param emoji - The emoji to add or remove
+ * @param userId - The ID of the user reacting
+ */
   addReaction(message: Message, emoji: string, userId: string) {
     if (!message.reactions) {
       message.reactions = {};
@@ -246,6 +343,11 @@ export class MessageComponent implements OnInit, OnChanges {
     });
   }
 
+
+  /**
+ * Adds or removes a reaction based on user interaction.
+ * @param emoji - The emoji to toggle
+ */
   addOrRemoveReaction(emoji: string) {
     const userId = this.currentUserId;
     let reactionAdded = false;
@@ -277,22 +379,47 @@ export class MessageComponent implements OnInit, OnChanges {
     });
   }
 
+
+/**
+ * Toggles the visibility of mobile emojis.
+ */
   toggleMobileEmojis() {
     this.showMobileEmojis = !this.showMobileEmojis;
   }
 
+
+  /**
+ * Handles clicks on mobile emojis by adding or removing reactions.
+ * @param emoji - The emoji that was clicked
+ */
   onMobileEmojiClick(emoji: string): void {
     this.addOrRemoveReaction(emoji);
   }
 
+
+  /**
+ * Retrieves the count of reactions for a specific emoji.
+ * @param emoji - The emoji to get the reaction count for
+ * @returns The number of reactions for the emoji
+ */
   getReactionCount(emoji: string): number {
     return this.message.reactions?.[emoji]?.length || 0;
   }
 
+
+  /**
+ * Retrieves the usernames of users who reacted with a specific emoji.
+ * @param emoji - The emoji to get usernames for
+ * @returns An array of usernames who reacted with the emoji
+ */
   getReactionUsernames(emoji: string): string[] {
     return this.usernames[emoji] || [];
   }
 
+
+  /**
+ * Loads the usernames of users who reacted to the message.
+ */
   loadReactionUsernames(): void {
     if (this.message.reactions) {
       Object.keys(this.message.reactions).forEach((emoji: string) => {
@@ -313,14 +440,15 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
+
   /**
-    * Reaction-Tooltip mit dynamischem Text basierend auf den Reaktionen.
-    */
+ * Generates tooltip content based on emoji reactions.
+ * @param emoji - The emoji to generate the tooltip for
+ * @returns The HTML content for the tooltip
+ */
   getTooltipContent(emoji: string): SafeHtml {
     const userIds: string[] = this.message.reactions?.[emoji] || [];
     const hasCurrentUserReacted: boolean = userIds.includes(this.currentUserId);
-
-    // Erstellen einer Liste von Benutzernamen, wobei der aktuelle Benutzer durch 'Du' ersetzt wird
     const displayUsernames: string[] = userIds.map((userId: string): string => {
       if (userId === this.currentUserId) {
         return 'Du';
@@ -329,7 +457,6 @@ export class MessageComponent implements OnInit, OnChanges {
     });
 
     const numUsers: number = userIds.length;
-
     let usernames: string;
     let reactionText: string;
 
@@ -342,22 +469,23 @@ export class MessageComponent implements OnInit, OnChanges {
       reactionText = this.getReactionText(userIds.length, hasCurrentUserReacted);
     }
 
-    // Generieren des Tooltip-HTML-Inhalts
     const tooltipHtml = this.generateTooltipHtml(emoji, usernames, reactionText);
-
-    // Fallback, falls keine Bedingungen erfüllt sind (z.B. keine Reaktionen)
     const fallbackHtml = this.generateTooltipHtml(
       emoji,
       'Keine Reaktionen',
       'haben reagiert'
     );
-
     return tooltipHtml || this.sanitizer.bypassSecurityTrustHtml(fallbackHtml);
   }
 
-  /**
-   * Erstellt den HTML-Inhalt des Tooltips.
-   */
+  
+/**
+ * Creates the HTML content for the tooltip.
+ * @param emoji - The emoji to display
+ * @param usernames - The usernames to display
+ * @param reactionText - The reaction text to display
+ * @returns The generated HTML string for the tooltip
+ */
   private generateTooltipHtml(emoji: string, usernames: string, reactionText: string): string {
     return `
     <span class="emoji">${emoji}</span>
@@ -366,12 +494,14 @@ export class MessageComponent implements OnInit, OnChanges {
   `;
   }
 
-  /**
-   * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer reagiert hat.
-   */
+
+/**
+ * Determines the display order of usernames when the current user has reacted.
+ * @param otherUsers - The list of other users who have reacted
+ * @returns A formatted string of usernames
+ */
   private getUsernamesWhenCurrentUserReacted(otherUsers: string[]): string {
     const numOtherUsers = otherUsers.length;
-
     if (numOtherUsers === 0) {
       return 'Du';
     } else if (numOtherUsers === 1) {
@@ -382,9 +512,12 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Bestimmt die Anzeigereihenfolge der Benutzernamen, wenn der aktuelle Benutzer nicht reagiert hat.
-   */
+
+/**
+ * Determines the display order of usernames when the current user has not reacted.
+ * @param displayUsernames - The list of usernames to display
+ * @returns A formatted string of usernames
+ */
   private getUsernamesWhenCurrentUserDidNotReact(displayUsernames: string[]): string {
     const numUsers = displayUsernames.length;
 
@@ -399,9 +532,13 @@ export class MessageComponent implements OnInit, OnChanges {
     }
   }
 
+
   /**
-   * Bestimmt den Reaktionstext basierend auf der Anzahl der Benutzer.
-   */
+ * Determines the reaction text based on the number of users.
+ * @param numUsers - The number of users who reacted
+ * @param isCurrentUserReacted - Whether the current user has reacted
+ * @returns The appropriate reaction text
+ */
   private getReactionText(numUsers: number, isCurrentUserReacted: boolean): string {
     if (isCurrentUserReacted && numUsers === 1) {
       return 'hast reagiert';

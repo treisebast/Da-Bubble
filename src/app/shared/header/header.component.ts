@@ -55,6 +55,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
   ) { }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Subscribes to authentication and user data, and initializes accessible chat IDs.
+ */
   ngOnInit() {
     const authSub = this.auth.getUser().subscribe((firebaseUser) => {
       if (firebaseUser?.uid) {
@@ -74,38 +79,73 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subs.add(authSub);
   }
 
+
+  /**
+  * Lifecycle hook that is called when the component is destroyed.
+  * Unsubscribes from all subscriptions to prevent memory leaks.
+  */
   ngOnDestroy() {
     this.subs.unsubscribe();
   }
 
+
+  /**
+ * Handles the event when the mobile logo is clicked.
+ * Emits an event if in mobile view and the current view is not 'channels'.
+ */
   onMobileLogoClick() {
     if (this.isMobileView && this.currentView !== 'channels') {
       this.mobileLogoClicked.emit();
     }
   }
 
+  /**
+ * Logs out the currently authenticated user.
+ */
   logout() {
     this.auth.signOut();
   }
 
+
+  /**
+ * Opens the menu by setting the `isMenuOpen` flag to true.
+ */
   openMenu() {
     this.isMenuOpen = true;
   }
 
+
+  /**
+  * Closes the menu by setting the `isMenuOpen` flag to false.
+  */
   closeMenu() {
     this.isMenuOpen = false;
   }
 
+
+  /**
+ * Opens the profile section for the specified user.
+ * @param user - The user whose profile is to be opened
+ */
   openProfil(User: Partial<User>) {
     this.isProfilOpen = true;
     console.log(User);
   }
 
+
+  /**
+  * Closes the profile section by setting the `isProfilOpen` flag to false.
+  */
   closeProfil() {
     this.isProfilOpen = false;
   }
 
-  // Search
+
+  /**
+ * Handles the input event for the search bar.
+ * Initiates a search if the query is not empty and updates the search results.
+ * @param event - The input event triggered by the user
+ */
   onSearchInput(event: Event) {
     if (event.target !== this.searchInput.nativeElement) {
       return;
@@ -119,11 +159,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.searchService.searchMessages(this.searchQuery, this.accessibleChatIds).subscribe((results) => {
         this.searchResults = results;
         this.selectedSearchResultIndex = -1;
-        console.log('Suchergebnisse:', results);
       })
     );
   }
 
+
+  /**
+ * Handles document click events to manage the visibility of search results.
+ * Closes the search results if the click is outside the search bar division.
+ * @param event - The mouse event that occurred
+ */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const targetElement = event.target as HTMLElement;
@@ -133,6 +178,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Retrieves the name of a user based on their user ID.
+ * Caches the result to optimize performance.
+ * @param senderId - The ID of the user whose name is to be retrieved
+ * @returns The name of the user or a placeholder if not yet loaded
+ */
   getUserName(senderId: string): string {
     if (this.userNamesCache[senderId]) {
       return this.userNamesCache[senderId];
@@ -146,11 +198,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Navigates to the specified message within the chat.
+ * @param message - The message to navigate to
+ */
   async goToMessage(message: Message) {
     this.navigationService.selectMessage(message);
     this.searchResults = [];
   }
 
+
+  /**
+ * Determines if a chat is private based on its chat ID.
+ * @param chatId - The ID of the chat to check
+ * @returns A promise that resolves to `true` if the chat is private, otherwise `false`
+ */
   async isChatPrivate(chatId: string): Promise<boolean> {
     try {
       await firstValueFrom(this.channelService.getChannel(chatId, true));
@@ -160,6 +223,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Retrieves the name of a channel based on its chat ID and privacy status.
+ * Caches the result to optimize performance.
+ * @param chatId - The ID of the chat whose name is to be retrieved
+ * @param isPrivate - Flag indicating if the chat is private
+ * @returns The name of the channel or a placeholder if not yet loaded
+ */
   getChannelName(chatId: string, isPrivate: boolean): string {
     if (this.channelNamesCache[chatId]) {
       return this.channelNamesCache[chatId];
@@ -190,6 +261,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Handles keydown events in the search input to navigate through search results.
+ * @param event - The keyboard event that occurred
+ */
   onSearchKeydown(event: KeyboardEvent) {
     if (this.hasSearchResults()) {
       switch (event.key) {
@@ -209,26 +285,48 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Checks if there are any search results available.
+ * @returns `true` if search results exist, otherwise `false`
+ */
   private hasSearchResults(): boolean {
     return this.searchResults && this.searchResults.length > 0;
   }
 
+
+  /**
+ * Handles the ArrowDown key event to move the selection down in search results.
+ */
   private handleArrowDown() {
     this.incrementSelectedIndex();
     this.scrollToSelectedItem();
   }
 
+
+  /**
+ * Handles the ArrowUp key event to move the selection up in search results.
+ */
   private handleArrowUp() {
     this.decrementSelectedIndex();
     this.scrollToSelectedItem();
   }
 
+
+  /**
+ * Handles the Enter key event to select the currently highlighted search result.
+ */
   private handleEnter() {
     if (this.isSelectedIndexValid()) {
       this.goToMessage(this.searchResults[this.selectedSearchResultIndex]);
     }
   }
 
+
+
+  /**
+   * Increments the selected search result index, wrapping around if necessary.
+   */
   private incrementSelectedIndex() {
     if (this.selectedSearchResultIndex < this.searchResults.length - 1) {
       this.selectedSearchResultIndex++;
@@ -237,6 +335,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Decrements the selected search result index, wrapping around if necessary.
+ */
   private decrementSelectedIndex() {
     if (this.selectedSearchResultIndex > 0) {
       this.selectedSearchResultIndex--;
@@ -245,6 +347,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Checks if the currently selected index is valid.
+ * @returns `true` if the index is within the range of search results, otherwise `false`
+ */
   private isSelectedIndexValid(): boolean {
     return (
       this.selectedSearchResultIndex >= 0 &&
@@ -252,6 +359,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
   }
 
+
+  /**
+ * Scrolls the view to the currently selected search result item.
+ */
   private scrollToSelectedItem() {
     setTimeout(() => {
       const selectedItem = this.getSelectedSearchResultItem();
@@ -265,6 +376,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  /**
+ * Retrieves the ElementRef of the currently selected search result item.
+ * @returns The ElementRef of the selected search result item or `null` if not found
+ */
   private getSelectedSearchResultItem(): ElementRef<HTMLLIElement> | null {
     if (this.searchResultItems && this.selectedSearchResultIndex !== -1) {
       const itemsArray = this.searchResultItems.toArray();

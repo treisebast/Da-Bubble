@@ -1,39 +1,26 @@
-/* Import Angular Material Prebuilt Theme (azure-blue) */
 @use "@angular/material" as mat;
-
-/* Define global typography configuration using Nunito */
 $nunito-typography: mat.define-typography-config(
   $font-family: '"Nunito", sans-serif'
 );
 
-/* Apply the Nunito typography hierarchy */
 @include mat.typography-hierarchy($nunito-typography);
-
-/* Define a light theme with the Nunito typography */
 $app-theme: mat.define-light-theme(
   (
     typography: $nunito-typography
   )
 );
-
-/* Include Angular Material components with the defined theme */
 @include mat.all-component-themes($app-theme);
-
-/* Custom Font Imports */
 @import "./fonts.scss";
 @import "./styles/mixins.scss";
 @import "./styles/colors.scss";
 @import "./styles/reaction-tooltip.scss";
 @import "@ctrl/ngx-emoji-mart/picker";
 @import "./styles/emoji-mart.scss";
-
-/* Fallback font-face definition (Raleway) */
 @font-face {
   font-family: "Raleway";
   src: none;
 }
 
-/* Global Styles */
 html,
 body {
   height: 100%;
@@ -59,7 +46,6 @@ body {
   width: 100%;
 }
 
-/* Universal styles */
 * {
   box-sizing: border-box;
   font-family: inherit;
@@ -73,7 +59,6 @@ body {
   display: none !important;
 }
 
-/* Flexbox utility classes */
 .jc-end {
   justify-content: flex-end !important;
 }
@@ -90,12 +75,10 @@ body {
   align-items: flex-end !important;
 }
 
-/* Full width class */
 .full-width {
   width: 100%;
 }
 
-/* Centered positioning */
 .centered {
   position: absolute;
   left: 50%;
@@ -103,7 +86,6 @@ body {
   transform: translate(-50%, -50%);
 }
 
-/* Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -121,7 +103,6 @@ body {
   background: var(--purple-one);
 }
 
-/* Overlay and backdrop visibility */
 .cdk-overlay-backdrop,
 .cdk-overlay-backdrop-showing {
   display: none !important;
@@ -133,12 +114,10 @@ body {
   opacity: 1 !important;
 }
 
-/* Material-specific styles */
 .mat-mdc-menu-panel {
   border-radius: 20px !important;
 }
 
-/* Modal background style */
 .modal-background {
   position: fixed;
   top: 0;

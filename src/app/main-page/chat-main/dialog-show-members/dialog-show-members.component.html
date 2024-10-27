@@ -11,11 +11,9 @@
                     member.avatar =
                       '../../../../assets/img/profile/fallback_user.png'
                   " />
-        <!-- Status icons -->
         <div *ngIf="member.status === 'online'" class="status-indicator online"></div>
         <div *ngIf="member.status === 'away'" class="status-indicator away"></div>
         <div *ngIf="member.status === 'offline'" class="status-indicator offline"></div>
-
         <span>{{ member.name }}</span>
       </div>
     </mat-dialog-content>
@@ -38,7 +36,6 @@
       </div>
     </mat-dialog-actions>
   </ng-container>
-
   <ng-container class="addUserContent" *ngIf="dialogProgressState == 'addUsers'">
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <mat-dialog-content class="addUserContent">
@@ -46,13 +43,10 @@
         <h2>Leute hinzufügen</h2>
         <mat-icon mat-dialog-close>close</mat-icon>
       </div>
-
       <div class="channelName">
         <span>#</span>
         {{ data.channel.name }}
       </div>
-
-      <!-- Show search input and user list if choosing specific users -->
       <div>
         <div class="inputDiv">
           <mat-chip-grid #chipGrid aria-label="Enter User">
@@ -75,11 +69,8 @@
               [matChipInputAddOnBlur]="addOnBlur" [(ngModel)]="searchInput" (ngModelChange)="filterUsers()" type="text"
               placeholder="Name eingeben" class="addUserInput" />
           </mat-chip-grid>
-
-          <!-- Hovering User List -->
           <div *ngIf="searchInput.trim()" class="hoveringUserList">
             <div *ngIf="filteredUsers.length > 0; else noUsersFound">
-              <!-- User List -->
               <div *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="userToClick"
                 (click)="!isAlreadyMember(user) && selectUsers(user)" [ngClass]="{
                   selected: isSelected(user),
@@ -92,7 +83,6 @@
                     user.avatar =
                       '../../../../assets/img/profile/fallback_user.png'
                   " />
-                <!-- Status icons -->
                 <div *ngIf="user.status === 'online'" class="status-indicator_addUser online"></div>
                 <div *ngIf="user.status === 'away'" class="status-indicator_addUser away"></div>
                 <div *ngIf="user.status === 'offline'" class="status-indicator_addUser offline"></div>
@@ -102,7 +92,6 @@
                 </h2>
               </div>
             </div>
-            <!-- No Users Found Message -->
             <ng-template #noUsersFound>
               <p>Keine Benutzer gefunden.</p>
             </ng-template>
@@ -110,7 +99,6 @@
         </div>
       </div>
     </mat-dialog-content>
-
     <mat-dialog-actions class="addUserContent_actions" align="end">
       <button class="addUsersBtn" [disabled]="loading || selectedUsers.length === 0"
         (click)="addUsersToChannel(data.channel)">

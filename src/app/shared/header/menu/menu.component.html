@@ -1,6 +1,5 @@
 <div class="modal-background" (click)="close()">
   <div class="max-width">
-    <!-- desktop menu -->
     <div class="menu-container" (click)="$event.stopPropagation()">
       <div class="profil-btn" mat-button cdkFocusInitial (click)="openProfilContent()">
         <span>Profil</span>
@@ -9,8 +8,6 @@
         <span>Log out</span>
       </div>
     </div>
-
-    <!-- mobile menu -->
     <div class="mobile-menu-container" (click)="$event.stopPropagation()"
       [ngClass]="isMenuOpen ? 'slideIn' : 'slideOut'">
       <div style="display: flex; justify-content: center" (click)="close()">

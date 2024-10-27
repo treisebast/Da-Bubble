@@ -28,6 +28,7 @@ import { MessageMenuComponent } from '../message/message-menu/message-menu.compo
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss'],
 })
+
 export class ThreadComponent implements OnInit, OnDestroy {
   showEmojiPicker = false;
   selectedMessage: Message | null = null;

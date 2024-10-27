@@ -8,11 +8,9 @@ import { Observable, catchError, from, switchMap, throwError } from 'rxjs';
 export class FirebaseStorageService {
   constructor(private storage: Storage) { }
 
-
   /**
     * Uploads a file to the specified path in Firebase Storage and returns an observable
     * that emits the download URL of the uploaded file.
-    *
     * @param {File} file - The file to be uploaded.
     * @param {string} filePath - The path in Firebase Storage where the file should be uploaded.
     * @returns {Observable<string>} An observable that emits the download URL of the uploaded file.
@@ -27,7 +25,6 @@ export class FirebaseStorageService {
 
   /**
    * Deletes a file stored at the specified path in Firebase Storage.
-   *
    * @param {string} filePath - The path in Firebase Storage of the file to be deleted.
    * @returns {Observable<void>} An observable that completes when the file has been deleted.
    */
@@ -38,7 +35,6 @@ export class FirebaseStorageService {
 
   /**
    * Retrieves the download URL of a file stored at the specified path in Firebase Storage.
-   *
    * @param {string} filePath - The path in Firebase Storage of the file whose URL is to be retrieved.
    * @returns {Observable<string>} An observable that emits the download URL of the file.
    */
@@ -59,7 +55,6 @@ export class FirebaseStorageService {
     const storageRef = ref(this.storage, filePath);
     return from(getMetadata(storageRef)).pipe(
       catchError(error => {
-        console.error('Fehler beim Abrufen der Metadaten:', error);
         return throwError(error);
       })
     );

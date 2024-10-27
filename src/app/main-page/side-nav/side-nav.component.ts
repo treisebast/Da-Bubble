@@ -55,7 +55,6 @@ import { map, switchMap } from 'rxjs/operators';
 export class SideNavComponent implements OnInit, OnDestroy {
   menuChannelIsDropedDown: boolean = false;
   directMessagesIsDropedDown: boolean = false;
-
   publicChannels: Channel[] = [];
   privateChannels: Channel[] = [];
   workspaceUsers: UserWithImageStatus[] = [];
@@ -73,6 +72,11 @@ export class SideNavComponent implements OnInit, OnDestroy {
     private userService: UserService
   ) { }
 
+
+  /**
+ * Lifecycle hook that is called after data-bound properties are initialized.
+ * Subscribes to user authentication, channel data, and current chat updates.
+ */
   ngOnInit() {
     const user$ = this.authService.getUser().pipe(
       switchMap(firebaseUser => {
@@ -109,7 +113,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Kombiniere die Observables
+    // Combine the Observables for public and private channels
     const channelsSub = combineLatest([publicChannels$, privateChannels$]).subscribe(([publicChannels, privateChannels]) => {
       this.publicChannels = publicChannels;
       this.privateChannels = privateChannels;
@@ -118,24 +122,35 @@ export class SideNavComponent implements OnInit, OnDestroy {
 
     this.subs.add(channelsSub);
 
-    // Abonniere den aktuellen Chat
+    // Subscribe to the current chat updates
     const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
       this.currentChat = chatData;
     });
     this.subs.add(chatSub);
   }
 
+
+  /**
+ * Lifecycle hook that is called when the component is destroyed.
+ * Unsubscribes from all subscriptions to prevent memory leaks.
+ */
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
 
 
+  /**
+   * Tracks users by their unique user ID for efficient rendering.
+   * @param index - The index of the user in the list
+   * @param user - The user object
+   * @returns The unique user ID as a string
+   */
   trackByUserId(index: number, user: UserWithImageStatus): string {
     return user.userId;
   }
 
   /**
-   * Lädt die Liste der Benutzer aus dem UserService und aktualisiert die Workspace-Benutzer.
+   * Loads the list of workspace users from the UserService and updates the workspace users.
    */
   private showWorkspaceUsers() {
     const usersSub = this.userService.getUsers().subscribe({
@@ -156,8 +171,9 @@ export class SideNavComponent implements OnInit, OnDestroy {
     this.subs.add(usersSub);
   }
 
+
   /**
-   * Verschiebt den aktuellen Benutzer an den Anfang des `workspaceUsers`-Arrays.
+   * Moves the current user to the top of the `workspaceUsers` array.
    */
   private moveCurrentUserToTop() {
     const currentUserIndex = this.workspaceUsers.findIndex(
@@ -169,8 +185,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
     }
   }
 
+
   /**
-   * Behandelt das Ereignis, wenn ein Bild für einen Benutzer geladen wird.
+   * Handles the event when a user's image is successfully loaded.
+   * @param userId - The ID of the user whose image was loaded
    */
   onImageLoad(userId: string) {
     const user = this.workspaceUsers.find((u) => u.userId === userId);
@@ -179,8 +197,11 @@ export class SideNavComponent implements OnInit, OnDestroy {
     }
   }
 
+
   /**
-   * Behandelt das Ereignis, wenn ein Bild für einen Benutzer nicht geladen werden kann.
+   * Handles the event when a user's image fails to load.
+   * Sets a fallback avatar image.
+   * @param userId - The ID of the user whose image failed to load
    */
   onImageError(userId: string) {
     const user = this.workspaceUsers.find((u) => u.userId === userId);
@@ -190,16 +211,26 @@ export class SideNavComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  /**
+ * Toggles the dropdown menu for channels.
+ */
   openMenuChannelDropdown() {
     this.menuChannelIsDropedDown = !this.menuChannelIsDropedDown;
   }
 
+
+  /**
+ * Toggles the dropdown menu for direct messages.
+ */
   openDirectMessagesDropdown() {
     this.directMessagesIsDropedDown = !this.directMessagesIsDropedDown;
   }
 
+
   /**
-   * Findet oder erstellt einen privaten Chat-Kanal mit dem angegebenen Benutzer.
+   * Finds or creates a private chat channel with the specified user.
+   * @param user - The user to chat with
    */
   async findOrCreatePrivateChannelWithUser(user: UserWithImageStatus) {
     const isSelfChat = user.userId === this.currentUser.userId;
@@ -213,7 +244,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Findet einen vorhandenen privaten Kanal basierend auf dem bereitgestellten Benutzer und Chat-Typ.
+   * Finds an existing private channel based on the provided user and chat type.
+   * @param user - The user to find a private channel with
+   * @param isSelfChat - Flag indicating if the chat is a self-chat
+   * @returns The existing private channel or `undefined` if not found
    */
   private findExistingPrivateChannel(
     user: UserWithImageStatus,
@@ -222,14 +256,18 @@ export class SideNavComponent implements OnInit, OnDestroy {
     return this.privateChannels.find((channel) =>
       isSelfChat
         ? channel.members.length === 1 &&
-          channel.members.includes(this.currentUser.userId)
+        channel.members.includes(this.currentUser.userId)
         : channel.members.includes(this.currentUser.userId) &&
-          channel.members.includes(user.userId)
+        channel.members.includes(user.userId)
     );
   }
 
+
   /**
-   * Erstellt einen neuen Kanal für einen Benutzer.
+   * Creates a new channel for a user.
+   * @param user - The user to create a channel for
+   * @param isSelfChat - Flag indicating if the channel is a self-chat
+   * @returns The new channel object
    */
   private createNewChannel(user: UserWithImageStatus, isSelfChat: boolean): NewChannel {
     return {
@@ -245,8 +283,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
     };
   }
 
+
   /**
-   * Fügt einen neuen Kanal hinzu und setzt ihn als aktuellen Chat.
+   * Adds a new channel and sets it as the current chat.
+   * @param newChannel - The new channel to add
    */
   async addAndSetChannel(newChannel: NewChannel) {
     try {
@@ -255,12 +295,12 @@ export class SideNavComponent implements OnInit, OnDestroy {
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
     } catch (error) {
-      console.error('Error creating private channel:', error);
     }
   }
 
+
   /**
-   * Öffnet einen Dialog zum Hinzufügen eines neuen Kanals.
+   * Opens a dialog to add a new channel.
    */
   addNewChannel() {
     const dialogRef = this.dialog.open(DialogAddChannelComponent, {
@@ -275,43 +315,55 @@ export class SideNavComponent implements OnInit, OnDestroy {
     });
   }
 
+
   /**
-   * Zeigt den angegebenen Kanal in der Chat-Oberfläche an.
-   */
+ * Displays the specified channel in the chat interface.
+ * @param channel - The channel to display
+ * @param isPrivate - Flag indicating if the channel is private
+ */
   showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
     this.channelSelected.emit();
   }
 
+
   /**
-   * Setzt die ausgewählte Nachricht im Chat-Service.
-   */
+ * Sets the selected message in the ChatService.
+ */
   setSelectedMessage() {
     this.chatService.setSelectedChat(true);
   }
 
+
   /**
-   * Setzt den ausgewählten Chat-Zustand auf false und signalisiert, dass eine neue Nachricht erstellt wird.
-   */
+ * Resets the selected chat state and signals that a new message is being created.
+ */
   newMessage() {
     this.chatService.setSelectedChat(false);
   }
 
+
+  /**
+   * Determines if the given channel is the active channel.
+   * @param channel - The channel to check
+   * @returns `true` if the channel is active, otherwise `false`
+   */
   isActiveChannel(channel: Channel): boolean {
     return this.currentChat.isPrivate === false && this.currentChat.chat?.id === channel.id;
   }
 
+
   /**
-   * Bestimmt, ob der gegebene Benutzer ein aktiver Teilnehmer im aktuellen Chat ist.
+   * Determines if the given user is an active participant in the current chat.
+   * @param user - The user to check
+   * @returns `true` if the user is active in the current chat, otherwise `false`
    */
   isActiveUser(user: UserWithImageStatus): boolean {
     if (this.currentChat.isPrivate && this.currentChat.chat) {
       const members = this.currentChat.chat.members;
       if (members.length === 1) {
-        // Selbst-Chat
         return members[0] === this.currentUser.userId && user.userId === this.currentUser.userId;
       } else if (members.length === 2) {
-        // Privater Chat mit einem anderen Benutzer
         const isCurrentUserInMembers = members.includes(this.currentUser.userId);
         const isUserInMembers = members.includes(user.userId);
         return isCurrentUserInMembers && isUserInMembers && user.userId !== this.currentUser.userId;
@@ -320,6 +372,10 @@ export class SideNavComponent implements OnInit, OnDestroy {
     return false;
   }
 
+
+  /**
+ * Emits an event when the server name is clicked.
+ */
   onServerNameClick() {
     this.serverNameClicked.emit();
   }

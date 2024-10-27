@@ -1,13 +1,11 @@
 <div id="{{ message.id }}" class="singelMessageContainer"
   [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
-
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">
     <div class="message-header">
       <span class="timestamp">{{ convertToDate(message.timestamp) | date: 'HH:mm' }} Uhr</span>
       <span class="name" (click)="openProfilePopup(message.senderId)">{{ userProfile?.name }}</span>
     </div>
-
     <div class="reactionBar" [ngClass]="{ 'reactionBar-left': isCurrentUser, 'reactionBar-right': !isCurrentUser }">
       <div class="recent-emoji" *ngIf="lastTwoEmojis[0]" (click)="addOrRemoveReaction(lastTwoEmojis[0])">
         {{ lastTwoEmojis[0] }}
@@ -17,11 +15,9 @@
       </div>
       <div class="reaction" (click)="toggleEmojiPicker($event)"></div>
       <div *ngIf="!isCurrentChatPrivate" class="comment" (click)="onMessageClick()"></div>
-      <!-- Füge hier die MessageMenuComponent ein -->
       <app-message-menu [isCurrentUser]="isCurrentUser" (edit)="editMessage()" (delete)="deleteMessage()">
       </app-message-menu>
     </div>
-
     <div class="message-content" [ngClass]="{ 'editing': isEditing }">
       <p *ngIf="!isEditing">{{ message.content }}</p>
       <div *ngIf="isEditing" class="editing-container">
@@ -34,7 +30,6 @@
       <div *ngIf="message.attachments && message.attachments.length > 0" class="attachments">
         <div *ngFor="let attachment of message.attachments">
           <ng-container *ngIf="isImage(attachment); else pdfTemplate">
-            <!-- PDF als Preview anzeigen -->
             <img [src]="attachment" alt="Anhang" class="attachment-img" (click)="onImageClick(attachment)" />
           </ng-container>
           <ng-template #pdfTemplate>
@@ -51,7 +46,6 @@
         </div>
       </div>
     </div>
-
     <div class="reaction-button-bar">
       <div class="mobile-nav-menu">
         <div class="mobile-mart" *ngIf="screenSmall" (click)="toggleMobileEmojis()" #mobileMartButton>
@@ -63,7 +57,6 @@
         </div>
         <div class="mobile-thread-opener" (click)="onMessageClick()"></div>
       </div>
-
       <div class="web-nav-menu">
         <div class="reaction-button" *ngFor="let emoji of (message.reactions | keyvalue)"
           (mouseenter)="showTooltip = emoji.key" (mouseleave)="showTooltip = null"
@@ -75,14 +68,12 @@
         <div class="mart-button" (click)="toggleEmojiPicker($event)"></div>
       </div>
     </div>
-
     <div #emojiPickerContainer>
       <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light"
         class="emoji-mart-message {{ emojiMartPositionClass }}" (emojiClick)="addEmoji($event)"
         (click)="$event.stopPropagation()">
       </emoji-mart>
     </div>
-
     <div *ngIf="message.threadCount && message.threadCount > 0" class="thread-count" [ngClass]="{
         'thread-count-end': isCurrentUser && screenSmall,
         'thread-count-start': !isCurrentUser && screenSmall

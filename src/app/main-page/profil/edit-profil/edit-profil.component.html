@@ -1,4 +1,3 @@
-<!-- Formular für den Namen -->
 <form [formGroup]="nameFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingName">
   <div class="flex-container">
     <div class="account-circle-icon"></div>
@@ -11,7 +10,6 @@
   <span class="validMsg" *ngIf="nameControls.name.invalid && nameControls.name.touched">
     Name muss mindestens 3 Zeichen lang sein.
   </span>
-
   <div class="flex-container">
     <div class="account-circle-icon"></div>
     <span class="h2text">Name wiederholen</span>
@@ -22,8 +20,6 @@
   <span class="validMsg" *ngIf="nameControls.nameRepeat.hasError('mismatch')">
     Name stimmt nicht überein.
   </span>
-
-  <!-- Speichern und Abbrechen -->
   <div class="width-100">
     <div class="button-container">
       <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
@@ -31,8 +27,6 @@
     </div>
   </div>
 </form>
-
-<!-- Formular für die E-Mail -->
 <form [formGroup]="emailFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingEmail">
   <div class="flex-container">
     <div class="email-icon"></div>
@@ -56,8 +50,6 @@
   <span class="validMsg" *ngIf="emailControls.emailRepeat.hasError('mismatch')">
     E-Mail-Adresse stimmt nicht überein.
   </span>
-
-  <!-- Speichern und Abbrechen -->
   <div class="width-100">
     <div class="button-container">
       <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>

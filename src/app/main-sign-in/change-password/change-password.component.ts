@@ -15,18 +15,7 @@ import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/co
 @Component({
   selector: 'app-change-password',
   standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatDialogModule,
-    CommonModule,
-    MatIconModule,
-    MatCardModule,
-    RouterOutlet,
-    RouterModule,
-    ReactiveFormsModule
-  ],
+  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatDialogModule, CommonModule, MatIconModule, MatCardModule, RouterOutlet, RouterModule, ReactiveFormsModule],
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.scss']
 })
@@ -64,6 +53,7 @@ export class ChangePasswordComponent {
     return this.changePasswordForm.get('newPassword')!;
   }
 
+
   /**
    * Getter for the confirmPassword form control.
    * @returns {AbstractControl} The confirmPassword form control.
@@ -71,7 +61,6 @@ export class ChangePasswordComponent {
   get confirmPassword(): AbstractControl {
     return this.changePasswordForm.get('confirmPassword')!;
   }
-
 
 
   /**
