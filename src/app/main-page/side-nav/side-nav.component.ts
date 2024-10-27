@@ -10,8 +10,8 @@ import { UserService } from '../../shared/services/user.service';
 import { Channel, NewChannel } from '../../shared/models/channel.model';
 import { UserWithImageStatus } from '../../shared/models/user.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Observable, Subscription, combineLatest, of } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { Observable, Subject, Subscription, combineLatest, of } from 'rxjs';
+import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-side-nav',
@@ -53,6 +53,9 @@ import { filter, map, switchMap } from 'rxjs/operators';
   ],
 })
 export class SideNavComponent implements OnInit, OnDestroy {
+  @Output() serverNameClicked = new EventEmitter<void>();
+  @Output() channelSelected = new EventEmitter<void>();
+
   menuChannelIsDropedDown: boolean = false;
   directMessagesIsDropedDown: boolean = false;
   publicChannels: Channel[] = [];
@@ -61,8 +64,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   currentUser!: UserWithImageStatus;
   currentChat: { chat: Channel | null; isPrivate: boolean } = { chat: null, isPrivate: false };
   subs = new Subscription();
-  @Output() serverNameClicked = new EventEmitter<void>();
-  @Output() channelSelected = new EventEmitter<void>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private channelService: ChannelService,
@@ -72,102 +74,108 @@ export class SideNavComponent implements OnInit, OnDestroy {
     private userService: UserService
   ) { }
 
+  //---------------------------------------- Lifecycle Hooks ----------------------------------------
 
-/**
- * Lifecycle hook that is called after data-bound properties are initialized.
- * Subscribes to user authentication, channel data, and current chat updates.
- */
-ngOnInit() {
-  const user$ = this.authService.getUser().pipe(
-    filter(firebaseUser => !!firebaseUser && !!firebaseUser.uid),
-    switchMap(firebaseUser => this.userService.getUser(firebaseUser!.uid)),
-    filter(user => !!user && !!user.userId),
-    map(user => {
-      this.currentUser = { ...user, isImageLoaded: false };
-      return this.currentUser;
-    })
-  );
+  ngOnInit() {
+    const user$ = this.authService.getUser().pipe(
+      filter(firebaseUser => !!firebaseUser && !!firebaseUser.uid),
+      switchMap(firebaseUser => this.userService.getUser(firebaseUser!.uid)),
+      filter(user => !!user && !!user.userId),
+      map(user => {
+        this.currentUser = { ...user, isImageLoaded: false };
+        return this.currentUser;
+      })
+    );
 
-  const publicChannels$ = user$.pipe(
-    switchMap(user => this.channelService.getChannelsForUser(user.userId, false))
-  );
+    const publicChannels$ = user$.pipe(
+      switchMap(user => this.channelService.getChannelsForUser(user.userId, false))
+    );
 
-  const privateChannels$ = user$.pipe(
-    switchMap(user => this.channelService.getChannelsForUser(user.userId, true))
-  );
+    const privateChannels$ = user$.pipe(
+      switchMap(user => this.channelService.getChannelsForUser(user.userId, true))
+    );
 
-  const channelsSub = combineLatest([publicChannels$, privateChannels$]).subscribe(
-    ([publicChannels, privateChannels]) => {
-      this.publicChannels = publicChannels;
-      this.privateChannels = privateChannels;
-      this.showWorkspaceUsers();
-    }
-  );
+    const channelsSub = combineLatest([publicChannels$, privateChannels$]).pipe(
+      switchMap(([publicChannels, privateChannels]) => {
+        this.publicChannels = publicChannels;
+        this.privateChannels = privateChannels;
+        return this.showWorkspaceUsers();
+      })
+    ).subscribe();
 
-  this.subs.add(channelsSub);
+    this.subs.add(channelsSub);
 
-  const chatSub = this.chatService.currentChat$.subscribe((chatData) => {
-    this.currentChat = chatData;
-  });
-  this.subs.add(chatSub);
-}
+    const chatSub = this.chatService.currentChat$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((chatData) => {
+      this.currentChat = chatData;
+    });
+    this.subs.add(chatSub);
+  }
 
-
-  /**
- * Lifecycle hook that is called when the component is destroyed.
- * Unsubscribes from all subscriptions to prevent memory leaks.
- */
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-
-  /**
-   * Tracks users by their unique user ID for efficient rendering.
-   * @param index - The index of the user in the list
-   * @param user - The user object
-   * @returns The unique user ID as a string
-   */
-  trackByUserId(index: number, user: UserWithImageStatus): string {
-    return user.userId;
-  }
+  //---------------------------------------- Initialization Methods ----------------------------------------
 
   /**
    * Loads the list of workspace users from the UserService and updates the workspace users.
+   * Also removes invalid users and updates channels accordingly.
    */
-  private showWorkspaceUsers() {
-    const usersSub = this.userService.getUsers().subscribe({
-      next: (users) => {
-        users.forEach((user) => {
-          const existingUserIndex = this.workspaceUsers.findIndex(u => u.userId === user.userId);
-          if (existingUserIndex !== -1) {
-            const existingUser = this.workspaceUsers[existingUserIndex];
-            this.workspaceUsers[existingUserIndex] = { ...existingUser, ...user };
-          } else {
-            this.workspaceUsers.push({ ...user, isImageLoaded: false });
-          }
-        });
-        this.moveCurrentUserToTop();
-      },
-      error: (err) => console.error('Error loading workspace users:', err),
-    });
-    this.subs.add(usersSub);
+  private showWorkspaceUsers(): Observable<void> {
+    return this.userService.getUsers().pipe(
+      takeUntil(this.destroy$),
+      switchMap((users) => {
+        const validUsers = users.filter(user => !!user && !!user.userId) as UserWithImageStatus[];
+        this.workspaceUsers = validUsers;
+
+        return this.removeInvalidMembersFromChannels(validUsers).pipe(
+          map(() => {})
+        );
+      }),
+      map(() => { this.moveCurrentUserToTop(); })
+    );
   }
 
+  /**
+   * Removes invalid member IDs from all channels and updates Firestore.
+   * @param validUsers - The list of currently valid users
+   * @returns An Observable that completes when all channels have been processed
+   */
+  private removeInvalidMembersFromChannels(validUsers: UserWithImageStatus[]): Observable<void> {
+    const validUserIds = new Set(validUsers.map(user => user.userId));
+
+    const updateObservables = [...this.publicChannels,...this.privateChannels].map(channel => {
+      const originalMemberIds = channel.members;
+      const updatedMemberIds = originalMemberIds.filter(id => validUserIds.has(id));
+
+      if (updatedMemberIds.length !== originalMemberIds.length) {
+        channel.members = updatedMemberIds;
+        return this.channelService.updateChannel(channel, { members: updatedMemberIds });
+      }
+      return of(void 0);
+    });
+
+    return combineLatest(updateObservables).pipe(
+      map(() => { /* Keine Aktion erforderlich hier */ })
+    );
+  }
 
   /**
    * Moves the current user to the top of the `workspaceUsers` array.
    */
   private moveCurrentUserToTop() {
-    const currentUserIndex = this.workspaceUsers.findIndex(
-      (user) => user.userId === this.currentUser.userId
-    );
+    const currentUserIndex = this.workspaceUsers.findIndex((user) => user.userId === this.currentUser.userId);
     if (currentUserIndex !== -1) {
       const currentUser = this.workspaceUsers.splice(currentUserIndex, 1)[0];
       this.workspaceUsers.unshift(currentUser);
     }
   }
 
+  //---------------------------------------- User Image Handlers ----------------------------------------
 
   /**
    * Handles the event when a user's image is successfully loaded.
@@ -179,7 +187,6 @@ ngOnInit() {
       user.isImageLoaded = true;
     }
   }
-
 
   /**
    * Handles the event when a user's image fails to load.
@@ -194,22 +201,23 @@ ngOnInit() {
     }
   }
 
+  //---------------------------------------- Dropdown Methods ----------------------------------------
 
   /**
- * Toggles the dropdown menu for channels.
- */
+   * Toggles the dropdown menu for channels.
+   */
   openMenuChannelDropdown() {
     this.menuChannelIsDropedDown = !this.menuChannelIsDropedDown;
   }
 
-
   /**
- * Toggles the dropdown menu for direct messages.
- */
+   * Toggles the dropdown menu for direct messages.
+   */
   openDirectMessagesDropdown() {
     this.directMessagesIsDropedDown = !this.directMessagesIsDropedDown;
   }
 
+  //---------------------------------------- Channel Management ----------------------------------------
 
   /**
    * Finds or creates a private chat channel with the specified user.
@@ -245,7 +253,6 @@ ngOnInit() {
     );
   }
 
-
   /**
    * Creates a new channel for a user.
    * @param user - The user to create a channel for
@@ -259,13 +266,10 @@ ngOnInit() {
       createdBy: this.currentUser.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
-      members: isSelfChat
-        ? [this.currentUser.userId]
-        : [this.currentUser.userId, user.userId],
+      members: isSelfChat ? [this.currentUser.userId] : [this.currentUser.userId, user.userId],
       isPrivate: true,
     };
   }
-
 
   /**
    * Adds a new channel and sets it as the current chat.
@@ -278,9 +282,9 @@ ngOnInit() {
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
     } catch (error) {
+      console.error('Error adding and setting new channel:', error);
     }
   }
-
 
   /**
    * Opens a dialog to add a new channel.
@@ -298,33 +302,53 @@ ngOnInit() {
     });
   }
 
-
   /**
- * Displays the specified channel in the chat interface.
- * @param channel - The channel to display
- * @param isPrivate - Flag indicating if the channel is private
- */
+   * Displays the specified channel in the chat interface.
+   * @param channel - The channel to display
+   * @param isPrivate - Flag indicating if the channel is private
+   */
   showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
     this.channelSelected.emit();
   }
 
+  //---------------------------------------- Chat Management ----------------------------------------
 
   /**
- * Sets the selected message in the ChatService.
- */
+   * Sets the selected message in the ChatService.
+   */
   setSelectedMessage() {
     this.chatService.setSelectedChat(true);
   }
 
-
   /**
- * Resets the selected chat state and signals that a new message is being created.
- */
+   * Resets the selected chat state and signals that a new message is being created.
+   */
   newMessage() {
     this.chatService.setSelectedChat(false);
   }
 
+  //---------------------------------------- Utility Methods ----------------------------------------
+
+  /**
+   * Tracks users by their unique user ID for efficient rendering.
+   * @param index - The index of the user in the list
+   * @param user - The user object
+   * @returns The unique user ID as a string
+   */
+  trackByUserId(index: number, user: UserWithImageStatus): string {
+    return user.userId;
+  }
+
+  /**
+   * Tracks channels by their unique ID.
+   * @param index - The index of the channel in the list
+   * @param channel - The channel object
+   * @returns The unique channel ID as a string
+   */
+  trackByChannelId(index: number, channel: Channel): string {
+    return channel.id;
+  }
 
   /**
    * Determines if the given channel is the active channel.
@@ -334,7 +358,6 @@ ngOnInit() {
   isActiveChannel(channel: Channel): boolean {
     return this.currentChat.isPrivate === false && this.currentChat.chat?.id === channel.id;
   }
-
 
   /**
    * Determines if the given user is an active participant in the current chat.
@@ -355,10 +378,11 @@ ngOnInit() {
     return false;
   }
 
+  //---------------------------------------- Event Handlers ----------------------------------------
 
   /**
- * Emits an event when the server name is clicked.
- */
+   * Emits an event when the server name is clicked.
+   */
   onServerNameClick() {
     this.serverNameClicked.emit();
   }

@@ -1,6 +1,6 @@
 <div class="channelHeader">
   <div class="serverName" (click)="onServerNameClick()"></div>
-  <img (click)="addNewChannel()" class="edit" src="/assets/img/icons/add.svg" alt="" />
+  <img (click)="addNewChannel()" class="edit" src="/assets/img/icons/add.svg" alt="Add Channel" />
 </div>
 <div class="sidenav-content">
   <div class="menuChannelDropdown">
@@ -9,7 +9,7 @@
     <table>
       <div class="channels ml40" [@dropDown]="menuChannelIsDropedDown ? 'expanded' : 'collapsed'"
         [ngStyle]="{'overflow-y': menuChannelIsDropedDown ? 'visible' : 'hidden'}">
-        <tr class="channel-tr" *ngFor="let channel of publicChannels"
+        <tr class="channel-tr" *ngFor="let channel of publicChannels; trackBy: trackByChannelId"
           (click)="showChannel(channel, false); setSelectedMessage()"
           [ngClass]="{'active-chat': isActiveChannel(channel)}">
           <span class="channelName"></span>
@@ -46,3 +46,4 @@
       </div>
     </table>
   </div>
+</div>
