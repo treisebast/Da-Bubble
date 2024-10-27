@@ -1,4 +1,4 @@
-import { AfterViewInit,Component,ElementRef,EventEmitter,HostListener,OnDestroy,OnInit,Output,ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +27,7 @@ import { MentionDropdownComponent } from './mention-dropdown/mention-dropdown.co
 import { ChannelDropdownComponent } from './channel-dropdown/channel-dropdown.component';
 import { NavigationService } from '../../shared/services/navigation-service.service';
 import { WelcomeChannelComponent } from './welcome-channel/welcome-channel.component';
+import { ScrollService } from '../../shared/services/scroll-service.service';
 
 @Component({
   selector: 'app-chat-main',
@@ -101,6 +102,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private profileSubscription: Subscription | null = null;
 
   constructor(
+    private scrollService: ScrollService,
     private chatService: ChatService,
     private authService: AuthService,
     private userService: UserService,
@@ -148,7 +150,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   ngAfterViewInit() {
-    this.scrollToBottom();
+    if (this.chatContainer) {
+      this.scrollService.scrollToBottom(this.chatContainer);
+    }
     setTimeout(() => {
       document.addEventListener(
         'click',
@@ -170,7 +174,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         await this.loadChatById(chatId, isPrivate);
       }
       if (message.id) {
-        this.scrollToMessage(message.id);
+        this.scrollService.scrollToMessage(message.id);
       } else {
         console.error('Message ID is undefined');
       }
@@ -228,7 +232,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(
         switchMap(({ chat, isPrivate }) => {
           if (chat && chat.id) {
-            // Abonniere das Kanalobjekt, um auf Änderungen zu reagieren
             return this.channelService
               .getChannel(chat.id, isPrivate)
               .pipe(map((updatedChat) => ({ chat: updatedChat, isPrivate })));
@@ -283,7 +286,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.setLoadingState(false);
 
       if (this.messages && this.userProfiles) {
-        this.scrollToBottom();
+        this.scrollService.scrollToBottom(this.chatContainer);
       }
     });
   }
@@ -391,7 +394,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       .addMessage(newMessage)
       .then(() => {
         this.clearMessageInput();
-        this.scrollToBottom();
+        this.scrollService.scrollToBottom(this.chatContainer);
         this.setLoadingState(false);
       })
       .catch((error) => {
@@ -441,21 +444,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     return new Date();
   }
-
-scrollToBottom(): void {
-  setTimeout(() => {
-    try {
-      if (this.chatContainer) {
-        this.chatContainer.nativeElement.scrollTo({
-          top: this.chatContainer.nativeElement.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    } catch (err) {
-      console.error('Scroll to bottom failed:', err);
-    }
-  }, 300);
-}
 
   trackByUserId(index: number, user: User): string {
     return user.userId ? user.userId : index.toString();
@@ -791,8 +779,8 @@ scrollToBottom(): void {
     const match = input.match(new RegExp(`\\${symbol}([a-zA-Z0-9]+)`));
     return match
       ? channels.filter((ch) =>
-          ch.name?.toLowerCase().includes(match[1].toLowerCase())
-        )
+        ch.name?.toLowerCase().includes(match[1].toLowerCase())
+      )
       : [];
   }
 
@@ -996,37 +984,5 @@ scrollToBottom(): void {
     this.currentChat = chat;
     this.isCurrentChatPrivate = isPrivate;
     this.chatService.setCurrentChat(chat, isPrivate);
-  }
-
-  scrollToMessage(messageId: string) {
-    setTimeout(() => {
-      const messageElement = document.getElementById(messageId);
-      if (messageElement) {
-        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        messageElement.classList.add('highlight');
-        setTimeout(() => {
-          messageElement.classList.remove('highlight');
-        }, 3000);
-      } else {
-        this.waitForMessageElement(messageId);
-      }
-    }, 500);
-  }
-
-  waitForMessageElement(messageId: string) {
-    const checkExist = setInterval(() => {
-      const messageElement = document.getElementById(messageId);
-      if (messageElement) {
-        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        messageElement.classList.add('highlight');
-        setTimeout(() => {
-          messageElement.classList.remove('highlight');
-        }, 3000);
-        clearInterval(checkExist);
-      }
-    }, 100);
-    setTimeout(() => {
-      clearInterval(checkExist);
-    }, 5000);
   }
 }

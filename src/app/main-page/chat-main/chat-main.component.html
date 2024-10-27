@@ -1,56 +1,13 @@
-<!-- Neue Nachricht -->
 <div *ngIf="!currentChat" class="newMessageChatContainer">
   <div class="header column">
     <app-welcome-channel></app-welcome-channel>
   </div>
-
-
-
-
-
-
-  <!-- class="newMessageChatContainer"
-  <div class="header column">
-    <h2>Neue Nachricht</h2>
-    <input type="text" (keyup)="onKeyUp($event)" placeholder="An: #channel, oder @jemand oder E-Mail Adresse" />
-    
-    <ul *ngIf="filteredChannels.length > 0">
-      <li *ngFor="let channel of filteredChannels">{{ channel.name }}</li>
-    </ul>
-    
-    <ul *ngIf="filteredPublicChannels.length > 0">
-      <li *ngFor="let channel of filteredPublicChannels">{{ channel.name }}</li>
-    </ul>
-  </div> -->
-
-  <!-- Nachrichteneingabefeld -->
-  <!-- <div class="messageBox absolute-bottom">
-    <textarea #messageTextarea [(ngModel)]="newMessageText" placeholder="Nachricht eingeben..."
-      (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
-
-    <div class="messageBoxBottom">
-      <div class="iconsLeft">
-        <div class="addIcon" (click)="openFileDialog()"></div>
-        <input type="file" #fileInput (change)="handleFileInput($event)" style="display: none" />
-        <div class="border"></div>
-        <div class="emoji" (click)="toggleEmojiPicker()"></div>
-      </div>
-      <div (click)="sendMessage()" class="sendMessage"></div>
-      <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" class="emoji-mart-message-box"
-        (emojiClick)="addEmoji($event)"></emoji-mart>
-    </div>
-  </div> -->
 </div>
-
-<!-- Chat-Schnittstelle -->
 <div class="wrapper" *ngIf="currentChat">
-  <!-- Chat-Header -->
   <div class="header">
-    <!-- Kanal-Info-Popup -->
     <app-channel-info-popup *ngIf="selectedChannel" [channel]="selectedChannel"
       (close)="closeChannelInfoPopup()"></app-channel-info-popup>
     <div class="header-title">
-      <!-- Profilbild oder Kanalname -->
       <div class="header-channel-name" (click)="onHeaderChannelNameClick($event)">
         <div class="profileImg" *ngIf="isCurrentChatPrivate">
           <img *ngIf="clickedUser" [src]="clickedUser.avatar" alt="profile image" (error)="
@@ -68,8 +25,6 @@
         </h2>
         <img src="../assets/img/chatChannel/keyboard_arrow_down.svg" alt="open channel info" />
       </div>
-
-      <!-- Kanal-Info -->
       <div *ngIf="!isCurrentChatPrivate" class="header-channel-info">
         <div class="channelMembersIcons" (click)="showUserListPopup(currentChat, 'listView')">
           <ng-container *ngFor="
@@ -88,24 +43,16 @@
       </div>
     </div>
   </div>
-
-  <!-- Nachrichtencontainer -->
   <div class="chat-container" [ngClass]="{ 'no-messages-active': messages.length === 0 }" #chatContainer>
-    <!-- Ladeindikator -->
     <div class="spinner" *ngIf="isLoading">
       <mat-spinner></mat-spinner>
     </div>
-
-    <!-- Nachrichtenanzeige -->
     <ng-container *ngIf="currentChat && !isLoading">
-      <!-- If no Messages: -->
       <div *ngIf="messages.length == 0 && !isCurrentChatPrivate">
         <div class="no-messages">
           <div class="nm_header">
             <img class="nm_hastag" src="assets/img/chatChannel/tag.svg" alt="hastag" />
             <span class="nm_channelName">{{ currentChat.name }}</span>
-            <!--ToDo:  when hovering the header, the arrowdown should be displayed. and when clicking the channel, the channel-info-popup should show-->
-            <!-- <img class="" src="" alt="" (click)=""/> -->
           </div>
           <div class="nm_content">
             <span *ngIf="currentChat.createdBy == currentUserId" class="nm_text">Du hast diesen Channel heute erstellt.
@@ -116,28 +63,21 @@
           </div>
         </div>
       </div>
-
-      <!-- if there are Messages -->
       <div *ngFor="
           let message of messages;
           let i = index;
           trackBy: trackByMessageId
         ">
-        <!-- Tagestrenner -->
         <div *ngIf="message.timestamp && isNewDay(message.timestamp, i)" class="date-divider">
           <span class="date">{{
             convertToDate(message.timestamp) | date : "fullDate" : "" : "de"
             }}</span>
         </div>
-
-        <!-- Einzelne Nachricht -->
         <app-message [message]="message" [userProfile]="userProfiles[message.senderId]"
           [isCurrentUser]="message.senderId === currentUserId" (messageClicked)="openThread($event)"
           [isCurrentChatPrivate]="isCurrentChatPrivate" [currentUserId]="currentUserId"
           (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)" [messageIndex]="i"></app-message>
       </div>
-
-      <!-- Keine Nachrichten Information -->
       <div [ngClass]="{ hidden: !isCurrentChatPrivate || messages.length > 0 }" class="message-info">
         <div (click)="openProfilePopup( clickedUser?.userId!)" class="chat-main-container">
           <img [src]="
@@ -167,8 +107,6 @@
       </div>
     </ng-container>
   </div>
-
-  <!-- Anhang-Vorschau -->
   <div *ngIf="previewUrl || attachmentUrl" class="preview-container">
     <div class="preview-image-wrapper" *ngIf="attachmentUrl; else localPreview">
       <img [src]="attachmentUrl" alt="Anhang Vorschau" class="attachment-preview" />
@@ -184,8 +122,6 @@
       </div>
     </ng-template>
   </div>
-
-  <!-- Nachrichteneingabe für aktuellen Chat -->
   <div class="relative-container">
     <div class="messageBox">
       <textarea #messageTextarea [(ngModel)]="newMessageText" [placeholder]="
@@ -195,12 +131,9 @@
               : 'Nachricht an ' + clickedUserName + '...')
           : 'Nachricht an ' + currentChat.name
       " (keydown)="onTextareaKeydown($event)" (input)="onTextareaInput($event)"></textarea>
-      <!-- Einbinden der MentionDropdownComponent -->
       <app-mention-dropdown *ngIf="showMentionDropdown" #mentionDropdown [users]="usersOfSelectedChannel"
         [searchTerm]="mentionSearchTerm" (userSelected)="onUserSelected($event)">
       </app-mention-dropdown>
-
-      <!-- ChannelDropdownComponent -->
       <app-channel-dropdown *ngIf="showChannelDropdown" #channelDropdown [channels]="publicChannels"
         [searchTerm]="channelSearchTerm" (channelSelected)="onChannelSelected($event)">
       </app-channel-dropdown>
@@ -214,21 +147,15 @@
         </div>
         <div (click)="sendMessage()" class="sendMessage"></div>
       </div>
-      <!-- Fehleranzeige -->
       <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
     </div>
-    <!-- Emoji-Auswahl -->
     <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light" class="emoji-mart-message-box"
       (emojiClick)="addEmoji($event)"></emoji-mart>
   </div>
 </div>
-
-<!-- Profil-Card -->
 <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
   *ngIf="isProfileOpen"></app-profil>
-
-<!-- Bild-Overlay -->
 <app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
   (closeOverlay)="closeOverlay()"></app-image-overlay>

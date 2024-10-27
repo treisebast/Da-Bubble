@@ -205,6 +205,7 @@ export class SignUpComponent {
     this.cdr.detectChanges();
   }
 
+
   /**
  * Adds the user to the "Entwicklerteam" channel. If the channel doesn't exist, it will be created.
  * @private
@@ -235,5 +236,4 @@ export class SignUpComponent {
       }
     }
   }
-  
 }
