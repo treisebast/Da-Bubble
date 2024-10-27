@@ -27,7 +27,6 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   styleUrls: ['./dialog-add-channel.component.scss'],
 })
 export class DialogAddChannelComponent {
-  isTesting = false; // Set this to true when testing without Firebase
   loading = false;
   channelName = '';
   description = '';
@@ -220,16 +219,10 @@ export class DialogAddChannelComponent {
     try {
       const updatedMembers = [...new Set([...channel.members, ...usersToAddIds])];
       channel.members = updatedMembers;
-
-      if (!this.isTesting) {
-        // Only update Firebase if not in testing mode
         await this.channelService.updateChannel(channel, {
           members: updatedMembers,
         });
         console.log('Users added to channel in Firebase:', channel);
-      } else {
-        console.log('Testing mode: Users added to channel locally', channel);
-      }
     } catch (error) {
       console.error('Error adding users to channel:', error);
     } finally {
@@ -291,16 +284,7 @@ export class DialogAddChannelComponent {
    * @param newChannel - The new channel to be saved.
    */
   async saveChannelToFirebase(newChannel: NewChannel) {
-    if (this.isTesting) {
-      this.channel = { ...newChannel, id: '' };
-      // Aktualisiere die channelMembers
-      this.channelMembers = new Set(newChannel.members);
-      console.log('Testing mode: Channel created locally', newChannel);
-      return;
-    }
-
     this.loading = true;
-
     try {
       const channelDocRef = await this.channelService.addChannel(newChannel);
       const createdChannel: Channel = { ...newChannel, id: channelDocRef.id };

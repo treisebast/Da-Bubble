@@ -24,7 +24,6 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrls: ['./dialog-show-members.component.scss'],
 })
 export class DialogShowMembersComponent implements OnInit, OnDestroy {
-  isTesting = false; // Set this to true when testing without Firebase
   loading = false;
   isDialogOpen = false;
   dialogProgressState: 'listView' | 'addUsers' = 'listView';
@@ -227,16 +226,6 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
 
     const usersToAdd = this.selectedUsers.map((user) => user.userId);
 
-    if (this.isTesting) {
-      console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
-      this.loading = false;
-      this.dialogRef.close();
-      this.showConfirmationDialog(
-        'Testingmode: Users successfully added to the channel.'
-      );
-      return;
-    }
-
     try {
       const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
       channel.members = updatedMembers; // Update the local channel object
@@ -248,7 +237,7 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       console.error('Error adding users to channel:', error);
     } finally {
       this.loading = false;
-      this.dialogRef.close(); // Close the dialog after adding users
+      this.dialogRef.close();
       this.showConfirmationDialog('Users successfully added to the channel.');
     }
   }

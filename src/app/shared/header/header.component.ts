@@ -61,24 +61,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
  * Lifecycle hook that is called after data-bound properties are initialized.
  * Subscribes to authentication and user data, and initializes accessible chat IDs.
  */
-  ngOnInit() {
-    const authSub = this.auth.getUser().subscribe((firebaseUser) => {
-      if (firebaseUser?.uid) {
-        this.currentUserId = firebaseUser.uid;
-        const userSub = this.userService.getUser(firebaseUser.uid).subscribe((user) => {
-          if (user) {
-            this.currentUser = user;
-            const channelsSub = this.userService.getUserChannels(this.currentUserId).subscribe((channels: Channel[]) => {
-              this.accessibleChatIds = channels.map(channel => channel.id);
-            });
-            this.subs.add(channelsSub);
-          }
-        });
-        this.subs.add(userSub);
-      }
-    });
-    this.subs.add(authSub);
-  }
+ngOnInit() {
+  const authSub = this.auth.getUser().subscribe((firebaseUser) => {
+    if (firebaseUser?.uid) {
+      this.currentUserId = firebaseUser.uid;
+      const userSub = this.userService.getUser(firebaseUser.uid).subscribe((user) => {
+        if (user) {
+          this.currentUser = user;
+          const channelsSub = this.userService.getUserChannels(this.currentUserId).subscribe((channels: Channel[]) => {
+            this.accessibleChatIds = channels.map(channel => channel.id);
+          });
+          this.subs.add(channelsSub);
+        }
+      });
+      this.subs.add(userSub);
+    } else {
+      console.error('HeaderComponent: firebaseUser ist undefined');
+      this.currentUserId = '';
+      this.currentUser = {};
+      this.accessibleChatIds = [];
+    }
+  });
+  this.subs.add(authSub);
+}
 
 
   /**

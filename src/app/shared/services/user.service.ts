@@ -297,13 +297,18 @@ export class UserService implements OnDestroy {
     localStorage.setItem(this.localStorageKey, JSON.stringify(emojis));
   }
 
-  
+
   /**
    * Retrieves all channels (public and private) the user belongs to.
    * @param userId - The user ID.
    * @returns Observable of Channel array.
    */
   getUserChannels(userId: string): Observable<Channel[]> {
+    if (!userId) {
+      console.error('UserService: userId ist undefined in getUserChannels');
+      return of([]);
+    }
+    
     const publicChannelsQuery = query(
       collection(this.firestore, 'channels'),
       where('members', 'array-contains', userId)

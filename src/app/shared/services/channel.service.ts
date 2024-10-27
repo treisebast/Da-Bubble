@@ -170,10 +170,11 @@ export class ChannelService implements OnDestroy {
    * @param isPrivate - Indicates if channels are private.
    * @returns An Observable of Channel array.
    */
-  getChannelsForUser(
-    userId: string,
-    isPrivate: boolean
-  ): Observable<Channel[]> {
+  getChannelsForUser(userId: string, isPrivate: boolean): Observable<Channel[]> {
+    if (!userId) {
+      console.error('ChannelService: userId ist undefined');
+      return of([]);
+    }
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
     const key = `channels-for-user-${isPrivate}-${userId}`;
     return this.cacheService.wrap(key, () => {
