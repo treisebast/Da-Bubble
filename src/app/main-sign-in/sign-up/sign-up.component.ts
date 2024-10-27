@@ -14,6 +14,8 @@ import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { firstValueFrom } from 'rxjs';
+import { ChannelService } from '../../shared/services/channel.service';
+import { NewChannel } from '../../shared/models/channel.model';
 
 @Component({
   selector: 'app-sign-up',
@@ -32,6 +34,7 @@ export class SignUpComponent {
     private router: Router,
     private authService: AuthService,
     private userService: UserService,
+    private channelService: ChannelService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef
   ) {
@@ -80,15 +83,19 @@ export class SignUpComponent {
     */
   async onSubmit(event: Event) {
     event.preventDefault();
-
+  
     if (this.signUpForm.valid && this.isPrivacyPolicyAccepted) {
       const { name, email, password } = this.signUpForm.value;
-
+  
       try {
         const user = await this.signUpUser(email, password);
         await this.updateUserProfile(user, name);
         const userObj = this.createUserObject(user.uid, name, email);
         await this.saveUserDetails(userObj);
+  
+        // Add user to "Entwicklerteam" channel
+        await this.addUserToDeveloperTeamChannel(user.uid);
+  
         this.showConfirmationDialog('Konto erfolgreich erstellt!');
         this.redirectToAvatarPage(name);
       } catch (error: any) {
@@ -197,4 +204,36 @@ export class SignUpComponent {
     }
     this.cdr.detectChanges();
   }
+
+  /**
+ * Adds the user to the "Entwicklerteam" channel. If the channel doesn't exist, it will be created.
+ * @private
+ * @param {string} userId - The user ID.
+ */
+  private async addUserToDeveloperTeamChannel(userId: string): Promise<void> {
+    const channelName = 'Entwicklerteam';
+    let channel = await this.channelService.getChannelByName(channelName, false);
+  
+    if (!channel) {
+      channel = {
+        id: '',
+        name: channelName,
+        isPrivate: false,
+        members: [userId],
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const channelRef = await this.channelService.addChannel(channel as NewChannel);
+      channel.id = channelRef.id;
+    } else {
+      if (!channel.members.includes(userId)) {
+        await this.channelService.updateChannel(channel, {
+          members: [...channel.members, userId],
+          updatedAt: new Date(),
+        });
+      }
+    }
+  }
+  
 }

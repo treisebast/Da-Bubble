@@ -15,6 +15,7 @@ import { User } from '../../shared/models/user.model';
 import { firstValueFrom } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+import { sendEmailVerification } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-avatar-choice',
@@ -177,6 +178,11 @@ export class AvatarChoiceComponent implements OnInit {
       const avatarUrl = await this.getAvatarUrl(currentUser.uid);
       await this.updateUserAvatar(currentUser.uid, avatarUrl);
       this.showConfirmationDialog();
+      if (!currentUser.emailVerified) {
+        await sendEmailVerification(currentUser);
+        console.log('Verification email sent to user');
+      }
+
       if (!this.isChangingAvatar) {
         this.router.navigate(['/main-page']);
       } else {
