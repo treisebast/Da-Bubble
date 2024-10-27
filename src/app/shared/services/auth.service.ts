@@ -4,6 +4,7 @@ import { from, Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { UserService } from './user.service';
 import { ChannelService } from './channel.service';
+import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +23,8 @@ export class AuthService implements OnDestroy {
     private auth: Auth,
     private firestore: Firestore,
     private userService: UserService,
-    private channelService: ChannelService
+    private channelService: ChannelService,
+    private cacheService: CacheService
   ) {
     this.checkAndSetUserOnlineStatus();
     this.monitorUserActivity();
@@ -176,12 +178,12 @@ export class AuthService implements OnDestroy {
    */
   signOut(): Observable<any> {
     return from(
-      this.auth.currentUser
-        ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
+      this.auth.currentUser ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
           () => {
             this.removeUserStatusListener(this.auth.currentUser!.uid);
             this.userService.removeAllUserListeners();
             this.channelService.removeAllChannelListeners();
+            this.cacheService.clearAll();
             return signOut(this.auth);
           }
         )
