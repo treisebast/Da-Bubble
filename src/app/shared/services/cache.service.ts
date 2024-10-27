@@ -80,13 +80,11 @@ export class CacheService {
     const expiry = Date.now() + effectiveTtl;
 
     const existingEntry = this.cache.get(key);
-    if (existingEntry) {
-      // Update existing entry
+    if (existingEntry && existingEntry.subject) {
+      // Update existing entry and notify subscribers
       existingEntry.data = data;
       existingEntry.expiry = expiry;
-      if (existingEntry.subject) {
-        existingEntry.subject.next(data);
-      }
+      existingEntry.subject.next(data);
     } else {
       // Create new entry
       const subject = new BehaviorSubject<T>(data);

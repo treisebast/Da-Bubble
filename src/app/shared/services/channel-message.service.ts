@@ -116,9 +116,6 @@ export class ChannelMessageService implements OnDestroy {
       `${collectionPath}/${channelId}/messages`
     );
     await addDoc(messagesCollection, message);
-
-    const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key); // Cache invalidieren, um aktualisierte Nachrichten zu laden
   }
 
   /**
@@ -145,9 +142,6 @@ export class ChannelMessageService implements OnDestroy {
       content_lowercase: updatedContent.toLowerCase(),
       edited: true,
     });
-
-    const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**
@@ -168,9 +162,6 @@ export class ChannelMessageService implements OnDestroy {
       `${collectionPath}/${channelId}/messages/${messageId}`
     );
     await deleteDoc(messageDocRef);
-
-    const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**
@@ -198,9 +189,6 @@ export class ChannelMessageService implements OnDestroy {
     } else {
       await updateDoc(messageDocRef, { reactions: {} });
     }
-
-    const key = `channelMessages-${isPrivate}-${channelId}`;
-    this.cacheService.clear(key); // Cache invalidieren
   }
 
   /**
