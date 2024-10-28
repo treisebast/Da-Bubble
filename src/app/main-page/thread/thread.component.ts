@@ -2,7 +2,7 @@ import { Component, EventEmitter, inject, Output, OnInit, ViewChild, ElementRef,
 import { ChatService } from '../../shared/services/chat-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
 import { CommonModule } from '@angular/common';
-import { collection, doc, FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Message } from '../../shared/models/message.model';
 import { Channel } from '../../shared/models/channel.model';
 import { FormsModule } from '@angular/forms';
@@ -10,9 +10,8 @@ import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { MatMenuModule } from '@angular/material/menu';
-import { finalize, firstValueFrom, takeUntil } from 'rxjs';
+import { takeUntil } from 'rxjs';
 import { Firestore } from '@angular/fire/firestore';
-import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { ImageOverlayComponent } from '../image-overlay/image-overlay.component';
 import { getMetadata, getStorage, ref } from 'firebase/storage';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
@@ -21,6 +20,10 @@ import { convertToDate } from '../../shared/utils';
 import { MentionDropdownComponent } from '../chat-main/mention-dropdown/mention-dropdown.component';
 import { MessageMenuComponent } from '../message/message-menu/message-menu.component';
 import { ScrollService } from '../../shared/services/scroll-service.service';
+import { ThreadFileHelper } from './thread-file-helper';
+import { ThreadReactionHelper } from './thread-reaction-helper';
+import { ThreadUserHelper } from './thread-user-helper';
+import { ThreadMessageHelper } from './thread-message-helper';
 
 @Component({
   selector: 'app-thread',
@@ -71,6 +74,11 @@ export class ThreadComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private scrollService = inject(ScrollService);
+  private threadFileHelper = inject(ThreadFileHelper);
+  private threadReactionHelper = inject(ThreadReactionHelper);
+  private threadUserHelper = inject(ThreadUserHelper);
+  private threadMessageHelper = inject(ThreadMessageHelper);
+  private unsubscribe$ = new Subject<void>();
 
   @ViewChild('fileInput') fileInput!: ElementRef;
   @Output() closeThread = new EventEmitter<void>();
@@ -79,62 +87,66 @@ export class ThreadComponent implements OnInit, OnDestroy {
   @ViewChild('threadContainer') threadContainer!: ElementRef;
   @ViewChildren(MessageMenuComponent) messageMenuComponents!: QueryList<MessageMenuComponent>;
 
-  private unsubscribe$ = new Subject<void>();
-
   constructor(
     private firestore: Firestore,
-    private firebaseStorageService: FirebaseStorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
-ngOnInit() {
-  this.authenticateUser();
-  this.subscribeToEmojis();
-  this.openCurrentMessage();
-  this.subscribeToCurrentChat();
-  this.subscribeToCurrentThread();
-  this.loadUserListFromCurrentChat();
-}
+  /**
+ * Initializes the component by subscribing to necessary observables.
+ */
+  ngOnInit() {
+    this.authenticateUser();
+    this.subscribeToEmojis();
+    this.openCurrentMessage();
+    this.subscribeToCurrentChat();
+    this.subscribeToCurrentThread();
+    this.loadUserListFromCurrentChat();
+  }
 
-private authenticateUser() {
-  // Authentifizierung des Benutzers
-  this.authService
-    .getUser()
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: (user) => {
+  /**
+ * Cleans up subscriptions and clears error messages upon destruction.
+ */
+  ngOnDestroy() {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+    this.clearErrorMessage();
+  }
+
+  /**
+ * Authenticates the current user and sets user information.
+ */
+  private authenticateUser() {
+    this.authService
+      .getUser()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((user) => {
         if (user) {
           this.currentUserId = user.uid;
           this.currentUserName = user.displayName || '';
         }
-      },
-      error: (error) => {
-        console.error('Fehler beim Abrufen des Benutzers:', error);
-      },
-    });
-}
+      });
+  }
 
-private subscribeToEmojis() {
-  // Emoji-Abonnements
-  this.userService.lastTwoEmojis$
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: (emojis) => {
+  /**
+ * Subscribes to the last two emojis used by the user.
+ */
+  private subscribeToEmojis() {
+    this.userService.lastTwoEmojis$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((emojis) => {
         this.lastTwoEmojis = emojis;
-      },
-      error: (error) => {
-        console.error('Fehler beim Abrufen der letzten Emojis:', error);
-      },
-    });
-}
+      });
+  }
 
-private openCurrentMessage() {
-  // Aktuelle Nachricht für den Thread öffnen
-  this.threadService
-    .getCurrentMessageToOpen()
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: (chatMessage: Message | null) => {
+  /**
+ * Opens the current message, loads user profiles, and tracks changes.
+ */
+  private openCurrentMessage() {
+    this.threadService
+      .getCurrentMessageToOpen()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((chatMessage: Message | null) => {
         if (chatMessage) {
           this.currentMessageToOpen = chatMessage;
           this.resolveUserName(chatMessage.senderId);
@@ -146,48 +158,40 @@ private openCurrentMessage() {
 
           this.loadAttachments(chatMessage.attachments);
         }
-      },
-      error: (error) => {
-        console.error('Fehler beim Abrufen der aktuellen Nachricht:', error);
-      },
-    });
-}
+      });
+  }
 
-private watchMessageChanges(chatId: string, messageId: string) {
-  this.threadService
-    .watchMessageChanges(chatId, messageId)
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: (updatedMessage) => {
+  /**
+ * Monitors changes for a specific message in the current chat.
+ */
+  private watchMessageChanges(chatId: string, messageId: string) {
+    this.threadService
+      .watchMessageChanges(chatId, messageId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((updatedMessage) => {
         this.currentMessageToOpen = updatedMessage;
         this.loadUserProfiles([updatedMessage]);
-      },
-      error: (error) => {
-        console.error('Fehler beim Überwachen der Nachrichtenänderungen:', error);
-      },
-    });
-}
+      });
+  }
 
-private subscribeToCurrentChat() {
-  // Aktuellen Chat abonnieren
-  this.chatService.currentChat$
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: ({ chat }) => {
+  /**
+ * Subscribes to updates for the current chat.
+ */
+  private subscribeToCurrentChat() {
+    this.chatService.currentChat$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(({ chat }) => {
         this.currentChat = chat;
-      },
-      error: (error) => {
-        console.error('Fehler beim Abrufen des aktuellen Chats:', error);
-      },
-    });
-}
+      });
+  }
 
-private subscribeToCurrentThread() {
-  // Aktuelle Threads abonnieren
-  this.threadService.currentThread$
-    .pipe(takeUntil(this.unsubscribe$))
-    .subscribe({
-      next: async (currentThread) => {
+  /**
+ * Subscribes to messages in the current thread and sorts them by timestamp.
+ */
+  private subscribeToCurrentThread() {
+    this.threadService.currentThread$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(async (currentThread) => {
         if (Array.isArray(currentThread)) {
           this.messages = this.sortMessagesByTimestamp(currentThread);
           await this.resolveUserNames(this.messages);
@@ -200,40 +204,42 @@ private subscribeToCurrentThread() {
         } else {
           this.messages = [];
         }
-      },
-      error: (error) => {
-        console.error('Fehler beim Abrufen der aktuellen Threads:', error);
-      },
-    });
-}
-
-private loadUserListFromCurrentChat() {
-  if (this.currentChat && this.currentChat.members) {
-    this.userService
-      .getUsers()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.usersOfSelectedChannel = users.filter((user) =>
-          this.currentChat!.members.includes(user.userId)
-        );
       });
   }
-}
 
-  ngOnDestroy() {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-    this.clearErrorMessage();
+  /**
+ * Loads the list of users from the current chat.
+ */
+  private loadUserListFromCurrentChat() {
+    if (this.currentChat && this.currentChat.members) {
+      this.userService
+        .getUsers()
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe((users) => {
+          this.usersOfSelectedChannel = users.filter((user) =>
+            this.currentChat!.members.includes(user.userId)
+          );
+        });
+    }
   }
 
+  /**
+ * Emits a close event for the thread.
+ */
   onCloseThread() {
     this.closeThread.emit();
   }
 
+  /**
+ * Returns a unique key for each message.
+ */
   getMessageKey(message: Message, index: number): string {
     return message.id || `index-${index}`;
   }
 
+  /**
+ * Sends a new message or adds an attachment, if available.
+ */
   async sendMessage(event?: Event) {
     if (event) event.preventDefault();
     if (!this.canSendMessage()) return;
@@ -244,22 +250,29 @@ private loadUserListFromCurrentChat() {
 
   }
 
+  /**
+ * Checks if the message can be sent based on content or attachment presence.
+ */
   canSendMessage(): boolean {
     return this.newMessageText.trim() !== '' || this.selectedFile !== null;
   }
 
+  /**
+ * Uploads an attachment file if available.
+ */
   async uploadAttachment(): Promise<void> {
-    if (this.selectedFile) {
-      const autoId = doc(collection(this.firestore, 'dummy')).id;
-      const filePath = `thread-files/${this.currentChat!.id}/${autoId}_${this.selectedFile.name
-        }`;
-      const downloadUrl = await firstValueFrom(
-        this.firebaseStorageService.uploadFile(this.selectedFile, filePath)
+    if (this.selectedFile && this.currentChat) {
+      this.attachmentUrl = await this.threadFileHelper.uploadAttachment(
+        this.selectedFile,
+        this.currentChat.id,
+        this.firestore
       );
-      this.attachmentUrl = downloadUrl as string;
     }
   }
 
+  /**
+   * Adds a message to the current thread.
+   */
   async addThreadMessage(): Promise<void> {
     const newMessage: Message = {
       content: this.newMessageText,
@@ -277,21 +290,19 @@ private loadUserListFromCurrentChat() {
         this.threadService.currentMessageId,
         newMessage
       );
-    } else {
-      console.error('Current chat or chat ID is undefined.');
     }
   }
 
+  /**
+ * Resets the input fields for a new message.
+ */
   resetMessageFields(): void {
-    this.newMessageText = '';
-    this.attachmentUrl = null;
-    this.selectedFile = null;
-    this.previewUrl = null;
-    if (this.fileInput) {
-      this.fileInput.nativeElement.value = '';
-    }
+    this.threadMessageHelper.resetMessageFields(this);
   }
 
+  /**
+ * Sorts messages in the current thread by their timestamps.
+ */
   sortMessagesByTimestamp(messages: Message[]): Message[] {
     return messages.sort((a, b) => {
       const dateA = convertToDate(a.timestamp);
@@ -301,6 +312,9 @@ private loadUserListFromCurrentChat() {
     });
   }
 
+  /**
+ * Checks if a message was sent on a new day.
+ */
   isNewDay(timestamp: Timestamp | FieldValue | Date, index: number): boolean {
     if (index === 0) return true;
     const prevDate = convertToDate(this.messages[index - 1].timestamp);
@@ -309,6 +323,9 @@ private loadUserListFromCurrentChat() {
     return prevDate.toDateString() !== currentDate.toDateString();
   }
 
+  /**
+ * Converts a timestamp to a Date object.
+ */
   convertToDate(
     timestamp: Timestamp | FieldValue | Date | null | undefined
   ): Date {
@@ -320,13 +337,16 @@ private loadUserListFromCurrentChat() {
     return new Date();
   }
 
+  /**
+ * Resolves and loads usernames for messages in a thread.
+ */
   async resolveUserNames(messages: Message[]) {
-    const userIds = [...new Set(messages.map((msg) => msg.senderId))];
-    for (const userId of userIds) {
-      await this.resolveUserName(userId);
-    }
+    await this.threadUserHelper.resolveUserNames(messages, this.userNames);
   }
 
+  /**
+ * Resolves the username for a single user ID.
+ */
   async resolveUserName(userId: string) {
     if (!this.userNames[userId]) {
       const userName = await this.userService.getUserNameById(userId);
@@ -334,104 +354,36 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Retrieves the username for a given user ID.
+ */
   getUserName(userId: string): string {
     return this.userNames[userId] || 'Unknown';
   }
 
   /**
-   * Loads user profiles for the given messages.
-   *
-   * This method collects all user IDs from the provided messages and filters out
-   * the ones that are already loaded. It then fetches the profiles of the new user IDs
-   * using the UserService's bulk-fetch method and assigns them to the userProfiles object.
-   * @param {Message[]} messages - An array of message objects from which user IDs are collected.
-   * @returns {void} This method does not return a value.
-   */
+ * Loads profiles for users mentioned in the messages.
+ */
   loadUserProfiles(messages: Message[]) {
-    const allUserIds = this.collectUserIds(messages);
-    const newUserIds = allUserIds.filter(
-      (userId) => !this.userProfiles[userId]
-    );
-
-    if (newUserIds.length === 0) return;
-
-    // Lade alle neuen Benutzerprofile mit der Bulk-Fetch-Methode aus dem UserService
-    this.userService
-      .getUsersOnce(newUserIds)
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe({
-        next: (users) => this.assignUserProfiles(users, newUserIds),
-        error: (error) => {
-          console.error(
-            'Fehler beim Laden der Benutzerprofile mit getUsersOnce:',
-            error
-          );
-        },
-      });
+    this.threadUserHelper.loadUserProfiles(messages, this.userProfiles, this.cdr);
   }
 
-  // Collects all user IDs from the given messages and their reactions
-  private collectUserIds(messages: Message[]): string[] {
-    const userIds = new Set<string>();
-    messages.forEach(({ senderId, reactions }) => {
-      userIds.add(senderId);
-      if (reactions) {
-        Object.values(reactions).flat().forEach(userIds.add, userIds);
-      }
-    });
-    return Array.from(userIds);
-  }
-
-  // Assigns the fetched user profiles to the corresponding user IDs
-  private assignUserProfiles(users: User[], newUserIds: string[]): void {
-    users.forEach((user) => {
-      if (user) {
-        this.userProfiles[user.userId] = user;
-      }
-    });
-    // Setze Standard-Avatare für Benutzer, die nicht gefunden wurden
-    this.setStandardAvatars(newUserIds);
-    this.cdr.detectChanges(); // Änderungserkennung manuell auslösen
-  }
-
-  // Sets standard avatars for users that were not found in the database
-  setStandardAvatars(userIds: string[]) {
-    userIds.forEach((userId, index) => {
-      if (!this.userProfiles[userId]) {
-        this.userProfiles[userId] = {
-          userId,
-          name: 'Unknown',
-          email: '',
-          avatar: `assets/img/profile/${index % 10}.svg`,
-          status: 'offline',
-          lastSeen: null,
-        };
-      }
-    });
-  }
-
+  /**
+ * Returns a tracking ID for a message for optimized rendering.
+ */
   trackByMessageId(index: number, message: any): number {
     return message.id;
   }
 
   /**
-   * Loads the attachments and processes each one.
-   * If the attachment is not an image, it loads the file metadata.
-   * @param attachments - An array of attachment URLs or undefined.
+   * Loads attachments for a message if present.
    */
   loadAttachments(attachments: string[] | undefined): void {
-    if (attachments) {
-      attachments.forEach((attachment) => {
-        if (!this.isImage(attachment)) {
-          this.loadFileMetadata(attachment);
-        }
-      });
-    }
+    this.threadMessageHelper.loadAttachments(attachments, this);
   }
 
   /**
-   * Öffnet den Bearbeitungsmodus für die ausgewählte Nachricht.
-   * @param {Message} message - Die zu bearbeitende Nachricht.
+   * Initiates editing for a specific message.
    */
   editMessage(message: Message) {
     if (message.senderId === this.currentUserId) {
@@ -439,6 +391,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Deletes a message and its attachments from the thread.
+ */
   async deleteMessage(message: Message) {
     if (this.canDeleteMessage(message)) {
       await this.deleteMessageAttachments(message);
@@ -447,6 +402,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Updates the thread count and timestamp in the main chat.
+ */
   checkAndUpdateThreadCount() {
     if (this.messages.length === 0 && this.currentMessageToOpen) {
       this.currentMessageToOpen.threadCount = 0;
@@ -456,10 +414,8 @@ private loadUserListFromCurrentChat() {
   }
 
   /**
-   * Updates the thread information in the main chat.
-   * @returns {Promise<void>} A promise that resolves when the thread information is successfully updated.
-   * @throws Will log an error message if the `updateThreadInfo` method fails or if `messageId` or `chatId` is undefined.
-   */
+ * Updates thread info in the main chat based on the current message.
+ */
   async updateThreadInfoInMainChat() {
     if (this.currentMessageToOpen?.id && this.currentMessageToOpen.chatId) {
       const { chatId, id: messageId } = this.currentMessageToOpen;
@@ -473,62 +429,51 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Checks if the user can delete the specified message.
+ */
   private canDeleteMessage(message: Message): boolean {
-    return message.senderId === this.currentUserId;
+    return this.threadMessageHelper.canDeleteMessage(message, this.currentUserId);
   }
 
-  private async deleteMessageAttachments(message: Message): Promise<void> {
-    const deleteTasks = (message.attachments || []).map((attachmentUrl) => {
-      const filePath = this.getFilePathFromUrl(attachmentUrl);
-      return this.firebaseStorageService.deleteFile(filePath);
-    });
-
-    await Promise.all(deleteTasks);
+  /**
+ * Deletes message attachments from storage.
+ */
+  async deleteMessageAttachments(message: Message): Promise<void> {
+    await this.threadMessageHelper.deleteMessageAttachments(message.attachments || [], this.threadFileHelper);
   }
 
+  /**
+ * Deletes the message from the thread.
+ */
   private deleteMessageFromThread(message: Message): Promise<void> {
-    return this.threadService.deleteThread(
-      message.chatId!,
-      this.threadService.currentMessageId,
-      message.id!
-    );
+    return this.threadMessageHelper.deleteMessageFromThread(message, this.threadService);
   }
 
-  private getFilePathFromUrl(fileUrl: string): string {
-    const pathParts = decodeURIComponent(fileUrl)
-      .split('/o/')[1]
-      .split('?alt=media')[0];
-    return pathParts;
-  }
-
+  /**
+   * Starts the editing process for a message.
+   */
   startEditing(message: Message) {
-    if (message.senderId === this.currentUserId) {
-      this.editingMessageId = message.id;
-      this.editContent = message.content;
-    }
+    this.threadMessageHelper.startEditing(this, message);
   }
 
+  /**
+ * Saves the edited message.
+ */
   saveEdit(message: Message) {
-    const hasAttachments = message.attachments && message.attachments.length > 0;
-    if (this.editContent.trim() !== '' || hasAttachments) {
-      message.content = this.editContent;
-      this.threadService
-        .updateThread(
-          message.chatId!,
-          this.threadService.currentMessageId,
-          message
-        )
-        .catch((error) => {
-          console.error('Error updating message:', error);
-        });
-    }
-    this.editingMessageId = null;
+    this.threadMessageHelper.saveEdit(this, message);
   }
 
+  /**
+ * Cancels the editing process for a message.
+ */
   cancelEdit() {
-    this.editingMessageId = null;
+    this.threadMessageHelper.cancelEdit(this);
   }
 
+  /**
+ * Checks if a URL is an image based on its file extension.
+ */
   isImage(url: string): boolean {
     const imageTypes = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     return imageTypes.some((type) =>
@@ -536,10 +481,16 @@ private loadUserListFromCurrentChat() {
     );
   }
 
+  /**
+ * Opens a file dialog for selecting attachments.
+ */
   openFileDialog() {
     this.fileInput.nativeElement.click();
   }
 
+  /**
+ * Handles file input and validates the selected file.
+ */
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
     this.manageErrorMessage(null);
@@ -547,51 +498,38 @@ private loadUserListFromCurrentChat() {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
 
-      if (!this.isValidFile(file)) {
+      if (!this.validateFile(file)) {
         return;
       }
 
-      this.createFilePreview(file);
+      this.handleFilePreview(file);
     }
   }
 
-  private isValidFile(file: File): boolean {
-    const maxSizeInKB = 500;
-    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-
-    if (file.size > maxSizeInKB * 1024) {
-      this.manageErrorMessage(
-        `Die Datei überschreitet die maximal erlaubte Größe von ${maxSizeInKB}KB.`
-      );
-      return false;
+  /**
+ * Validates the selected file before uploading.
+ */
+  validateFile(file: File): boolean {
+    const result = this.threadFileHelper.isValidFile(file);
+    if (!result.isValid) {
+      this.manageErrorMessage(result.errorMessage ?? null);
     }
-
-    if (!allowedTypes.includes(file.type)) {
-      this.manageErrorMessage('Nur Bilder (PNG, JPEG) und PDFs sind erlaubt.');
-      return false;
-    }
-
-    return true;
+    return result.isValid;
   }
 
-  private createFilePreview(file: File): void {
-    if (file.type === 'application/pdf') {
-      this.previewUrl = '../../assets/img/chatChannel/pdf.png';
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewUrl = reader.result as string;
-        this.attachmentUrl = null;
-        this.selectedFile = file;
-        this.manageErrorMessage(null);
-      };
-      reader.readAsDataURL(file);
-    }
+  /**
+ * Creates a preview for the selected file.
+ */
+  async handleFilePreview(file: File): Promise<void> {
+    this.previewUrl = await this.threadFileHelper.createFilePreview(file);
     this.attachmentUrl = null;
     this.selectedFile = file;
     this.manageErrorMessage(null);
   }
 
+  /**
+ * Manages error messages with an optional timeout.
+ */
   private manageErrorMessage(
     message: string | null,
     timeout: number = 4000
@@ -609,74 +547,73 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Removes the file preview from the message.
+ */
   removePreview() {
     this.previewUrl = null;
     this.attachmentUrl = null;
+    this.selectedFile = null;
     this.fileInput.nativeElement.value = '';
   }
 
+  /**
+ * Opens an overlay to display an image.
+ */
   openOverlay(imageUrl: string) {
     this.overlayImageUrl = imageUrl;
   }
 
+  /**
+ * Closes the image overlay.
+ */
   closeOverlay() {
     this.overlayImageUrl = null;
   }
 
+  /**
+ * Loads metadata for a file attachment.
+ */
   loadFileMetadata(attachmentUrl: string): void {
-    this.firebaseStorageService
-      .getFileMetadata(attachmentUrl)
-      .pipe(
-        finalize(() => this.cdr.detectChanges()),
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe({
-        next: (metadata) => {
-          this.metadataMap[attachmentUrl] = {
-            name: metadata.name,
-            size: metadata.size,
-          };
-        },
-        error: (error) => {
-          console.error('Fehler beim Abrufen der Metadaten', error);
-        },
-      });
+    this.threadFileHelper.loadFileMetadata(attachmentUrl).then((metadata) => {
+      this.metadataMap[attachmentUrl] = metadata;
+    });
   }
 
+  /**
+ * Logs metadata for an attachment in storage.
+ */
   async logAttachmentMetadata(attachmentUrl: string) {
-    try {
-      const storage = getStorage();
-      const filePath = decodeURIComponent(attachmentUrl)
-        .split('/o/')[1]
-        .split('?alt=media')[0];
-      const storageRef = ref(storage, filePath);
-      const metadata = await getMetadata(storageRef);
+    const storage = getStorage();
+    const filePath = decodeURIComponent(attachmentUrl)
+      .split('/o/')[1]
+      .split('?alt=media')[0];
+    const storageRef = ref(storage, filePath);
+    const metadata = await getMetadata(storageRef);
 
-      this.metadataMap[attachmentUrl] = {
-        name: metadata.name,
-        size: metadata.size,
-      };
-    } catch (error) {
-      console.error('Fehler beim Abrufen der Metadaten:', error);
-    }
+    this.metadataMap[attachmentUrl] = {
+      name: metadata.name,
+      size: metadata.size,
+    };
   }
 
+  /**
+ * Checks if metadata has been loaded for an attachment.
+ */
   isMetadataLoaded(attachment: string): boolean {
     return !!this.metadataMap[attachment];
   }
 
-  logAttachment(attachment: string) {
-    // console.log('Attachment:', attachment);
-  }
-
+  /**
+ * Formats file size into a human-readable string.
+ */
   formatFileSize(size: number): string {
-    if (size < 1024) {
-      return size + ' B';
-    } else {
-      return (size / 1024).toFixed(2) + ' KB';
-    }
+    return this.threadFileHelper.formatFileSize(size);
   }
 
+  /**
+   * Toggles the emoji picker for a specific message.
+   */
   toggleEmojiPicker(event: MouseEvent, message: Message) {
     event.stopPropagation();
     if (this.selectedMessage === message && this.showEmojiPicker) {
@@ -696,6 +633,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Closes the emoji picker when the mouse leaves the message.
+ */
   onMouseLeave(event: MouseEvent, message: Message) {
     if (this.showEmojiPicker && this.selectedMessage === message) {
       this.showEmojiPicker = false;
@@ -712,16 +652,25 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Toggles the emoji picker for the message box.
+ */
   toggleMessageBoxEmojiPicker() {
     this.showMessageBoxEmojiPicker = !this.showMessageBoxEmojiPicker;
   }
 
+  /**
+ * Adds an emoji to the message box text.
+ */
   addEmojiToMessageBox(event: any) {
     this.newMessageText += event.emoji.native;
     this.showMessageBoxEmojiPicker = false;
     this.focusTextarea();
   }
 
+  /**
+ * Sets focus to the message input textarea.
+ */
   focusTextarea() {
     const textarea = document.querySelector('textarea');
     if (textarea) {
@@ -729,16 +678,16 @@ private loadUserListFromCurrentChat() {
     }
   }
 
-
+  /**
+   * Handles document click to close emoji picker and mention dropdown.
+   */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-
     if (this.showEmojiPicker && !target.closest('.emoji-mart-threadmessage')) {
       this.showEmojiPicker = false;
       this.selectedMessage = null;
     }
-
     if (
       this.showMessageBoxEmojiPicker &&
       !target.closest('.emoji-mart-thread-message-box') &&
@@ -746,12 +695,14 @@ private loadUserListFromCurrentChat() {
     ) {
       this.showMessageBoxEmojiPicker = false;
     }
-
     if (!target.closest('.mention-dropdown') && !target.closest('.messageBox textarea')) {
       this.showMentionDropdown = false;
     }
   }
 
+  /**
+ * Adds an emoji reaction to a message.
+ */
   addEmoji(event: any, message: Message) {
     const emoji = event.emoji.native;
     this.addOrRemoveReaction(message, emoji);
@@ -760,16 +711,10 @@ private loadUserListFromCurrentChat() {
   }
 
   /**
-   * Fügt eine Reaktion hinzu oder entfernt sie.
-   * @param message Die Nachricht, auf die reagiert wird.
-   * @param emoji Das Emoji der Reaktion.
+   * Toggles a reaction on or off for a message.
    */
   addOrRemoveReaction(message: Message, emoji: string): void {
-    const userId = this.currentUserId;
-
-    this.toggleUserReaction(message, emoji, userId);
-    this.userService.addEmoji(emoji);
-
+    this.threadReactionHelper.toggleReaction(message, emoji, this.currentUserId);
     if (this.isOriginalMessage(message)) {
       if (this.currentMessageToOpen) {
         this.updateMessageReactions(this.currentMessageToOpen);
@@ -780,67 +725,8 @@ private loadUserListFromCurrentChat() {
   }
 
   /**
-   * Entscheidet, ob eine Reaktion hinzugefügt oder entfernt werden soll.
-   * @param message Die Nachricht, auf die reagiert wird.
-   * @param emoji Das Emoji der Reaktion.
-   * @param userId Die ID des Benutzers.
+   * Checks if a message is the original in the thread.
    */
-  private toggleUserReaction(
-    message: Message,
-    emoji: string,
-    userId: string
-  ): void {
-    if (!message.reactions) {
-      message.reactions = {};
-    }
-
-    if (this.hasUserReacted(message, emoji, userId)) {
-      this.removeUserReaction(message, emoji, userId);
-    } else {
-      this.addUserReaction(message, emoji, userId);
-    }
-  }
-
-  private hasUserReacted(
-    message: Message,
-    emoji: string,
-    userId: string
-  ): boolean {
-    return !!message.reactions?.[emoji]?.includes(userId);
-  }
-
-  private addUserReaction(
-    message: Message,
-    emoji: string,
-    userId: string
-  ): void {
-    if (!message.reactions) {
-      message.reactions = {};
-    }
-    if (!message.reactions[emoji]) {
-      message.reactions[emoji] = [];
-    }
-    message.reactions[emoji].push(userId);
-  }
-
-  private removeUserReaction(
-    message: Message,
-    emoji: string,
-    userId: string
-  ): void {
-    if (!message.reactions || !message.reactions[emoji]) {
-      return;
-    }
-
-    message.reactions[emoji] = message.reactions[emoji].filter(
-      (id) => id !== userId
-    );
-
-    if (message.reactions[emoji].length === 0) {
-      delete message.reactions[emoji];
-    }
-  }
-
   private isOriginalMessage(message: Message): boolean {
     return (
       this.currentMessageToOpen !== null &&
@@ -848,11 +734,16 @@ private loadUserListFromCurrentChat() {
     );
   }
 
+  /**
+ * Returns the count of reactions for a specific emoji.
+ */
   getReactionCount(message: Message, emoji: string): number {
-    return message.reactions?.[emoji]?.length || 0;
+    return this.threadReactionHelper.getReactionCount(message, emoji);
   }
 
-  // updates the reactions for the given message
+  /**
+ * Updates message reactions in the current thread.
+ */
   private async updateMessageReactions(message: Message): Promise<void> {
     const { chatId, id: messageId } = message;
 
@@ -875,7 +766,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
-  // Tooltip
+  /**
+ * Retrieves a tooltip with usernames for emoji reactions.
+ */
   getTooltipContent(message: Message, emoji: string): string {
     const usernames = this.getReactionUsernames(message, emoji);
     const numUsers = usernames.length;
@@ -900,6 +793,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Returns a list of usernames who reacted with a specific emoji.
+ */
   getReactionUsernames(message: Message, emoji: string): string[] {
     const userIds = message.reactions?.[emoji] || [];
     const usernames = userIds.map(
@@ -908,10 +804,17 @@ private loadUserListFromCurrentChat() {
     return usernames;
   }
 
+  /**
+ * Clears the current error message.
+ */
   clearErrorMessage() {
     this.manageErrorMessage(null);
   }
 
+
+  /**
+ * Handles text input and manages mention detection.
+ */
   onTextareaInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
     const cursorPosition = textarea.selectionStart || 0;
@@ -930,6 +833,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Inserts the selected user's name into the message box.
+ */
   onUserSelected(user: User) {
     const textarea = this.messageTextarea.nativeElement;
     const cursorPosition = textarea.selectionStart || 0;
@@ -949,7 +855,9 @@ private loadUserListFromCurrentChat() {
     this.mentionSearchTerm = '';
   }
 
-
+  /**
+   * Handles keyboard events for navigating the mention dropdown.
+   */
   onTextareaKeydown(event: KeyboardEvent) {
     if (this.showMentionDropdown && this.mentionDropdownComponent) {
       if (event.key === 'Escape') {
@@ -976,6 +884,9 @@ private loadUserListFromCurrentChat() {
     }
   }
 
+  /**
+ * Inserts an '@' symbol in the message box and opens the mention dropdown.
+ */
   insertAtAndOpenMention() {
     const textarea = this.messageTextarea.nativeElement;
     const cursorPosition = textarea.selectionStart || 0;
@@ -994,6 +905,9 @@ private loadUserListFromCurrentChat() {
     }, 0);
   }
 
+  /**
+ * Handles window resizing to close the thread on small screens.
+ */
   @HostListener('window:resize', ['$event'])
   onResize(event: UIEvent): void {
     const windowWidth = (event.target as Window).innerWidth;
