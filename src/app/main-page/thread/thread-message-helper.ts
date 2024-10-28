@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ThreadService } from '../../shared/services/thread.service';
 import { Message } from '../../shared/models/message.model';
-import { UserService } from '../../shared/services/user.service';
 import { ThreadFileHelper } from './thread-file-helper';
 import { serverTimestamp } from 'firebase/firestore';
 import { Channel } from '../../shared/models/channel.model';
 import { ThreadComponent } from './thread.component';
-import { convertToDate } from '../../shared/utils';
 
 @Injectable({
     providedIn: 'root',
