@@ -76,10 +76,10 @@
         <app-message [message]="message" [userProfile]="userProfiles[message.senderId]"
           [isCurrentUser]="message.senderId === currentUserId" (messageClicked)="openThread($event)"
           [isCurrentChatPrivate]="isCurrentChatPrivate" [currentUserId]="currentUserId"
-          (senderId)="openProfilePopup($event)" (imageClicked)="openOverlay($event)" [messageIndex]="i"></app-message>
+          (senderId)="toggleProfilePopup($event)" (imageClicked)="openOverlay($event)" [messageIndex]="i"></app-message>
       </div>
       <div [ngClass]="{ hidden: !isCurrentChatPrivate || messages.length > 0 }" class="message-info">
-        <div (click)="openProfilePopup( clickedUser?.userId!)" class="chat-main-container">
+        <div (click)="toggleProfilePopup( clickedUser?.userId!)" class="chat-main-container">
           <img [src]="
               clickedUser?.avatar || 'assets/img/profile/fallback_user.png'
             " alt="profile image" (error)="
@@ -99,7 +99,7 @@
         <span *ngIf="currentUserId !== clickedUser?.userId">
           Diese Unterhaltung findet nur zwischen
           <span class="message-info-user" *ngIf="clickedUser"
-            (click)="clickedUser && openProfilePopup(clickedUser.userId)">
+            (click)="clickedUser && toggleProfilePopup(clickedUser.userId)">
             &#64;{{ clickedUser.name }}
           </span>
           und dir statt.
@@ -155,7 +155,7 @@
       (emojiClick)="addEmoji($event)"></emoji-mart>
   </div>
 </div>
-<app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="closeProfil()"
+<app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="toggleProfilePopup()"
   *ngIf="isProfileOpen"></app-profil>
 <app-image-overlay *ngIf="overlayImageUrl" [imageUrl]="overlayImageUrl"
   (closeOverlay)="closeOverlay()"></app-image-overlay>
