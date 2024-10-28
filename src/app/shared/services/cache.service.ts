@@ -97,9 +97,7 @@ export class CacheService {
     }
 
     if (isDevMode()) {
-      console.log(
-        // `[CacheService] Cache set for key: ${key} | Expires at: ${new Date(expiry).toLocaleTimeString()}`
-      );
+      // console.log(`[CacheService] Cache set for key: ${key} | Expires at: ${new Date(expiry).toLocaleTimeString()}`);
     }
   }
 

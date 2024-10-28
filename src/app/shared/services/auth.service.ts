@@ -54,7 +54,6 @@ export class AuthService implements OnDestroy {
         if (docSnap.exists()) {
           const data = docSnap.data();
           const status = data['status'] as 'online' | 'away' | 'offline';
-          console.log(`User ${userId} status updated to ${status}`);
         }
       },
       (error) => {
@@ -74,7 +73,7 @@ export class AuthService implements OnDestroy {
       unsubscribe();
       this.statusListeners.delete(userId);
       if (isDevMode()) {
-        console.log(`[AuthService] Status Listener removed for user: ${userId}`);
+        // console.log(`[AuthService] [DevMode] Status Listener removed for user: ${userId}`);
       }
     }
   }

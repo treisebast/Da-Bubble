@@ -60,7 +60,7 @@ export class ChannelMessageService implements OnDestroy {
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
+        // console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
       }
     }
   }
@@ -70,7 +70,7 @@ export class ChannelMessageService implements OnDestroy {
       unsubscribe();
       this.messageListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
+        // console.log(`[ChannelMessageService] Listener removed for key: ${key}`);
       }
     });
   }

@@ -83,19 +83,19 @@ export class SignUpComponent {
     */
   async onSubmit(event: Event) {
     event.preventDefault();
-  
+
     if (this.signUpForm.valid && this.isPrivacyPolicyAccepted) {
       const { name, email, password } = this.signUpForm.value;
-  
+
       try {
         const user = await this.signUpUser(email, password);
         await this.updateUserProfile(user, name);
         const userObj = this.createUserObject(user.uid, name, email);
         await this.saveUserDetails(userObj);
-  
+
         // Add user to "Entwicklerteam" channel
         await this.addUserToDeveloperTeamChannel(user.uid);
-  
+
         this.showConfirmationDialog('Konto erfolgreich erstellt!');
         this.redirectToAvatarPage(name);
       } catch (error: any) {
@@ -114,7 +114,7 @@ export class SignUpComponent {
  */
   private async signUpUser(email: string, password: string): Promise<any> {
     const credential = await firstValueFrom(this.authService.signUp(email, password));
-    console.log('New User ID:', credential.user?.uid);
+    // console.log('New User ID:', credential.user?.uid);
     return credential.user;
   }
 
@@ -131,7 +131,7 @@ export class SignUpComponent {
       const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
       const photoURL = userDoc?.avatar || '';
       await firstValueFrom(this.authService.updateUserProfile(user, { displayName: name, photoURL }));
-      console.log('User profile updated with display name and photoURL');
+      // console.log('User profile updated with display name and photoURL');
     }
   }
 
@@ -164,7 +164,7 @@ export class SignUpComponent {
    */
   private async saveUserDetails(userObj: User): Promise<void> {
     await this.userService.addUser(userObj);
-    console.log('User registered and details saved');
+    // console.log('User registered and details saved');
   }
 
 
@@ -214,7 +214,7 @@ export class SignUpComponent {
   private async addUserToDeveloperTeamChannel(userId: string): Promise<void> {
     const channelName = 'Entwicklerteam';
     let channel = await this.channelService.getChannelByName(channelName, false);
-  
+
     if (!channel) {
       channel = {
         id: '',

@@ -95,7 +95,7 @@ export class ChangePasswordComponent {
       const newPassword = this.changePasswordForm.value.newPassword;
       this.authService.confirmPasswordReset(this.oobCode, newPassword).subscribe({
         next: () => {
-          console.log('Password has been successfully changed');
+          // console.log('Password has been successfully changed');
           this.showConfirmationDialog();
           this.router.navigate(['/login']);
         },

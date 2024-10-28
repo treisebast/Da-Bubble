@@ -50,7 +50,7 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     private channelService: ChannelService,
     private dialog: MatDialog
   ) {
-    console.log('Dialog data:', data);
+    // console.log('Dialog data:', data);
     this.dialogProgressState = data.popupState;
   }
 
@@ -230,7 +230,7 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     try {
       const updatedMembers = [...new Set([...channel.members, ...usersToAdd])];
       channel.members = updatedMembers; // Update the local channel object
-      console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
+      // console.log('Adding users...', 'users:', usersToAdd, 'channel:', channel);
       await this.channelService.updateChannel(channel, {
         members: updatedMembers,
       });

@@ -354,7 +354,7 @@ export class ChannelService implements OnDestroy {
       unsubscribe();
       this.channelListeners.delete(key);
       if (isDevMode()) {
-        console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
+        // console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
       }
     });
   }

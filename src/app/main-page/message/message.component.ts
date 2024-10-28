@@ -219,7 +219,7 @@ export class MessageComponent implements OnInit, OnChanges {
  * @param Id - The ID of the user whose profile is to be opened
  */
   openProfilePopup(Id: string | undefined) {
-    console.log(Id);
+    // console.log(Id);
     this.senderId.emit(Id);
   }
 
@@ -478,7 +478,7 @@ export class MessageComponent implements OnInit, OnChanges {
     return tooltipHtml || this.sanitizer.bypassSecurityTrustHtml(fallbackHtml);
   }
 
-  
+
 /**
  * Creates the HTML content for the tooltip.
  * @param emoji - The emoji to display

@@ -109,7 +109,7 @@ export class MainPageComponent implements OnInit {
  * Closes the thread component and updates the view based on the current view mode.
  */
   closeThreadComponent() {
-    console.log('Closing thread component');
+    // console.log('Closing thread component');
     this.showSecondary = false;
     if (this.isMobileView) {
       this.currentView = 'main';
@@ -121,7 +121,7 @@ export class MainPageComponent implements OnInit {
  * Opens the thread component and updates the view based on the current view mode.
  */
   openThreadComponent() {
-    console.log('Opening thread component');
+    // console.log('Opening thread component');
     this.showSecondary = true;
     if (this.isMobileView) {
       this.currentView = 'secondary';
@@ -135,7 +135,7 @@ export class MainPageComponent implements OnInit {
  * @param view - The view to switch to ('channels', 'main', or 'secondary')
  */
   switchTo(view: 'channels' | 'main' | 'secondary') {
-    console.log('Switching to view:', view);
+    // console.log('Switching to view:', view);
     this.currentView = view;
 
     if (!this.isMobileView) {

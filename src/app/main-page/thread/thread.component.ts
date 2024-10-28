@@ -666,7 +666,7 @@ private loadUserListFromCurrentChat() {
   }
 
   logAttachment(attachment: string) {
-    console.log('Attachment:', attachment);
+    // console.log('Attachment:', attachment);
   }
 
   formatFileSize(size: number): string {
