@@ -138,51 +138,15 @@ export class ChannelInfoPopupComponent {
             // Filter out undefined or null users
             const validUsers = users.filter((user) => user != null) as User[];
             this.usersOfSelectedChannel = validUsers;
-
-            // Remove any invalid member IDs from the channel
-            await this.removeInvalidMembers(validMemberIds, validUsers);
           },
           error: () => {
-            console.error('Error loading channel members.');
+            console.error('Error loading channel membesrs.');
           },
         });
     }
   }
 
-  /**
-   * Removes invalid member IDs from the channel's members list and updates the backend.
-   * @param validMemberIds - The list of valid member IDs after filtering.
-   * @param validUsers - The list of valid User objects fetched from the backend.
-   */
-  private async removeInvalidMembers(
-    validMemberIds: string[],
-    validUsers: User[]
-  ): Promise<void> {
-    const returnedUserIds = validUsers.map((user) => user.userId);
-    const invalidMemberIds = validMemberIds.filter(
-      (id) => !returnedUserIds.includes(id)
-    );
 
-    if (invalidMemberIds.length > 0 && this.channel) {
-      console.log('Invalid member IDs:', invalidMemberIds);
-      this.channel.members = this.channel.members.filter(
-        (id) => !invalidMemberIds.includes(id)
-      );
-      try {
-        await this.channelService.updateChannel(this.channel, {
-          members: this.channel.members,
-        });
-        console.log(
-          'Removed invalid member IDs:',
-          invalidMemberIds,
-          'Updated channel:',
-          this.channel
-        );
-      } catch (error) {
-        console.error('Error updating channel members:', error);
-      }
-    }
-  }
 
   //---------------------------------------- Editing Methods ----------------------------------------
 

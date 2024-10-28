@@ -127,19 +127,9 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((users) => {
         this.loadedUsers = users.filter(user => !!user);
-        this.removeInvalidMembers();
       });
   }
 
-  private removeInvalidMembers(): void {
-    const validMemberIds = this.loadedUsers.map(user => user.userId);
-    const updatedMemberIds = this.data.channel.members.filter(memberId => validMemberIds.includes(memberId));
-
-    if (updatedMemberIds.length !== this.data.channel.members.length) {
-      this.data.channel.members = updatedMemberIds;
-      this.channelService.updateChannel(this.data.channel, { members: updatedMemberIds });
-    }
-  }
 
 
   /**

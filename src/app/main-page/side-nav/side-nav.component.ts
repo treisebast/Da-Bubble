@@ -131,38 +131,12 @@ export class SideNavComponent implements OnInit, OnDestroy {
       switchMap((users) => {
         const validUsers = users.filter(user => !!user && !!user.userId) as UserWithImageStatus[];
         this.workspaceUsers = validUsers;
-
-        return this.removeInvalidMembersFromChannels(validUsers).pipe(
-          map(() => {})
-        );
+        return this.workspaceUsers;
       }),
       map(() => { this.moveCurrentUserToTop(); })
     );
   }
 
-  /**
-   * Removes invalid member IDs from all channels and updates Firestore.
-   * @param validUsers - The list of currently valid users
-   * @returns An Observable that completes when all channels have been processed
-   */
-  private removeInvalidMembersFromChannels(validUsers: UserWithImageStatus[]): Observable<void> {
-    const validUserIds = new Set(validUsers.map(user => user.userId));
-
-    const updateObservables = [...this.publicChannels,...this.privateChannels].map(channel => {
-      const originalMemberIds = channel.members;
-      const updatedMemberIds = originalMemberIds.filter(id => validUserIds.has(id));
-
-      if (updatedMemberIds.length !== originalMemberIds.length) {
-        channel.members = updatedMemberIds;
-        return this.channelService.updateChannel(channel, { members: updatedMemberIds });
-      }
-      return of(void 0);
-    });
-
-    return combineLatest(updateObservables).pipe(
-      map(() => { /* Keine Aktion erforderlich hier */ })
-    );
-  }
 
   /**
    * Moves the current user to the top of the `workspaceUsers` array.
