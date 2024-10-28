@@ -113,7 +113,7 @@
     }
 
     .channel-members {
-      // display: none;
+      display: none;
     }
   }
 
@@ -428,5 +428,11 @@ app-profil {
     padding: 20px;
     max-width: unset;
     border-radius: 0;
+  }
+}
+
+@media(max-width:400px) {
+  app-profil {
+    top: 300px;
   }
 }
