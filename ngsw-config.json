@@ -41,7 +41,9 @@
       }
     }
   ],
-  "navigationUrls": [
-    "/**"
-  ]
+"navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/api/**"
+]
 }

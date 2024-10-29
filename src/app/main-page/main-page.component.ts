@@ -41,11 +41,7 @@ export class MainPageComponent implements OnInit {
   ngOnInit() {
     this.checkViewModes();
 
-    if (this.isMobileView) {
-      this.currentView = 'channels';
-    } else {
-      this.currentView = 'main';
-    }
+    this.currentView = this.isMobileView ? 'channels' : 'main';
 
     this.chatService.currentChat$.subscribe(({ chat }) => {
       if (this.previousChatId && chat?.id !== this.previousChatId) {
