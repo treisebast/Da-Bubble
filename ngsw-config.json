@@ -26,5 +26,22 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "firebase-data",
+      "urls": [
+        "https://firestore.googleapis.com/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 5,
+        "maxAge": "1d",
+        "timeout": "7s"
+      }
+    }
+  ],
+  "navigationUrls": [
+    "/**"
   ]
 }
