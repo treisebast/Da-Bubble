@@ -1,6 +1,6 @@
-import { Injectable, isDevMode, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Firestore, doc, docData, collectionData, collection, setDoc, updateDoc, deleteDoc, getDoc, query, getDocs, where, onSnapshot } from '@angular/fire/firestore';
-import { BehaviorSubject, catchError, combineLatest, forkJoin, from, map, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, forkJoin, from, map, Observable, of, Subject } from 'rxjs';
 import { User } from '../models/user.model';
 import { Channel } from '../models/channel.model';
 import { CacheService } from './cache.service';
@@ -10,34 +10,10 @@ import { CacheService } from './cache.service';
 })
 export class UserService implements OnDestroy {
 
-  /**
- * Firestore collection reference for users.
- */
-  private usersCollection = collection(this.firestore, 'users');
-
-  /**
- * BehaviorSubject to hold the last two emojis used.
- */
   private lastTwoEmojisSubject = new BehaviorSubject<string[]>([]);
-
-  /**
- * Observable stream of the last two emojis.
- */
   lastTwoEmojis$ = this.lastTwoEmojisSubject.asObservable();
-
-  /**
- * Key used for storing emojis in local storage.
- */
   private localStorageKey = 'lastTwoEmojis';
-
-  /**
- * Map to hold unsubscribe functions for user listeners.
- */
   private userListeners: Map<string, () => void> = new Map();
-
-  /**
-  * Subject to signal the destruction of the service for cleanup.
-  */
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -68,10 +44,9 @@ export class UserService implements OnDestroy {
       const unsubscribe = onSnapshot(userDoc, (docSnap) => {
         if (docSnap.exists()) {
           const userData = docSnap.data() as User;
-          this.cacheService.set(`user-${userId}`, userData); // Echtzeitdaten, keine TTL
+          this.cacheService.set(`user-${userId}`, userData);
         }
       }, (error) => {
-        console.error(`Error listening to user ${userId} updates:`, error);
       });
       this.userListeners.set(userId, unsubscribe);
     }
@@ -304,10 +279,9 @@ export class UserService implements OnDestroy {
    */
   getUserChannels(userId: string): Observable<Channel[]> {
     if (!userId) {
-      console.error('UserService: userId ist undefined in getUserChannels');
       return of([]);
     }
-    
+
     const publicChannelsQuery = query(
       collection(this.firestore, 'channels'),
       where('members', 'array-contains', userId)
