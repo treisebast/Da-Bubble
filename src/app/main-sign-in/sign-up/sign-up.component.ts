@@ -222,6 +222,7 @@ export class SignUpComponent {
         id: '',
         name: channelName,
         isPrivate: false,
+        description: 'Dieser Channel dient der grundlegenden Team-Kommunikation.',
         members: [userId],
         createdBy: userId,
         createdAt: new Date(),
