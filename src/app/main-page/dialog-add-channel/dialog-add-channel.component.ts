@@ -34,7 +34,7 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
   isDialogOpen = false;
   currentUserId = '';
   channelMembers: Set<string> = new Set();
-
+  errorMessage: string = '';
   dialogProgressState: 'addChannel' | 'addUsers' = 'addChannel';
   loadedUsers: User[] = [];
   filteredUsers: User[] = [];
@@ -65,7 +65,7 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private dialog: MatDialog,
     private userService: UserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initialize();
@@ -143,8 +143,8 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
     const searchTerm = this.searchInput.trim().toLowerCase();
 
     const filtered = searchTerm ? this.loadedUsers.filter((user) =>
-          user.name.toLowerCase().includes(searchTerm)
-        ) : this.loadedUsers.slice();
+      user.name.toLowerCase().includes(searchTerm)
+    ) : this.loadedUsers.slice();
 
     this.filteredUsers = this.sortUsers(filtered);
   }
@@ -225,6 +225,7 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
    * Creates a new channel and navigates to the add users page.
    */
   async createChannelAndGoToAddUsers() {
+    this.errorMessage = '';
     try {
       const duplicateChannel = await this.channelService.getChannelByName(
         this.channelName,
@@ -232,7 +233,7 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
       );
 
       if (duplicateChannel) {
-        console.error('Ein Channel mit diesem Namen existiert bereits.');
+        this.errorMessage = 'Ein Channel mit diesem Namen existiert bereits.';
         return;
       }
 
@@ -240,9 +241,17 @@ export class DialogAddChannelComponent implements OnInit, OnDestroy {
       await this.saveChannelToFirebase(newChannel);
       this.dialogProgressState = 'addUsers';
     } catch (error) {
-      console.error('Fehler beim Erstellen des Channels:', error);
+      this.errorMessage = 'Fehler beim Erstellen des Channels.';
     }
   }
+
+  /**
+   * Handler called when the channel name input changes.
+   */
+  onChannelNameChange() {
+    this.errorMessage = '';
+  }
+
 
   /**
    * Creates a channel object.
