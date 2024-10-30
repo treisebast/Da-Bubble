@@ -358,14 +358,19 @@ export class ThreadComponent implements OnInit, OnDestroy {
  * Retrieves the username for a given user ID.
  */
   getUserName(userId: string): string {
-    return this.userNames[userId] || 'Unknown';
+    return this.userProfiles[userId]?.name || 'Unknown';
   }
 
   /**
  * Loads profiles for users mentioned in the messages.
  */
   loadUserProfiles(messages: Message[]) {
-    this.threadUserHelper.loadUserProfiles(messages, this.userProfiles, this.cdr);
+    this.threadUserHelper.loadUserProfiles(
+      messages,
+      this.userProfiles,
+      this.cdr,
+      this.unsubscribe$
+  );
   }
 
   /**

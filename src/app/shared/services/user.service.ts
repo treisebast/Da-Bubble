@@ -132,7 +132,6 @@ export class UserService implements OnDestroy {
           }
         },
         (error) => {
-          console.error(`Error listening to user ${id} updates:`, error);
         }
       );
 

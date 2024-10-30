@@ -3,6 +3,7 @@ import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/user.model';
 import { Message } from '../../shared/models/message.model';
 import { ChangeDetectorRef } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -31,13 +32,18 @@ export class ThreadUserHelper {
       * @param userProfiles - Object to store loaded user profiles.
       * @param cdr - The ChangeDetectorRef instance from the component.
       */
-    loadUserProfiles(messages: Message[], userProfiles: { [key: string]: User }, cdr: ChangeDetectorRef) {
+    loadUserProfiles(
+        messages: Message[],
+        userProfiles: { [key: string]: User },
+        cdr: ChangeDetectorRef,
+        unsubscribe$: Subject<void>
+    ) {
         const allUserIds = this.collectUserIds(messages);
         const newUserIds = allUserIds.filter((userId) => !userProfiles[userId]);
-
         if (newUserIds.length === 0) return;
-
-        this.userService.getUsersOnce(newUserIds).subscribe((users) => {
+        this.userService.getUsersByIds(newUserIds).pipe(
+            takeUntil(unsubscribe$)
+        ).subscribe((users) => {
             this.assignUserProfiles(users, newUserIds, userProfiles);
             this.setStandardAvatars(newUserIds, userProfiles);
             cdr.detectChanges();
