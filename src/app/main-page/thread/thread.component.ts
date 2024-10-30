@@ -157,6 +157,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
           }
 
           this.loadAttachments(chatMessage.attachments);
+          this.cdr.detectChanges();
+          this.focusTextarea();
         }
       });
   }
@@ -677,9 +679,8 @@ export class ThreadComponent implements OnInit, OnDestroy {
  * Sets focus to the message input textarea.
  */
   focusTextarea() {
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      textarea.focus();
+    if (this.messageTextarea && this.messageTextarea.nativeElement) {
+      this.messageTextarea.nativeElement.focus();
     }
   }
 

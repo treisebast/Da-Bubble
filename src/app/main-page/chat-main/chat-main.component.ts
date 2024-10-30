@@ -33,6 +33,7 @@ import { handleFileAction } from './file-helper';
 import { setErrorMessage, clearErrorMessage } from './error-helper';
 import { loadMetadataForMessage } from './message-helper';
 import { handleTextareaInput, handleTextareaKeydown, InputHandlerState, KeydownHandlerCallbacks, KeydownHandlerState } from './chat-keydown.helper';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-chat-main',
@@ -114,7 +115,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private navigationSubscription: Subscription | null = null;
   private profileSubscription: Subscription | null = null;
 
-  constructor(private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
+  constructor(private cd: ChangeDetectorRef, private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
     registerLocaleData(localeDe);
   }
 
@@ -127,7 +128,6 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToCurrentChat();
     this.subscribeToLoadingState();
     this.subscribeToMessages();
-    this.subscribeToChannels();
     this.subscribeToSelectedMessage();
     this.setLoadingState(false);
   }
@@ -175,14 +175,15 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
    * Subscribes to private and public channels, updating local lists.
    */
   private subscribeToChannels(): void {
+    if (!this.currentUserId) return;
     const privateChannelsSub = this.channelService
-      .getPrivateChannels()
+      .getChannelsForUser(this.currentUserId, true)
       .subscribe((channels) => {
         this.privateChannels = channels;
       });
     this.subscriptions.add(privateChannelsSub);
     const publicChannelsSub = this.channelService
-      .getPublicChannels()
+      .getChannelsForUser(this.currentUserId, false)
       .subscribe((channels) => {
         this.publicChannels = channels;
       });
@@ -208,6 +209,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const authSub = this.authService.getUser().subscribe((user) => {
       if (user) {
         this.setUserDetails(user);
+        this.subscribeToChannels();
       }
     });
     this.subscriptions.add(authSub);
@@ -247,6 +249,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
           this.otherUser = this.getOtherUserInPrivateChat(chat);
           this.getUserNameById(chat);
         }
+        this.cd.detectChanges();
+        this.focusTextarea();
       });
   }
 
@@ -735,9 +739,8 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
  * Focuses on the message textarea for continued input.
  */
   focusTextarea() {
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      textarea.focus();
+    if (this.messageTextarea && this.messageTextarea.nativeElement) {
+      this.messageTextarea.nativeElement.focus();
     }
   }
 

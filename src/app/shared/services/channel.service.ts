@@ -172,7 +172,6 @@ export class ChannelService implements OnDestroy {
    */
   getChannelsForUser(userId: string, isPrivate: boolean): Observable<Channel[]> {
     if (!userId) {
-      console.error('ChannelService: userId ist undefined');
       return of([]);
     }
     const collectionPath = isPrivate ? 'directMessages' : 'channels';
@@ -353,9 +352,6 @@ export class ChannelService implements OnDestroy {
     this.channelListeners.forEach((unsubscribe, key) => {
       unsubscribe();
       this.channelListeners.delete(key);
-      if (isDevMode()) {
-        // console.log(`[ChannelService] Listener entfernt für Schlüssel: ${key}`);
-      }
     });
   }
 }
