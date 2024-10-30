@@ -3,6 +3,12 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { map } from 'rxjs/operators';
 
+/**
+ * Loads metadata for each attachment in a message and adds it to the message metadata.
+ * @param {Message} message - The message object containing attachments.
+ * @param {FirebaseStorageService} firebaseStorageService - Service to retrieve file metadata from Firebase.
+ * @returns {Observable<Message>} An observable that emits the message with added metadata for attachments.
+ */
 export function loadMetadataForMessage(
   message: Message,
   firebaseStorageService: FirebaseStorageService

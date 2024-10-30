@@ -50,7 +50,6 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
     private channelService: ChannelService,
     private dialog: MatDialog
   ) {
-    // console.log('Dialog data:', data);
     this.dialogProgressState = data.popupState;
   }
 
@@ -235,11 +234,10 @@ export class DialogShowMembersComponent implements OnInit, OnDestroy {
         members: updatedMembers,
       });
     } catch (error) {
-      console.error('Error adding users to channel:', error);
     } finally {
       this.loading = false;
       this.dialogRef.close();
-      this.showConfirmationDialog('Users successfully added to the channel.');
+      this.showConfirmationDialog('Benutzer erfolgreich zum Channel hinzugefügt.');
     }
   }
 
