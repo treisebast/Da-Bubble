@@ -11,32 +11,14 @@ import { CacheService } from './cache.service';
   providedIn: 'root',
 })
 export class ChatService implements OnDestroy {
-
-  /** Subject to manage the current chat state with its privacy status */
   private currentChatSubject = new BehaviorSubject<{ chat: Channel | null; isPrivate: boolean }>({ chat: null, isPrivate: false });
-
-  /** Observable for the current chat state */
   public currentChat$ = this.currentChatSubject.asObservable();
-
-  /** Subject to manage the selected chat status */
   private selectedChatSubject = new BehaviorSubject<boolean>(false);
-
-  /** Observable for the selected chat status */
   selectedChat$ = this.selectedChatSubject.asObservable();
-
-  /** Subject to manage the loading state */
   private loadingStateSubject = new BehaviorSubject<boolean>(false);
-
-  /** Observable for the loading state */
   loadingState$ = this.loadingStateSubject.asObservable();
-
-  /** Subject to manage the initiation of a private chat */
   private createPrivateChatSubject = new BehaviorSubject<User | null>(null);
-
-  /** Observable for initiating a private chat */
   createPrivateChat$ = this.createPrivateChatSubject.asObservable();
-
-  /** Observable for the messages in the current chat */
   messages$ = this.currentChat$.pipe(
     switchMap(({ chat, isPrivate }) => {
       if (chat && chat.id) {
