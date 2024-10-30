@@ -33,7 +33,7 @@
       <span>Anmelden mit Google</span>
     </button>
     <div class="login-actions">
-      <button type="submit" class="prio-button">Anmelden</button>
+      <button type="submit" class="prio-button" [disabled]="signInForm.invalid">Anmelden</button>
       <button (click)="guestLogin($event)" class="alt-button">Gäste-Login</button>
     </div>
   </form>

@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-  ElementRef,
-  ChangeDetectorRef,
-  OnInit,
-  Input,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, ElementRef, ChangeDetectorRef, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -30,18 +20,7 @@ import { sendEmailVerification } from '@angular/fire/auth';
 @Component({
   selector: 'app-avatar-choice',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterOutlet,
-    RouterModule,
-  ],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterOutlet, RouterModule],
   templateUrl: './avatar-choice.component.html',
   styleUrls: ['./avatar-choice.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -192,7 +171,6 @@ export class AvatarChoiceComponent implements OnInit {
       this.showConfirmationDialog();
       if (!currentUser.emailVerified && !this.isChangingAvatar) {
         await sendEmailVerification(currentUser);
-        console.log('Verification email sent to user');
       }
 
       if (!this.isChangingAvatar) {
@@ -207,10 +185,12 @@ export class AvatarChoiceComponent implements OnInit {
    * Displays a confirmation dialog indicating that the avatar has been selected.
    */
   showConfirmationDialog() {
-    this.dialog.open(ConfirmationDialogComponent, {
+    this.dialog.closeAll();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: { message: 'Avatar ausgewählt' },
       hasBackdrop: false,
     });
+    setTimeout(() => dialogRef.close(), 2000);
   }
 
   /**

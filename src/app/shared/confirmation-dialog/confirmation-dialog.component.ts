@@ -33,7 +33,7 @@ export class ConfirmationDialogComponent {
  * @param {AnimationEvent} event - The animation event that occurred.
  */
   onAnimationEnd(event: AnimationEvent): void {
-    if (event.animationName === 'slide-out') {
+    if (event.animationName === 'slide-out' || event.animationName === 'slide-up-out') {
       this.dialogRef.close();
     }
   }

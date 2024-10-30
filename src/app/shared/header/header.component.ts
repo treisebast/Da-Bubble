@@ -137,7 +137,6 @@ ngOnInit() {
  */
   openProfil(User: Partial<User>) {
     this.isProfilOpen = true;
-    console.log(User);
   }
 
 

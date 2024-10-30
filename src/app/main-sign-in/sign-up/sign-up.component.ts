@@ -1,5 +1,5 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -44,7 +44,7 @@ export class SignUpComponent {
      */
     this.signUpForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, this.customEmailValidator]],
       password: ['', [Validators.required, Validators.minLength(8)]],
     });
   }
@@ -174,10 +174,12 @@ export class SignUpComponent {
   * @param {string} message - The message to display in the confirmation dialog.
   */
   private showConfirmationDialog(message: string): void {
-    this.dialog.open(ConfirmationDialogComponent, {
+    this.dialog.closeAll();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: { message: message },
       hasBackdrop: false
     });
+    setTimeout(() => dialogRef.close(), 2000);
   }
 
 
@@ -235,5 +237,17 @@ export class SignUpComponent {
         });
       }
     }
+  }
+
+  /**
+ * Validates an email address to ensure it contains a valid top-level domain.
+ * @param {AbstractControl} control - The form control containing the email address.
+ * @returns {ValidationErrors | null} An object with validation errors if the email is invalid, otherwise null.
+ */
+  customEmailValidator(control: AbstractControl): ValidationErrors | null {
+    const email = control.value;
+    if (!email) return null;
+    const EMAIL_REGEXP = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return EMAIL_REGEXP.test(email) ? null : { email: true };
   }
 }

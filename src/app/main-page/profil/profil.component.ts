@@ -124,7 +124,6 @@ export class ProfilComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error opening or creating chat:', error);
         },
       });
   }

@@ -132,6 +132,7 @@ export class SignInComponent {
  * @private
  */
   private showConfirmationDialog() {
+    this.dialog.closeAll();
     this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: 'Erfolgreich angemeldet',

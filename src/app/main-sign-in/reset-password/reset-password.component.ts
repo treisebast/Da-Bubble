@@ -88,9 +88,11 @@ export class ResetPasswordComponent {
    * @param {string} image - The image to display.
    */
   private openDialog(message: string, image: string): void {
-    this.dialog.open(ConfirmationDialogComponent, {
+    this.dialog.closeAll();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: { message, image },
       hasBackdrop: false
     });
+    setTimeout(() => dialogRef.close(), 2000);
   }
 }
