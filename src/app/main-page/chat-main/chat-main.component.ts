@@ -16,7 +16,6 @@ import { AuthService } from '../../shared/services/auth.service';
 import { ChannelService } from '../../shared/services/channel.service';
 import { ChatService } from '../../shared/services/chat-service.service';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
-import { MessageHandlerService } from '../../shared/services/message-handler.service';
 import { NavigationService } from '../../shared/services/navigation-service.service';
 import { ScrollService } from '../../shared/services/scroll-service.service';
 import { ThreadService } from '../../shared/services/thread.service';
@@ -115,7 +114,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private navigationSubscription: Subscription | null = null;
   private profileSubscription: Subscription | null = null;
 
-  constructor(private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private messageHandlerService: MessageHandlerService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
+  constructor(private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
     registerLocaleData(localeDe);
   }
 
@@ -194,9 +193,9 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
    * Subscribes to the selected message, handling it if a message is chosen.
    */
   private subscribeToSelectedMessage(): void {
-    this.navigationSubscription = this.navigationService.selectedMessage$.subscribe((message) => {
+    this.navigationSubscription = this.navigationService.selectedMessage$.subscribe(async (message) => {
       if (message) {
-        this.messageHandlerService.handleSelectedMessage(this, message);
+        await this.handleSelectedMessage(message);
       }
     });
     this.subscriptions.add(this.navigationSubscription);
@@ -871,5 +870,34 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (index === 0) return true;
     const previousMessage = this.messages[index - 1];
     return helperIsNewDay(currentMessage, previousMessage);
+  }
+
+  /**
+ * Loads a chat by its ID and sets it as the current chat.
+ */
+  public async loadChatById(chatId: string, isPrivate: boolean): Promise<void> {
+    const channel = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));
+    if (channel) {
+      this.chatService.setCurrentChat(channel, isPrivate);
+    }
+  }
+
+  /**
+ * Handles a selected message by loading the associated chat if necessary and scrolling to the message.
+ */
+  private async handleSelectedMessage(message: Message) {
+    const chatId = message.chatId;
+    const isPrivate = message.isPrivateChat;
+    if (chatId) {
+      if (
+        this.currentChat?.id !== chatId ||
+        this.isCurrentChatPrivate !== isPrivate
+      ) {
+        await this.loadChatById(chatId, isPrivate);
+      }
+      if (message.id) {
+        this.scrollService.scrollToMessage(message.id);
+      }
+    }
   }
 }
