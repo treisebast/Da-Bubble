@@ -51,6 +51,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   channelMentionStartPosition = -1;
   isLoading: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
+  
   showEmojiPicker = false;
   currentChat: any = null;
   selectedChat: boolean = false;
@@ -79,7 +80,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   publicChannels: Channel[] = [];
   filteredChannels: Channel[] = [];
   filteredPublicChannels: Channel[] = [];
-
+  showEmojiMart = false;
   private usersOfSelectedChannelSubscription: Subscription | null = null;
   private clickedUserSubscription: Subscription | null = null;
   private previousChatId: string | null = null;
@@ -168,6 +169,10 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
         this.closeEmojiPickerOnOutsideClick.bind(this)
       );
     }, 0);
+
+    setTimeout(() => {
+      this.showEmojiMart = true;
+    }, 300);
   }
 
 

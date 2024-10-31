@@ -49,7 +49,9 @@
     <div class="reaction-button-bar">
       <div class="mobile-nav-menu">
         <div class="mobile-mart" *ngIf="screenSmall" (click)="toggleMobileEmojis()" #mobileMartButton>
-          <div class="mobile-mart-container"  [ngClass]="{'left-aligned': isCurrentUser, 'right-aligned': !isCurrentUser}" *ngIf="showMobileEmojis" #mobileMartContainer>
+          <div class="mobile-mart-container"
+            [ngClass]="{'left-aligned': isCurrentUser, 'right-aligned': !isCurrentUser}" *ngIf="showMobileEmojis"
+            #mobileMartContainer>
             <span *ngFor="let emoji of mobileEmojis" class="mobile-emoji" (click)="onMobileEmojiClick(emoji)">
               {{ emoji }}
             </span>
@@ -69,7 +71,7 @@
       </div>
     </div>
     <div #emojiPickerContainer>
-      <emoji-mart *ngIf="showEmojiPicker" set="twitter" theme="light"
+      <emoji-mart [style.display]="showEmojiPicker ? 'block' : 'none'" set="twitter" theme="light"
         class="emoji-mart-message {{ emojiMartPositionClass }}" (emojiClick)="addEmoji($event)"
         (click)="$event.stopPropagation()">
       </emoji-mart>

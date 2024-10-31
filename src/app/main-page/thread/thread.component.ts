@@ -64,7 +64,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
   mentionSearchTerm = '';
   mentionStartPosition = -1;
   usersOfSelectedChannel: User[] = [];
-
+  showEmojiMarts = false;
   showMessageBoxEmojiPicker = false;
   preventImmediateClose: boolean = true;
   errorTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -102,6 +102,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
     this.subscribeToCurrentChat();
     this.subscribeToCurrentThread();
     this.loadUserListFromCurrentChat();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.showEmojiMarts = true;
+    }, 300);
   }
 
   /**
@@ -372,7 +378,7 @@ export class ThreadComponent implements OnInit, OnDestroy {
       this.userProfiles,
       this.cdr,
       this.unsubscribe$
-  );
+    );
   }
 
   /**
