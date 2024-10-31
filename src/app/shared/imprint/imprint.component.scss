@@ -14,3 +14,15 @@ mat-card-subtitle {
     text-align: left;
     margin: 0;
 }
+
+.imprint-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }

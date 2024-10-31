@@ -1,23 +1,24 @@
-<mat-card class="login-card centered gap32">
-    <div class="arrow-back position-relative" (click)="goBack()">
-        <div class="arrow-back-img"></div>
-    </div>
-    <div class="gap16">
-        <mat-card-title>Impressum</mat-card-title>
-        <div>
-            <mat-card-subtitle>Sebastian Treittinger</mat-card-subtitle>
-            <mat-card-subtitle>Marco Ammann</mat-card-subtitle>
-            <mat-card-subtitle>Tobias Wall</mat-card-subtitle>
-            <mat-card-subtitle>Aristotelis Stratis</mat-card-subtitle>
+<div class="imprint-overlay" (click)="onOverlayClick($event)">
+    <mat-card class="login-card centered gap32" (click)="$event.stopPropagation()">
+        <div class="arrow-back position-relative" (click)="goBack()">
+            <div class="arrow-back-img"></div>
         </div>
-        <div>
-            <mat-card-subtitle>Siebenbürger Straße 8</mat-card-subtitle>
-            <mat-card-subtitle>93197 Zeitlarn</mat-card-subtitle>
+        <div class="gap16">
+            <mat-card-title>Impressum</mat-card-title>
+            <div>
+                <mat-card-subtitle>Sebastian Treittinger</mat-card-subtitle>
+                <mat-card-subtitle>Marco Ammann</mat-card-subtitle>
+                <mat-card-subtitle>Tobias Wall</mat-card-subtitle>
+                <mat-card-subtitle>Aristotelis Stratis</mat-card-subtitle>
+            </div>
+            <div>
+                <mat-card-subtitle>Siebenbürger Straße 8</mat-card-subtitle>
+                <mat-card-subtitle>93197 Zeitlarn</mat-card-subtitle>
+            </div>
         </div>
-    </div>
-    <div class="gap16">
-        <mat-card-title>Contact:</mat-card-title>
-        <mat-card-subtitle>contact&#64;sebastian-treittinger.de</mat-card-subtitle>
-    </div>
-
-</mat-card>
+        <div class="gap16">
+            <mat-card-title>Contact:</mat-card-title>
+            <mat-card-subtitle>contact&#64;sebastian-treittinger.de</mat-card-subtitle>
+        </div>
+    </mat-card>
+</div>

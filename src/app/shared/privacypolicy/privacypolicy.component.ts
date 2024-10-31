@@ -30,4 +30,12 @@ export class PrivacypolicyComponent {
     window.history.go(-1);
     return false;
   }
+
+  /**
+ * Handles click on overlay to close the privacy policy if clicked outside the mat-card.
+ * @param event MouseEvent
+ */
+  onOverlayClick(event: MouseEvent) {
+    this.goBack();
+  }
 }
