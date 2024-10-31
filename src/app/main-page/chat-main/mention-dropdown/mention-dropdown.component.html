@@ -1,10 +1,13 @@
 <div class="mention-dropdown">
     <div class="mention-dropdown-content">
         <ul>
-            <li #userItem *ngFor="let user of filteredUsers; let i = index" 
+            <li *ngIf="filteredUsers.length === 0" class="no-results">
+                Keine Resultate für: "<span class="searchTermText">{{ searchTerm }}</span>"
+            </li>
+            <li #userItem *ngFor="let user of filteredUsers; let i = index"
                 (click)="selectUser(user)"
                 [ngClass]="{'selected': selectedIndex === i}">
-                <img [src]="user.avatar || 'assets/img/profile/fallback_user.png'" 
+                <img [src]="user.avatar || 'assets/img/profile/fallback_user.png'"
                 (error)="handleImgError($event)"
                 alt="{{ user.name }}" />
               <div
@@ -15,7 +18,7 @@
                   'offline': user.status === 'offline'
                 }"
               ></div>
-              <span>{{ user.name }}</span>
+              <span class="nameOfUser">{{ user.name }}</span>
             </li>
         </ul>
     </div>

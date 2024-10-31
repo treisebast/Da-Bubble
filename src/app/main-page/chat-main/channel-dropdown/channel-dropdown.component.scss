@@ -53,6 +53,12 @@
     padding: 12px;
     font-size: 16px;
     text-align: center;
+    display: block!important;
+
+    .searchTermText {
+      font-weight: 600;
+      color: red;
+    }
 }
 
 @media(max-width:600px) {

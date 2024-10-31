@@ -47,7 +47,7 @@
                 object-fit: cover;
             }
 
-            span {
+            .nameOfUser {
                 flex-grow: 1;
                 font-size: 16px;
             }
@@ -76,6 +76,20 @@
 
         }
     }
+}
+
+.no-results {
+  padding: 12px;
+  font-size: 16px;
+  text-align: center;
+  font-style: italic;
+
+  display: block!important;
+
+  .searchTermText {
+    font-weight: 600;
+    color: red;
+  }
 }
 
 @media(max-width:600px) {

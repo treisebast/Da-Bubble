@@ -2,7 +2,7 @@
     <div class="channel-dropdown-content">
       <ul>
         <li *ngIf="filteredChannels.length === 0" class="no-results">
-          Keine Ergebnisse gefunden
+          Keine Resultate für: "<span class="searchTermText">{{ searchTerm }}</span>"
         </li>
         <li #channelItem *ngFor="let channel of filteredChannels; let i = index"
             (click)="selectChannel(channel)"
