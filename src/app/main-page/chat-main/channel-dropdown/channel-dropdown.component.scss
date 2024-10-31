@@ -49,6 +49,12 @@
     }
 }
 
+.no-results {
+    padding: 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
 @media(max-width:600px) {
     .channel-dropdown {
         bottom: 130px;
