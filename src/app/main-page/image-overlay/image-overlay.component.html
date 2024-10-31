@@ -1,6 +1,8 @@
 <div class="overlay" *ngIf="imageUrl" (click)="onClose()">
-    <div class="overlay-content" (click)="$event.stopPropagation()">
-      <img [src]="imageUrl" alt="Full size image" />
+  <div class="overlay-content" (click)="$event.stopPropagation()">
+    <img [src]="imageUrl" alt="Full size image" />
+    <div class="open-in-browser">
+      <a [href]="imageUrl" target="_blank" rel="noopener noreferrer">Open in Browser</a>
     </div>
   </div>
-  
+</div>

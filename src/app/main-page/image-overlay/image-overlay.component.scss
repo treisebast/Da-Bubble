@@ -17,6 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
 .overlay-content img {
@@ -36,6 +37,28 @@
     font-size: 30px;
     color: white;
     cursor: pointer;
+}
+
+.open-in-browser {
+    width: 100%;
+    align-items: center;
+    display: flex;
+    justify-content: end;
+
+    a {
+        color: white;
+        text-decoration: none;
+        padding-right: 8px;
+        padding-top: 8px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &:visited {
+            color: white;
+        }
+    }
 }
 
 
