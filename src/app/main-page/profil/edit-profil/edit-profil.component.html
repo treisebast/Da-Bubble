@@ -27,13 +27,15 @@
     </div>
   </div>
 </form>
+
+<!-- E-Mail -->
 <form [formGroup]="emailFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingEmail">
   <div class="flex-container">
-    <div class="email-icon"></div>
     <span class="h2text">E-Mail-Adresse</span>
   </div>
   <div class="input-container"
     [ngClass]="{'invalid-border': emailControls.email.invalid && (emailControls.email.dirty || emailControls.email.touched)}">
+    <img src="/assets/img/front-page/mail.svg" alt="email icon">
     <input type="email" formControlName="email" [placeholder]="ownUser.email" />
   </div>
   <span class="validMsg" *ngIf="emailControls.email.invalid && emailControls.email.touched">
@@ -41,19 +43,31 @@
   </span>
 
   <div class="flex-container">
-    <div class="email-icon"></div>
     <span class="h2text">E-Mail-Adresse wiederholen</span>
   </div>
   <div class="input-container" [ngClass]="{'invalid-border': emailControls.emailRepeat.invalid}">
+    <img src="/assets/img/front-page/mail.svg" alt="email icon">
     <input type="email" formControlName="emailRepeat" [placeholder]="ownUser.email" />
   </div>
   <span class="validMsg" *ngIf="emailControls.emailRepeat.hasError('mismatch')">
     E-Mail-Adresse stimmt nicht überein.
   </span>
+
+  <div class="flex-container">
+    <span class="h2text">Passwort</span>
+  </div>
+  <div class="input-container">
+    <img src="/assets/img/front-page/lock.svg" alt="password icon">
+    <input type="password" formControlName="password" autocomplete="password" placeholder="Passwort" required>
+  </div>
+
+  <p *ngIf="successMessage" style="color: green;">{{ successMessage }}</p>
+  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
+
   <div class="width-100">
     <div class="button-container">
-      <span class="btn btn-cancel" type="button" (click)="cancel()">Abbrechen</span>
-      <button class="btn btn-save" type="submit" [disabled]="emailFormGroup.invalid">Speichern</button>
+      <button type="button" class="btn btn-cancel" (click)="cancel()">Abbrechen</button>
+      <button type="submit" class="btn btn-save" [disabled]="emailFormGroup.invalid">Speichern</button>
     </div>
   </div>
 </form>

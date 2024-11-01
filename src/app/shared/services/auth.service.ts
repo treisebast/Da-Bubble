@@ -1,10 +1,28 @@
 import { Injectable, isDevMode, OnDestroy } from '@angular/core';
-import { Auth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState, User as FirebaseUser, GoogleAuthProvider, sendPasswordResetEmail, confirmPasswordReset, updateProfile, Unsubscribe } from '@angular/fire/auth';
+import {
+  Auth,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  authState,
+  User as FirebaseUser,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  updateProfile,
+  Unsubscribe,
+} from '@angular/fire/auth';
 import { from, Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { UserService } from './user.service';
 import { ChannelService } from './channel.service';
 import { CacheService } from './cache.service';
+import {
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updateEmail,
+} from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +36,7 @@ export class AuthService implements OnDestroy {
   private statusListeners: Map<string, () => void> = new Map();
   private authStateSubscription!: Subscription;
   private destroy$ = new Subject<void>();
+  // private auth: Auth;
 
   constructor(
     private auth: Auth,
@@ -28,8 +47,31 @@ export class AuthService implements OnDestroy {
   ) {
     this.checkAndSetUserOnlineStatus();
     this.monitorUserActivity();
+    // this.auth = getAuth();
   }
 
+  /**
+   * Erneut die Authentifizierung des Benutzers mit Passwort.
+   * @param password Passwort des Benutzers
+   */
+  reauthenticateUser(password: string) {
+    const user = this.auth.currentUser;
+    if (user?.email) {
+      const credential = EmailAuthProvider.credential(user.email, password);
+      return reauthenticateWithCredential(user, credential);
+    } else {
+      return Promise.reject('No user is currently signed in.');
+    }
+  }
+
+  /**
+   * Aktualisiert die E-Mail-Adresse des angemeldeten Benutzers.
+   * @param newEmail Neue E-Mail-Adresse
+   */
+  updateUserEmail(newEmail: string) {
+    const user = this.auth.currentUser;
+    return updateEmail(user!, newEmail);
+  }
 
   /**
    * Lifecycle hook that is called when the component is destroyed.
@@ -57,7 +99,10 @@ export class AuthService implements OnDestroy {
         }
       },
       (error) => {
-        console.error(`Error listening to status updates for user ${userId}:`, error);
+        console.error(
+          `Error listening to status updates for user ${userId}:`,
+          error
+        );
       }
     );
     this.statusListeners.set(userId, unsubscribe);
@@ -158,17 +203,19 @@ export class AuthService implements OnDestroy {
    */
   signInWithGoogle(): Observable<any> {
     const provider = new GoogleAuthProvider();
-    return from(signInWithPopup(this.auth, provider).then((result) => {
-      if (result.user) {
-        this.setUserOnlineStatus(result.user.uid, 'online');
-        this.monitorVisibility(result.user.uid);
-        this.addUnloadEvent(result.user.uid);
-        this.listenToUserStatusUpdates(result.user.uid);
-        this.userService.listenToUserUpdates(result.user.uid);
-        this.channelService.listenToChannelUpdates();
-      }
-      return result;
-    }));
+    return from(
+      signInWithPopup(this.auth, provider).then((result) => {
+        if (result.user) {
+          this.setUserOnlineStatus(result.user.uid, 'online');
+          this.monitorVisibility(result.user.uid);
+          this.addUnloadEvent(result.user.uid);
+          this.listenToUserStatusUpdates(result.user.uid);
+          this.userService.listenToUserUpdates(result.user.uid);
+          this.channelService.listenToChannelUpdates();
+        }
+        return result;
+      })
+    );
   }
 
   /**
@@ -177,15 +224,16 @@ export class AuthService implements OnDestroy {
    */
   signOut(): Observable<any> {
     return from(
-      this.auth.currentUser ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
-          () => {
-            this.removeUserStatusListener(this.auth.currentUser!.uid);
-            this.userService.removeAllUserListeners();
-            this.channelService.removeAllChannelListeners();
-            this.cacheService.clearAll();
-            return signOut(this.auth);
-          }
-        )
+      this.auth.currentUser
+        ? this.setUserOnlineStatus(this.auth.currentUser.uid, 'offline').then(
+            () => {
+              this.removeUserStatusListener(this.auth.currentUser!.uid);
+              this.userService.removeAllUserListeners();
+              this.channelService.removeAllChannelListeners();
+              this.cacheService.clearAll();
+              return signOut(this.auth);
+            }
+          )
         : signOut(this.auth)
     );
   }
@@ -197,7 +245,6 @@ export class AuthService implements OnDestroy {
   getUser(): Observable<FirebaseUser | null> {
     return authState(this.auth);
   }
-
 
   /**
    * Returns the currently authenticated user.
@@ -292,20 +339,20 @@ export class AuthService implements OnDestroy {
    * Checks the authentication state and sets the user's online status.
    */
   private checkAndSetUserOnlineStatus(): void {
-    this.getUser().pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((user) => {
-      if (user) {
-        this.setUserOnlineStatus(user.uid, 'online');
-        this.monitorVisibility(user.uid);
-        this.addUnloadEvent(user.uid);
-        this.listenToUserStatusUpdates(user.uid);
-        this.userService.listenToUserUpdates(user.uid);
-        this.channelService.listenToChannelUpdates();
-      } else {
-        this.userService.removeAllUserListeners();
-        this.channelService.removeAllChannelListeners();
-      }
-    });
+    this.getUser()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        if (user) {
+          this.setUserOnlineStatus(user.uid, 'online');
+          this.monitorVisibility(user.uid);
+          this.addUnloadEvent(user.uid);
+          this.listenToUserStatusUpdates(user.uid);
+          this.userService.listenToUserUpdates(user.uid);
+          this.channelService.listenToChannelUpdates();
+        } else {
+          this.userService.removeAllUserListeners();
+          this.channelService.removeAllChannelListeners();
+        }
+      });
   }
 }
