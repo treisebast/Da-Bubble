@@ -13,6 +13,8 @@ import { firstValueFrom, switchMap } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { ChangeDetectorRef } from '@angular/core';
+import { ChannelService } from '../../shared/services/channel.service';
+import { NewChannel } from '../../shared/models/channel.model';
 
 @Component({
   selector: 'app-sign-in',
@@ -32,6 +34,7 @@ export class SignInComponent {
     private authService: AuthService,
     private userService: UserService,
     private dialog: MatDialog,
+    private channelService: ChannelService,
     private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
@@ -160,6 +163,7 @@ export class SignInComponent {
           const user = res.user;
           if (user) {
             await this.updateUserProfile(user);
+            await this.addUserToDeveloperTeamChannel(user.uid);
           }
           return res;
         })
@@ -222,6 +226,7 @@ export class SignInComponent {
         lastSeen: new Date().toISOString(),
       });
     }
+    await this.addUserToDeveloperTeamChannel(user.uid);
   }
 
   /**
@@ -241,6 +246,33 @@ export class SignInComponent {
     await this.userService.addUser(newUser);
   }
 
+
+  private async addUserToDeveloperTeamChannel(userId: string): Promise<void> {
+    const channelName = 'Entwicklerteam';
+    let channel = await this.channelService.getChannelByName(channelName, false);
+
+    if (!channel) {
+      channel = {
+        id: '',
+        name: channelName,
+        isPrivate: false,
+        description: 'Dieser Channel ist für alles rund um #Entwicklerteam vorgesehen. Hier kannst du zusammen mit deinem Team Meetings abhalten, Dokumente teilen und Entscheidungen treffen.',
+        members: [userId],
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const channelRef = await this.channelService.addChannel(channel as NewChannel);
+      channel.id = channelRef.id;
+    } else {
+      if (!channel.members.includes(userId)) {
+        await this.channelService.updateChannel(channel, {
+          members: [...channel.members, userId],
+          updatedAt: new Date(),
+        });
+      }
+    }
+  }
 
   /**
  * Signs in as guest.
