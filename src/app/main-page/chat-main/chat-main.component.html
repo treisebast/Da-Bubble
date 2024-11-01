@@ -151,9 +151,8 @@
         {{ errorMessage }}
       </div>
     </div>
-    <emoji-mart *ngIf="showEmojiMart" [style.display]="showEmojiPicker ? 'block' : 'none'" set="twitter" theme="light"
-      class="emoji-mart-message-box" (emojiClick)="addEmoji($event)">
-    </emoji-mart>
+    <emoji-mart [ngClass]="{'hidden': !showEmojiPicker}" set="twitter" theme="light" class="emoji-mart-message-box"
+      [isNative]="true" (emojiClick)="addEmoji($event)"></emoji-mart>
   </div>
 </div>
 <app-profil class="app-profile-card" [onclickUser]="clickedUser!" (closeProfileCard)="toggleProfilePopup()"

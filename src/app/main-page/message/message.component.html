@@ -71,8 +71,8 @@
       </div>
     </div>
     <div #emojiPickerContainer>
-      <emoji-mart [style.display]="showEmojiPicker ? 'block' : 'none'" set="twitter" theme="light"
-        class="emoji-mart-message {{ emojiMartPositionClass }}" (emojiClick)="addEmoji($event)"
+      <emoji-mart  [ngClass]="{'hidden': !showEmojiPicker}"  set="twitter" theme="light" 
+        class="emoji-mart-message {{ emojiMartPositionClass }}" (emojiClick)="addEmoji($event)" [isNative]="true"
         (click)="$event.stopPropagation()">
       </emoji-mart>
     </div>

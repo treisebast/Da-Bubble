@@ -75,7 +75,7 @@
     <div *ngIf="showEmojiMarts"
       [style.display]="showEmojiPicker && currentMessageToOpen === selectedMessage ? 'block' : 'none'"
       (click)="$event.stopPropagation()">
-      <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+      <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light" [isNative]="true"
         (emojiClick)="addEmoji($event, currentMessageToOpen)">
       </emoji-mart>
     </div>
@@ -152,7 +152,7 @@
       </div>
       <div *ngIf="showEmojiMarts" [style.display]="showEmojiPicker && message === selectedMessage ? 'block' : 'none'"
         (click)="$event.stopPropagation()">
-        <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+        <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light" [isNative]="true"
           (emojiClick)="addEmoji($event, message)">
         </emoji-mart>
       </div>
@@ -204,7 +204,7 @@
   <div *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </div>
-  <emoji-mart *ngIf="showEmojiMarts" [style.display]="showMessageBoxEmojiPicker ? 'block' : 'none'" set="twitter"
+  <emoji-mart *ngIf="showEmojiMarts" [style.display]="showMessageBoxEmojiPicker ? 'block' : 'none'" set="twitter" [isNative]="true"
     theme="light" class="emoji-mart-thread-message-box" (emojiClick)="addEmojiToMessageBox($event)">
   </emoji-mart>
 </div>

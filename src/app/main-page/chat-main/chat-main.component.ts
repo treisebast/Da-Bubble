@@ -51,7 +51,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   channelMentionStartPosition = -1;
   isLoading: boolean = false;
   hoverStates: { [key: string]: boolean } = {};
-  
+
   showEmojiPicker = false;
   currentChat: any = null;
   selectedChat: boolean = false;
@@ -115,7 +115,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscriptions = new Subscription();
   private navigationSubscription: Subscription | null = null;
   private profileSubscription: Subscription | null = null;
-
+  private boundCloseEmojiPicker = this.closeEmojiPickerOnOutsideClick.bind(this);
   constructor(private cd: ChangeDetectorRef, private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
     registerLocaleData(localeDe);
   }
@@ -146,11 +146,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.clickedUserSubscription.unsubscribe();
       this.clickedUserSubscription = null;
     }
-    document.removeEventListener(
-      'click',
-      this.closeEmojiPickerOnOutsideClick.bind(this)
-    );
-
+    document.addEventListener('click', this.boundCloseEmojiPicker);
     if (this.navigationSubscription) {
       this.navigationSubscription.unsubscribe();
     }
@@ -163,16 +159,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.chatContainer) {
       this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
     }
-    setTimeout(() => {
-      document.addEventListener(
-        'click',
-        this.closeEmojiPickerOnOutsideClick.bind(this)
-      );
-    }, 0);
-
-    setTimeout(() => {
-      this.showEmojiMart = true;
-    }, 300);
+    document.addEventListener('click', this.boundCloseEmojiPicker);
   }
 
 
