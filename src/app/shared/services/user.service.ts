@@ -1,29 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import {
-  Firestore,
-  doc,
-  docData,
-  collectionData,
-  collection,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  query,
-  getDocs,
-  where,
-  onSnapshot,
-} from '@angular/fire/firestore';
-import {
-  BehaviorSubject,
-  combineLatest,
-  forkJoin,
-  from,
-  map,
-  Observable,
-  of,
-  Subject,
-} from 'rxjs';
+import { Firestore, doc, docData, collectionData, collection, setDoc, updateDoc, deleteDoc, getDoc, query, getDocs, where, onSnapshot } from '@angular/fire/firestore';
+import { BehaviorSubject, combineLatest, forkJoin, from, map, Observable, of, Subject } from 'rxjs';
 import { User } from '../models/user.model';
 import { Channel } from '../models/channel.model';
 import { CacheService } from './cache.service';
@@ -70,7 +47,7 @@ export class UserService implements OnDestroy {
             this.cacheService.set(`user-${userId}`, userData);
           }
         },
-        (error) => {}
+        (error) => { }
       );
       this.userListeners.set(userId, unsubscribe);
     }
@@ -129,7 +106,7 @@ export class UserService implements OnDestroy {
             this.cacheService.set(key, userData);
           }
         },
-        (error) => {}
+        (error) => { }
       );
 
       this.userListeners.set(key, unsubscribe);
@@ -177,10 +154,10 @@ export class UserService implements OnDestroy {
         map((snapshot) =>
           snapshot.docs.map(
             (docSnap) =>
-              ({
-                ...docSnap.data(),
-                userId: docSnap.id,
-              } as User)
+            ({
+              ...docSnap.data(),
+              userId: docSnap.id,
+            } as User)
           )
         )
       );

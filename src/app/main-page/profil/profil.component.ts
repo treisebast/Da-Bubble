@@ -1,17 +1,5 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
-import {
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogTitle,
-  MatDialogContent,
-} from '@angular/material/dialog';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
@@ -28,18 +16,7 @@ import { NewChannel } from '../../shared/models/channel.model';
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatDialogActions,
-    MatDialogClose,
-    MatDialogTitle,
-    MatDialogContent,
-    MatCardModule,
-    MatButtonModule,
-    EditProfilComponent,
-    AvatarChoiceComponent,
-  ],
+  imports: [CommonModule, MatButtonModule, MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent, MatCardModule, MatButtonModule, EditProfilComponent, AvatarChoiceComponent],
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
 })
@@ -63,7 +40,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private chatService: ChatService,
     private channelService: ChannelService
-  ) {}
+  ) { }
 
   /**
    * Lifecycle hook that is called after data-bound properties are initialized.
@@ -146,7 +123,7 @@ export class ProfilComponent implements OnInit, OnDestroy {
             this.closeProfil();
           }
         },
-        error: (error) => {},
+        error: (error) => { },
       });
   }
 

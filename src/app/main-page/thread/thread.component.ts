@@ -209,6 +209,9 @@ export class ThreadComponent implements OnInit, OnDestroy {
           for (const message of this.messages) {
             this.loadAttachments(message.attachments);
           }
+          this.cdr.detectChanges();
+          this.scrollService.scrollToBottomOfThread(this.threadContainer);
+          this.focusTextarea();
         } else {
           this.messages = [];
         }
