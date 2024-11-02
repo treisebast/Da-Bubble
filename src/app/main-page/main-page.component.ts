@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit, ViewChild } from '@angular/core';
 import { SideNavComponent } from './side-nav/side-nav.component';
 import { ChatMainComponent } from './chat-main/chat-main.component';
 import { ThreadComponent } from './thread/thread.component';
@@ -9,11 +9,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { HeaderComponent } from '../shared/header/header.component';
 import { ChatService } from '../shared/services/chat-service.service';
 import { slideInOut, slideInOutRight } from './main-page.animations';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { distinctUntilChanged, filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [SideNavComponent, ChatMainComponent, ThreadComponent, CommonModule, MatButtonModule, MatDividerModule, MatIconModule, HeaderComponent],
+  imports: [SideNavComponent, ChatMainComponent, RouterOutlet, ThreadComponent, CommonModule, MatButtonModule, MatDividerModule, MatIconModule, HeaderComponent],
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.scss'],
   animations: [slideInOut, slideInOutRight],
@@ -26,13 +28,14 @@ export class MainPageComponent implements OnInit {
   private chatService = inject(ChatService);
   private previousChatId: string | null = null;
   workspaceMenu: string = 'Workspace-Menü schließen';
-
-
+  currentChatId: string | null = null;
+  private routeSub!: Subscription;
+  @ViewChild(ChatMainComponent) chatMainComponent!: ChatMainComponent;
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.checkViewModes();
   }
-
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   /**
  * Lifecycle hook that is called after data-bound properties are initialized.
@@ -40,17 +43,50 @@ export class MainPageComponent implements OnInit {
  */
   ngOnInit() {
     this.checkViewModes();
-
     this.currentView = this.isMobileView ? 'channels' : 'main';
 
-    this.chatService.currentChat$.subscribe(({ chat }) => {
-      if (this.previousChatId && chat?.id !== this.previousChatId) {
+    this.chatService.currentChat$.pipe(
+      distinctUntilChanged((prev, curr) => 
+        prev.chat?.id === curr.chat?.id && prev.isPrivate === curr.isPrivate
+      )
+    ).subscribe(({ chat }) => {
+      if (this.previousChatId && chat?.id && chat.id !== this.previousChatId) {
         this.closeThreadComponent();
       }
       this.previousChatId = chat?.id || null;
     });
   }
 
+  ngAfterViewInit() {
+    this.routeSub = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      const chatId = this.route.snapshot.firstChild?.paramMap.get('chatId');
+      if (chatId) {
+        this.loadChatById(chatId);
+      }
+    });
+    const initialChatId = this.route.snapshot.firstChild?.paramMap.get('chatId');
+    if (initialChatId) {
+      this.loadChatById(initialChatId);
+    }
+  }
+
+  ngOnDestroy() {
+    this.routeSub?.unsubscribe();
+  }
+
+  /**
+   * Lädt den Chat basierend auf der übergebenen chatId
+   * @param chatId Die ID des zu ladenden Chats
+   */
+  async loadChatById(chatId: string) {
+    if (this.chatMainComponent) {
+      await this.chatMainComponent.loadChatById(chatId);
+    } else {
+      console.warn('chatMainComponent ist undefined');
+    }
+  }
 
   /**
  * Checks and updates the view modes based on the current window width.
@@ -105,7 +141,6 @@ export class MainPageComponent implements OnInit {
  * Closes the thread component and updates the view based on the current view mode.
  */
   closeThreadComponent() {
-    // console.log('Closing thread component');
     this.showSecondary = false;
     if (this.isMobileView) {
       this.currentView = 'main';
@@ -122,6 +157,8 @@ export class MainPageComponent implements OnInit {
     if (this.isMobileView) {
       this.currentView = 'secondary';
     }
+      // Optional: Lade den spezifischen Chat basierend auf chatId
+      //this.chatService.setCurrentChat(chatId, true);
   }
 
 
@@ -131,7 +168,6 @@ export class MainPageComponent implements OnInit {
  * @param view - The view to switch to ('channels', 'main', or 'secondary')
  */
   switchTo(view: 'channels' | 'main' | 'secondary') {
-    // console.log('Switching to view:', view);
     this.currentView = view;
 
     if (!this.isMobileView) {
@@ -154,7 +190,8 @@ export class MainPageComponent implements OnInit {
  * Switches to the 'main' view and opens the welcome channel.
  */
   handleServerNameClick() {
-    this.switchTo('main');
-    this.openWelcomeChannel();
+    this.chatService.setCurrentChat(null, false);
+    this.router.navigate(['welcome'], { relativeTo: this.route });
+  
   }
 }

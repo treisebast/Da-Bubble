@@ -68,6 +68,34 @@ export const routes: Routes = [
         (m) => m.MainPageComponent
       ),
     canActivate: [authGuard],
+    children: [
+      {
+        path: 'chat/:chatId',
+        loadComponent: () =>
+          import('./main-page/chat-main/chat-main.component').then(
+            (m) => m.ChatMainComponent
+          ),
+        children: [
+          {
+            path: 'message/:messageId',
+            loadComponent: () =>
+              import('./main-page/chat-main/chat-main.component').then(
+                (m) => m.ChatMainComponent
+              ),
+          },
+        ],
+      },
+      {
+        path: 'welcome',
+        loadComponent: () =>
+          import('./main-page/chat-main/chat-main.component').then(
+            (m) => m.ChatMainComponent
+          ),
+      },
+    ],
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];

@@ -212,6 +212,7 @@ ngOnInit() {
  */
   async goToMessage(message: Message) {
     this.navigationService.selectMessage(message);
+    this.router.navigate(['/main/chat', message.chatId, 'message', message.id]);
     this.searchResults = [];
   }
 

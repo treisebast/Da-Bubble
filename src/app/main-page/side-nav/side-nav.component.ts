@@ -12,6 +12,7 @@ import { UserWithImageStatus } from '../../shared/models/user.model';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subject, Subscription, combineLatest, of } from 'rxjs';
 import { filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-side-nav',
@@ -71,7 +72,8 @@ export class SideNavComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) { }
 
   //---------------------------------------- Lifecycle Hooks ----------------------------------------
@@ -205,6 +207,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
       await this.addAndSetChannel(newChannel);
     } else {
       this.chatService.setCurrentChat(privateChat, true);
+      this.router.navigate(['/main/chat', privateChat.id]);
     }
   }
 
@@ -256,7 +259,6 @@ export class SideNavComponent implements OnInit, OnDestroy {
       this.chatService.setCurrentChat(createdChannel, true);
       this.showChannel(createdChannel, true);
     } catch (error) {
-      console.error('Error adding and setting new channel:', error);
     }
   }
 
@@ -284,6 +286,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   showChannel(channel: Channel, isPrivate: boolean) {
     this.chatService.setCurrentChat(channel, isPrivate);
     this.channelSelected.emit();
+    this.router.navigate(['/main/chat', channel.id]);
   }
 
   //---------------------------------------- Chat Management ----------------------------------------

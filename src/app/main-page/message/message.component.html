@@ -1,4 +1,4 @@
-<div id="{{ message.id }}" class="singelMessageContainer"
+<div id="{{ message.id }}" #messageElement class="singelMessageContainer"
   [ngClass]="{ 'message-left': !isCurrentUser, 'message-right': isCurrentUser }" (mouseleave)="onMouseLeave($event)">
   <img *ngIf="userProfile?.avatar" [src]="userProfile?.avatar" alt="{{ userProfile?.name }}" class="profile-img" />
   <div class="message-wrapper" [ngClass]="{ 'full-width': isEditing }">

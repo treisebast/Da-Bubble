@@ -34,6 +34,7 @@ import { setErrorMessage, clearErrorMessage } from './error-helper';
 import { loadMetadataForMessage } from './message-helper';
 import { handleTextareaInput, handleTextareaKeydown, InputHandlerState, KeydownHandlerCallbacks, KeydownHandlerState } from './chat-keydown.helper';
 import { ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-main',
@@ -116,7 +117,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private navigationSubscription: Subscription | null = null;
   private profileSubscription: Subscription | null = null;
   private boundCloseEmojiPicker = this.closeEmojiPickerOnOutsideClick.bind(this);
-  constructor(private cd: ChangeDetectorRef, private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
+  constructor(private cd: ChangeDetectorRef, private router: Router, private activatedRoute: ActivatedRoute, private scrollService: ScrollService, private chatService: ChatService, private authService: AuthService, private userService: UserService, private threadService: ThreadService, private firebaseStorageService: FirebaseStorageService, private firestore: Firestore, public dialog: MatDialog, private channelService: ChannelService, private navigationService: NavigationService) {
     registerLocaleData(localeDe);
   }
 
@@ -126,6 +127,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.setLoadingState(true);
     this.initializeUser();
+    this.subscribeToRouteParams();
     this.subscribeToCurrentChat();
     this.subscribeToLoadingState();
     this.subscribeToMessages();
@@ -280,7 +282,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadUserProfiles(messagesWithMetadata);
       this.setLoadingState(false);
 
-      if (this.messages && this.userProfiles) {
+      if (this.messages && this.userProfiles && this.chatContainer) {
         this.scrollService.scrollToBottomOfMainChat(this.chatContainer);
       }
     });
@@ -824,6 +826,7 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
  * Sets the current chat based on selected channel from dropdown.
  */
   onChannelSelected(channel: Channel) {
+    this.router.navigate(['/main', 'chat', channel.id]);
     this.chatService.setCurrentChat(channel, false);
     this.newMessageText = '';
     this.showChannelDropdown = false;
@@ -870,10 +873,24 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
  * Loads a chat by its ID and sets it as the current chat.
  */
-  public async loadChatById(chatId: string, isPrivate: boolean): Promise<void> {
-    const channel = await firstValueFrom(this.channelService.getChannel(chatId, isPrivate));
-    if (channel) {
-      this.chatService.setCurrentChat(channel, isPrivate);
+  public async loadChatById(chatId: string): Promise<void> {
+    try {
+      const channel = await firstValueFrom(this.channelService.getChannel(chatId, false));
+      let isPrivate = false;
+      if (!channel) {
+        const privateChannel = await firstValueFrom(this.channelService.getChannel(chatId, true));
+        if (privateChannel) {
+          this.chatService.setCurrentChat(privateChannel, true);
+          isPrivate = true;
+        } else {
+          this.chatService.setCurrentChat(null, false);
+          return;
+        }
+      } else {
+        this.chatService.setCurrentChat(channel, false);
+      }
+    } catch (error) {
+      this.chatService.setCurrentChat(null, false);
     }
   }
 
@@ -882,17 +899,31 @@ export class ChatMainComponent implements OnInit, AfterViewInit, OnDestroy {
  */
   private async handleSelectedMessage(message: Message) {
     const chatId = message.chatId;
-    const isPrivate = message.isPrivateChat;
+
     if (chatId) {
       if (
         this.currentChat?.id !== chatId ||
-        this.isCurrentChatPrivate !== isPrivate
+        this.isCurrentChatPrivate !== message.isPrivateChat
       ) {
-        await this.loadChatById(chatId, isPrivate);
+        await this.loadChatById(chatId);
       }
       if (message.id) {
         this.scrollService.scrollToMessage(message.id);
       }
     }
+  }
+
+  /**
+   * Subscribes to the route parameters to capture the current chat ID and load the chat.
+   */
+  private subscribeToRouteParams(): void {
+    this.activatedRoute.paramMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const chatId = params.get('chatId');
+        if (chatId) {
+          this.loadChatById(chatId);
+        }
+      });
   }
 }

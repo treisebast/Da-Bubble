@@ -49,6 +49,10 @@ export class ChatService implements OnDestroy {
   }
 
 
+  public get currentChatValue(): { chat: Channel | null; isPrivate: boolean } {
+    return this.currentChatSubject.getValue();
+  }
+
   /**
    * Sets the current chat and its privacy status.
    * @param chat - The chat to set as current.

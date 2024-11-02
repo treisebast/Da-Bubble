@@ -18,10 +18,10 @@
         (ngModelChange)="onChannelNameChange()"
         #channelNameModel="ngModel"
         type="text"
-        placeholder="#   z.B. Kooperationsprojekte"
+        placeholder="#   z.B. Koop-Projekte"
         class="addChannelInputs"
         minlength="3"
-        maxlength="25"
+        maxlength="17"
         required
       />
 
@@ -32,10 +32,6 @@
       <div class="error-message" *ngIf="channelNameModel.errors?.['minlength']">
         Der Channel-Name muss mindestens 3 Zeichen lang sein.
       </div>
-      <div class="error-message" *ngIf="channelNameModel.errors?.['maxlength']">
-        Der Channel-Name darf maximal 25 Zeichen lang sein.
-      </div>
-
       <div class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
