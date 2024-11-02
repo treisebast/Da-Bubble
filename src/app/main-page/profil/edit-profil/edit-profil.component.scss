@@ -14,15 +14,6 @@
   margin-top: 8px;
 }
 
-.account-circle-icon {
-  width: 30px;
-  height: 30px;
-  background-image: url("./../../../../assets/img/profilecard/account_circle.svg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: contain;
-}
-
 .email-icon {
   width: 30px;
   height: 30px;
@@ -30,6 +21,14 @@
   background-repeat: no-repeat;
   background-position: center center;
   background-size: contain;
+}
+
+.success-message {
+  color: var(--success-color, rgb(0, 255, 0));
+}
+
+.error-message {
+  color: var(--error-color, rgb(255, 0, 0));
 }
 
 .h2text {
@@ -111,15 +110,9 @@
   }
 }
 
-
-@media(max-width:550px) {
+@media (max-width: 550px) {
   .h2text {
     font-size: 16px;
-  }
-
-  .account-circle-icon {
-    width: 25px;
-    height: 25px;
   }
 
   .button-container {

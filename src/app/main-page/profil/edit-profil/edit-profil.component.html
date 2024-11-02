@@ -1,20 +1,20 @@
 <form [formGroup]="nameFormGroup" (ngSubmit)="onSubmitSave()" *ngIf="isEditingName">
   <div class="flex-container">
-    <div class="account-circle-icon"></div>
     <span class="h2text">Vollständiger Name</span>
   </div>
   <div class="input-container"
     [ngClass]="{'invalid-border': nameControls.name.invalid && (nameControls.name.dirty || nameControls.name.touched)}">
+    <img src="/assets/img/front-page/person_filled.svg" alt="user icon">
     <input type="text" formControlName="name" autocomplete="name" [placeholder]="ownUser.name" />
   </div>
   <span class="validMsg" *ngIf="nameControls.name.invalid && nameControls.name.touched">
     Name muss mindestens 3 Zeichen lang sein.
   </span>
   <div class="flex-container">
-    <div class="account-circle-icon"></div>
     <span class="h2text">Name wiederholen</span>
   </div>
   <div class="input-container" [ngClass]="{'invalid-border': nameControls.nameRepeat.invalid}">
+    <img src="/assets/img/front-page/person_filled.svg" alt="user icon">
     <input type="text" formControlName="nameRepeat" autocomplete="name" [placeholder]="ownUser.name" />
   </div>
   <span class="validMsg" *ngIf="nameControls.nameRepeat.hasError('mismatch')">
@@ -61,8 +61,8 @@
     <input type="password" formControlName="password" autocomplete="password" placeholder="Passwort" required>
   </div>
 
-  <p *ngIf="successMessage" style="color: green;">{{ successMessage }}</p>
-  <p *ngIf="errorMessage" style="color: red;">{{ errorMessage }}</p>
+  <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
   <div class="width-100">
     <div class="button-container">
