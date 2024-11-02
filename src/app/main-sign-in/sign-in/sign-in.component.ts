@@ -15,6 +15,7 @@ import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/co
 import { ChangeDetectorRef } from '@angular/core';
 import { ChannelService } from '../../shared/services/channel.service';
 import { NewChannel } from '../../shared/models/channel.model';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-sign-in',
@@ -162,16 +163,42 @@ export class SignInComponent {
         switchMap(async (res) => {
           const user = res.user;
           if (user) {
-            await this.updateUserProfile(user);
+            const userDoc = await firstValueFrom(this.userService.getUser(user.uid)) as User | null;
+            const guestUserData: Partial<User> = {
+              userId: user.uid,
+              name: "Gast",
+              email: guestEmail,
+              avatar: "../assets/img/profile/4.svg",
+              status: "online",
+              lastSeen: new Date().toISOString()
+            };
+  
+            if (!userDoc) {
+              await this.userService.addUser(guestUserData as User);
+            } else {
+              const updatedData: Partial<User> = {};
+              for (const key in guestUserData) {
+                if (guestUserData[key as keyof User] && !userDoc[key as keyof User]) {
+                  updatedData[key as keyof User] = guestUserData[key as keyof User]!;
+                }
+              }
+              if (Object.keys(updatedData).length > 0) {
+                updatedData.userId = user.uid;
+                await this.userService.updateUser(updatedData as User);
+              }
+            }
+  
             await this.addUserToDeveloperTeamChannel(user.uid);
           }
           return res;
         })
       )
     );
+  
     this.showConfirmationDialog();
     this.router.navigate(['/main']);
   }
+  
 
 
   /**
