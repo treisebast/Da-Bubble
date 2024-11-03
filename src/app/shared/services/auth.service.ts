@@ -11,18 +11,15 @@ import {
   sendPasswordResetEmail,
   confirmPasswordReset,
   updateProfile,
-  Unsubscribe,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updateEmail,
 } from '@angular/fire/auth';
 import { from, Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { UserService } from './user.service';
 import { ChannelService } from './channel.service';
 import { CacheService } from './cache.service';
-import {
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  updateEmail,
-} from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root',

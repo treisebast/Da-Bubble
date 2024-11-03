@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+  AbstractControl,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,9 +27,19 @@ import { User } from '../../shared/models/user.model';
 @Component({
   selector: 'app-sign-in',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterModule, CommonModule],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+    CommonModule,
+  ],
   templateUrl: './sign-in.component.html',
-  styleUrls: ['./sign-in.component.scss']
+  styleUrls: ['./sign-in.component.scss'],
 })
 export class SignInComponent {
   signInForm!: FormGroup;
@@ -41,7 +58,6 @@ export class SignInComponent {
     this.initializeForm();
   }
 
-
   /**
    * Gets the email form control.
    * @returns {AbstractControl} The email form control.
@@ -50,7 +66,6 @@ export class SignInComponent {
     return this.signInForm.get('email')!;
   }
 
-
   /**
    * Gets the password form control.
    * @returns {AbstractControl} The password form control.
@@ -58,7 +73,6 @@ export class SignInComponent {
   get password(): AbstractControl {
     return this.signInForm.get('password')!;
   }
-
 
   /**
    * Initializes the sign-in form with form controls and validation rules.
@@ -71,24 +85,24 @@ export class SignInComponent {
     });
   }
 
-
   /**
-    * Updates the user profile with additional information.
-    * @param {any} user - The user object.
-    * @private
-    */
+   * Updates the user profile with additional information.
+   * @param {any} user - The user object.
+   * @private
+   */
   private async updateUserProfile(user: any) {
     const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
     const photoURL = userDoc?.avatar || '';
-    await firstValueFrom(this.authService.updateUserProfile(user, { photoURL }));
+    await firstValueFrom(
+      this.authService.updateUserProfile(user, { photoURL })
+    );
   }
 
-
   /**
-    * Handles errors during the sign-in process.
-    * @param {any} err - The error object.
-    * @private
-    */
+   * Handles errors during the sign-in process.
+   * @param {any} err - The error object.
+   * @private
+   */
   private handleError(err: any) {
     switch (err.code) {
       case 'auth/invalid-credential':
@@ -106,8 +120,6 @@ export class SignInComponent {
     }
     this.cdr.detectChanges();
   }
-
-
 
   /**
    * Signs in the user with the given email and password.
@@ -130,26 +142,27 @@ export class SignInComponent {
     this.showConfirmationDialog();
   }
 
-
   /**
- * Opens a confirmation dialog upon successful sign-in.
- * @private
- */
+   * Opens a confirmation dialog upon successful sign-in.
+   * @private
+   */
   private showConfirmationDialog() {
     this.dialog.closeAll();
-    this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        message: 'Erfolgreich angemeldet',
-      },
-      hasBackdrop: false
-    }).afterOpened().subscribe(() => {
-      setTimeout(() => {
-        this.dialog.closeAll();
-        this.router.navigate(['/main']);
-      }, 1600);
-    });
+    this.dialog
+      .open(ConfirmationDialogComponent, {
+        data: {
+          message: 'Erfolgreich angemeldet',
+        },
+        hasBackdrop: false,
+      })
+      .afterOpened()
+      .subscribe(() => {
+        setTimeout(() => {
+          this.dialog.closeAll();
+          this.router.navigate(['/main']);
+        }, 1600);
+      });
   }
-
 
   /**
    * Signs in a guest user with predefined credentials.
@@ -163,23 +176,29 @@ export class SignInComponent {
         switchMap(async (res) => {
           const user = res.user;
           if (user) {
-            const userDoc = await firstValueFrom(this.userService.getUser(user.uid)) as User | null;
+            const userDoc = (await firstValueFrom(
+              this.userService.getUser(user.uid)
+            )) as User | null;
             const guestUserData: Partial<User> = {
               userId: user.uid,
-              name: "Gast",
+              name: 'Gast',
               email: guestEmail,
-              avatar: "../assets/img/profile/4.svg",
-              status: "online",
-              lastSeen: new Date().toISOString()
+              avatar: '../assets/img/profile/4.svg',
+              status: 'online',
+              lastSeen: new Date().toISOString(),
             };
-  
+
             if (!userDoc) {
               await this.userService.addUser(guestUserData as User);
             } else {
               const updatedData: Partial<User> = {};
               for (const key in guestUserData) {
-                if (guestUserData[key as keyof User] && !userDoc[key as keyof User]) {
-                  updatedData[key as keyof User] = guestUserData[key as keyof User]!;
+                if (
+                  guestUserData[key as keyof User] &&
+                  !userDoc[key as keyof User]
+                ) {
+                  updatedData[key as keyof User] =
+                    guestUserData[key as keyof User]!;
                 }
               }
               if (Object.keys(updatedData).length > 0) {
@@ -187,24 +206,22 @@ export class SignInComponent {
                 await this.userService.updateUser(updatedData as User);
               }
             }
-  
+
             await this.addUserToDeveloperTeamChannel(user.uid);
           }
           return res;
         })
       )
     );
-  
+
     this.showConfirmationDialog();
     this.router.navigate(['/main']);
   }
-  
-
 
   /**
- * Handles form submission for user sign-in.
- * @async
- */
+   * Handles form submission for user sign-in.
+   * @async
+   */
   async onSubmit() {
     this.formSubmitted = true;
     if (this.signInForm.valid) {
@@ -216,7 +233,6 @@ export class SignInComponent {
       }
     }
   }
-
 
   /**
    * Signs in the user using Google authentication.
@@ -240,7 +256,7 @@ export class SignInComponent {
    */
   private async handleGoogleUser(user: any) {
     const userDoc = await firstValueFrom(this.userService.getUser(user.uid));
-  
+
     if (!userDoc) {
       await this.addNewGoogleUser(user);
     } else {
@@ -273,23 +289,28 @@ export class SignInComponent {
     await this.userService.addUser(newUser);
   }
 
-
   private async addUserToDeveloperTeamChannel(userId: string): Promise<void> {
     const channelName = 'Entwicklerteam';
-    let channel = await this.channelService.getChannelByName(channelName, false);
+    let channel = await this.channelService.getChannelByName(
+      channelName,
+      false
+    );
 
     if (!channel) {
       channel = {
         id: '',
         name: channelName,
         isPrivate: false,
-        description: 'Dieser Channel ist für alles rund um #Entwicklerteam vorgesehen. Hier kannst du zusammen mit deinem Team Meetings abhalten, Dokumente teilen und Entscheidungen treffen.',
+        description:
+          'Dieser Channel ist für alles rund um #Entwicklerteam vorgesehen. Hier kannst du zusammen mit deinem Team Meetings abhalten, Dokumente teilen und Entscheidungen treffen.',
         members: [userId],
         createdBy: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const channelRef = await this.channelService.addChannel(channel as NewChannel);
+      const channelRef = await this.channelService.addChannel(
+        channel as NewChannel
+      );
       channel.id = channelRef.id;
     } else {
       if (!channel.members.includes(userId)) {
@@ -302,10 +323,10 @@ export class SignInComponent {
   }
 
   /**
- * Signs in as guest.
- * @param {Event} event - The event object.
- * @async
- */
+   * Signs in as guest.
+   * @param {Event} event - The event object.
+   * @async
+   */
   async guestLogin(event: Event) {
     event.preventDefault();
     const guestEmail = 'guest@email.com';
