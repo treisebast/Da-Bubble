@@ -17,6 +17,12 @@
         height: 50px;
     }
 
+    .emoji-mart-preview-name {
+        font-size: 10px;
+    }
+
+
+
     .emoji-mart-scroll {
         overflow-x: hidden;
     }
@@ -39,6 +45,15 @@
         span {
             background-color: var(--white);
             color: var(--black);
+        }
+    }
+
+    .emoji-mart-emoji {
+        width: 44px;
+        height: 43px;
+
+        span {
+            font-size: 24px !important;
         }
     }
 
