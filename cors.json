@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://dabubble.marco-ammann.ch", "http://localhost:4200"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type"]
+  }
+]
