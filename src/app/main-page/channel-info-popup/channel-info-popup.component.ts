@@ -181,13 +181,13 @@ export class ChannelInfoPopupComponent {
     try {
       const isDuplicate = await this.isDuplicateChannelName(this.editedName);
       if (isDuplicate) {
-        this.nameErrorMessage = 'A channel with this name already exists.';
+        this.nameErrorMessage = 'Ein Kanal mit diesem Namen existiert bereits.';
         return;
       }
 
       await this.updateChannelName();
     } catch (error) {
-      this.nameErrorMessage = 'Error saving the name. Please try again.';
+      this.nameErrorMessage = 'Fehler beim Speichern des Namens. Bitte versuche es erneut.';
     }
   }
 
@@ -245,7 +245,6 @@ export class ChannelInfoPopupComponent {
         this.chatService.setCurrentChat(null, false);
         this.close.emit();
       } catch (error) {
-        console.error('Error leaving channel:', error);
       }
     }
   }

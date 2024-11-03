@@ -288,20 +288,32 @@ export class ChannelService implements OnDestroy {
     updatedFields: Partial<Omit<Channel, 'id'>>
   ): Promise<void> {
     const collectionPath = channel.isPrivate ? 'directMessages' : 'channels';
-    const channelDocRef = doc(
-      this.firestore,
-      `${collectionPath}/${channel.id}`
-    );
-
+    const channelDocRef = doc(this.firestore, `${collectionPath}/${channel.id}`);
+  
+    let oldName: string | undefined;
+    if (updatedFields.name && updatedFields.name !== channel.name) {
+      oldName = channel.name;
+    }
+  
     await updateDoc(channelDocRef, {
       ...updatedFields,
       updatedAt: new Date(),
     });
-
+  
     const key = `channel-${channel.isPrivate}-${channel.id}`;
     const keyAllChannels = `channels-${channel.isPrivate}`;
     this.cacheService.clear(key);
     this.cacheService.clear(keyAllChannels);
+  
+    if (oldName) {
+      const oldKey = `channel-by-name-${channel.isPrivate}-${oldName}`;
+      this.cacheService.clear(oldKey);
+    }
+  
+    if (updatedFields.name) {
+      const newKey = `channel-by-name-${channel.isPrivate}-${updatedFields.name}`;
+      this.cacheService.clear(newKey);
+    }
   }
 
   /**
