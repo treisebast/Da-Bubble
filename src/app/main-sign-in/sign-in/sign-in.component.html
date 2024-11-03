@@ -9,7 +9,17 @@
       <input type="email" formControlName="email" autocomplete="email" placeholder="beispielname@email.com">
     </div>
     <span class="validMsg" [class.hidden]="!(email.invalid && (email.touched || formSubmitted))">
-      Bitte geben Sie eine gültige E-Mail-Adresse ein.
+      <ng-container *ngIf="email.errors?.['required']; else otherErrors">
+        Bitte geben Sie eine E-Mail-Adresse ein.
+      </ng-container>
+      <ng-template #otherErrors>
+        <ng-container *ngIf="email.errors?.['email']; else patternError">
+          Bitte geben Sie eine gültige E-Mail-Adresse ein.
+        </ng-container>
+      </ng-template>
+      <ng-template #patternError>
+        Bitte geben Sie eine vollständige E-Mail-Adresse ein.
+      </ng-template>
     </span>
     <div class="input-container"
       [ngClass]="{ 'invalid-border': password.invalid && (password.dirty || password.touched || formSubmitted) }">

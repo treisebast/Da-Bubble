@@ -27,17 +27,7 @@ import { User } from '../../shared/models/user.model';
 @Component({
   selector: 'app-sign-in',
   standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterModule,
-    CommonModule,
-  ],
+  imports: [MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, FormsModule, RouterModule, CommonModule],
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.scss'],
 })
@@ -79,9 +69,18 @@ export class SignInComponent {
    * @private
    */
   private initializeForm() {
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
     this.signInForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.pattern(emailPattern)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8)
+      ]],
     });
   }
 
