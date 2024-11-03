@@ -51,6 +51,10 @@
                     </span>
                     <ng-template #loading>Lädt...</ng-template>
                   </div>
+                  <button (click)="downloadPdf(attachment); $event.stopPropagation(); $event.preventDefault()"
+                    class="download-button" aria-label="PDF herunterladen">
+                    <img src="../../assets/img/icons/download.png" alt="Download PDF" class="download-icon" />
+                  </button>
                 </div>
               </a>
             </ng-template>
@@ -75,8 +79,8 @@
     <div *ngIf="showEmojiMarts"
       [style.display]="showEmojiPicker && currentMessageToOpen === selectedMessage ? 'block' : 'none'"
       (click)="$event.stopPropagation()">
-      <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light" [isNative]="true"
-        (emojiClick)="addEmoji($event, currentMessageToOpen)">
+      <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+        [isNative]="true" (emojiClick)="addEmoji($event, currentMessageToOpen)">
       </emoji-mart>
     </div>
   </div>
@@ -129,6 +133,10 @@
                         formatFileSize(metadataMap[attachment].size) }}</span>
                       <ng-template #loading>Lädt...</ng-template>
                     </div>
+                    <button (click)="downloadPdf(attachment); $event.stopPropagation(); $event.preventDefault()"
+                      class="download-button" aria-label="PDF herunterladen">
+                      <img src="../../assets/img/icons/download.png" alt="Download PDF" class="download-icon" />
+                    </button>
                   </div>
                 </a>
               </ng-template>
@@ -152,8 +160,8 @@
       </div>
       <div *ngIf="showEmojiMarts" [style.display]="showEmojiPicker && message === selectedMessage ? 'block' : 'none'"
         (click)="$event.stopPropagation()">
-        <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light" [isNative]="true"
-          (emojiClick)="addEmoji($event, message)">
+        <emoji-mart class="emoji-mart-threadmessage {{emojiMartPositionClass}}" set="twitter" theme="light"
+          [isNative]="true" (emojiClick)="addEmoji($event, message)">
         </emoji-mart>
       </div>
       <div class="reaction-button-bar">
@@ -204,7 +212,7 @@
   <div *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </div>
-  <emoji-mart *ngIf="showEmojiMarts" [style.display]="showMessageBoxEmojiPicker ? 'block' : 'none'" set="twitter" [isNative]="true"
-    theme="light" class="emoji-mart-thread-message-box" (emojiClick)="addEmojiToMessageBox($event)">
+  <emoji-mart *ngIf="showEmojiMarts" [style.display]="showMessageBoxEmojiPicker ? 'block' : 'none'" set="twitter"
+    [isNative]="true" theme="light" class="emoji-mart-thread-message-box" (emojiClick)="addEmojiToMessageBox($event)">
   </emoji-mart>
 </div>

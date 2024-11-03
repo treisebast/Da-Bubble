@@ -1,16 +1,18 @@
-// thread-file-helper.ts
-
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { FirebaseStorageService } from '../../shared/services/firebase-storage.service';
 import { Firestore, collection, doc } from '@angular/fire/firestore';
 import { firstValueFrom, Observable } from 'rxjs';
 import { FileValidationResult } from '../../shared/models/file.model';
+import { DOCUMENT } from '@angular/common';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ThreadFileHelper {
-    constructor(private firebaseStorageService: FirebaseStorageService) { }
+    constructor(private firebaseStorageService: FirebaseStorageService,
+        @Inject(DOCUMENT) private document: Document
+
+    ) { }
 
     /**
      * Uploads a file and returns its download URL.
@@ -112,6 +114,66 @@ export class ThreadFileHelper {
             return `${(size / 1024).toFixed(2)} KB`;
         } else {
             return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+        }
+    }
+
+    /**
+ * Initiates the download of the displayed PDF.
+ * @param attachmentUrl - Die URL des PDFs
+ * @param metadataMap - Map of metadata for attachments
+ */
+    async downloadPdf(attachmentUrl: string, metadataMap: { [url: string]: { name: string; size: number } }): Promise<void> {
+        if (!attachmentUrl) return;
+
+        try {
+            // Hole den Download-Link direkt
+            const response = await fetch(attachmentUrl, { mode: 'cors' });
+            if (!response.ok) throw new Error('Netzwerkantwort war nicht ok');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const attachmentName = metadataMap[attachmentUrl]?.name || this.extractFileName(attachmentUrl, blob.type) || 'downloaded-file.pdf';
+
+            const link = this.document.createElement('a');
+            link.href = url;
+            link.download = attachmentName;
+            this.document.body.appendChild(link);
+            link.click();
+            this.document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+        }
+    }
+
+    /**
+     * Extracts a shorter and meaningful file name from the imageUrl or attachmentUrl.
+     * @param url - The URL of the file
+     * @param mimeType - The MIME type of the blob
+     * @returns A string that represents the file name
+     */
+    extractFileName(url: string, mimeType: string): string {
+        try {
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            const path = decodeURIComponent(pathname);
+            const segments = path.split('/');
+            let filename = 'downloaded-file.pdf';
+
+            for (let i = segments.length - 1; i >= 0; i--) {
+                if (segments[i].includes('.')) {
+                    filename = segments[i].split('?')[0];
+                    break;
+                }
+            }
+
+            if (!filename.includes('.')) {
+                const extension = mimeType.split('/')[1] || 'pdf';
+                filename = `file.${extension}`;
+            }
+
+            return filename;
+        } catch (e) {
+            return 'downloaded-file.pdf';
         }
     }
 }

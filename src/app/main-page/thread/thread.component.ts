@@ -931,4 +931,12 @@ export class ThreadComponent implements OnInit, OnDestroy {
       this.onCloseThread();
     }
   }
+
+  /**
+   * Initiates the download of the displayed PDF.
+   * @param attachmentUrl - Die URL des PDFs
+   */
+  async downloadPdf(attachmentUrl: string): Promise<void> {
+    await this.threadFileHelper.downloadPdf(attachmentUrl, this.metadataMap);
+  }
 }

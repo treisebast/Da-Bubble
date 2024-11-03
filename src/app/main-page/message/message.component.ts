@@ -546,4 +546,74 @@ export class MessageComponent implements OnInit, OnChanges {
       return numUsers > 1 ? 'haben reagiert' : 'hat reagiert';
     }
   }
+
+   /**
+   * Initiates the download of the displayed PDF.
+   * @param attachmentUrl - Die URL des PDFs
+   */
+   async downloadPdf(attachmentUrl: string) {
+    if (!attachmentUrl) return;
+
+    try {
+      // Hole den Download-Link direkt
+      const response = await fetch(attachmentUrl, { mode: 'cors' });
+      if (!response.ok) throw new Error('Netzwerkantwort war nicht ok');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Extrahiere den Dateinamen aus den Metadaten oder der URL
+      const attachmentName = this.message.metadata?.[attachmentUrl]?.name || this.extractFileName(attachmentUrl, blob.type) || 'downloaded-file.pdf';
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = attachmentName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Freigeben der Blob-URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Fehler beim Herunterladen des PDFs:', error);
+      alert('Das PDF konnte nicht heruntergeladen werden. Bitte versuche es später erneut.');
+    }
+  }
+
+  /**
+   * Extrahiert einen kürzeren und sinnvollen Dateinamen aus der imageUrl oder attachmentUrl.
+   * @param url - Die URL der Datei
+   * @param mimeType - Der MIME-Typ des Blobs
+   * @returns Ein string, der den Dateinamen darstellt
+   */
+  private extractFileName(url: string, mimeType: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname; // z.B. /v0/b/bucket/o/chat-files%2FgVM7hDPl0aS1E4Tlou92%2Ffilename.pdf%2Fanotherfile
+      const path = decodeURIComponent(pathname); // /v0/b/bucket/o/chat-files/gVM7hDPl0aS1E4Tlou92/filename.pdf/anotherfile
+
+      // Teile den Pfad in Segmente
+      const segments = path.split('/');
+      let filename = 'downloaded-file.pdf';
+
+      // Iteriere rückwärts durch die Segmente, um das letzte Segment mit einer Dateiendung zu finden
+      for (let i = segments.length - 1; i >= 0; i--) {
+        if (segments[i].includes('.')) {
+          filename = segments[i].split('?')[0];
+          break;
+        }
+      }
+
+      // Falls kein Dateiname gefunden wurde, setze einen Standardnamen mit der richtigen Erweiterung
+      if (!filename.includes('.')) {
+        const extension = mimeType.split('/')[1] || 'pdf';
+        filename = `file.${extension}`;
+      }
+
+      return filename;
+    } catch (e) {
+      console.error('Fehler beim Extrahieren des Dateinamens:', e);
+      return 'downloaded-file.pdf';
+    }
+  }
 }

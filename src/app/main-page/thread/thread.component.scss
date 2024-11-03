@@ -721,6 +721,33 @@
   }
 }
 
+
+.download-button {
+  margin-left: 10px;
+  padding: 0;
+  background: var(--main-background);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+
+  .download-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover .download-icon {
+    transform: scale(1.1);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
 @media(max-width:1079px) {}
 
 @media(max-width:600px) {

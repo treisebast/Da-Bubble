@@ -40,6 +40,13 @@
                   <span class="pdf-name">{{ message.metadata?.[attachment]?.name || 'loading...' }}</span>
                   <span class="pdf-size">{{ formatFileSize(message.metadata?.[attachment]?.size || 0) }}</span>
                 </div>
+                <button 
+                (click)="downloadPdf(attachment); $event.stopPropagation(); $event.preventDefault()" 
+                class="download-button"
+                aria-label="PDF herunterladen">
+                <img src="../../assets/img/icons/download.png" alt="Download PDF" class="download-icon" />
+              </button>
+
               </div>
             </a>
           </ng-template>
